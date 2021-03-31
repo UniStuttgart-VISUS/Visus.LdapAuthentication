@@ -51,3 +51,18 @@ The configuration section can have any name of your choice as long as it can be 
     }
 }
 ```
+
+Once configured, the middleware can be used in controllers to implement cookie-based or JWT-based authorisation. An example for a cookie-based login method looks like:
+```C#
+[HttpPost]
+[AllowAnonymous]
+public ActionResult<ILdapUser> Login([FromForm] string username, [FromForm] string password) {
+    try {
+        var retval= this._authService.Login(username, password);
+        this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, etval.ToClaimsPrincipal());
+        return this.Ok(retval);
+    } catch {
+        return this.Unauthorized();
+    }
+}
+```
