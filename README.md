@@ -35,3 +35,19 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 }
 ```
+
+The configuration section can have any name of your choice as long as it can be bound to `LdapConfiguration`. Alternatively, you can use your own implementation of `ILdapConfiguration`. The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
+
+```JSON
+{
+    "LdapConfiguration": {
+        "Server": "dc.your-domain.de",
+        "SearchBase": "DC=your-domain,DC=de",
+        "Schema": "Active Directory",
+        "IsRecursiveGroupMembership": true,
+        "Port": 636,
+        "IsSsl": true,
+        "IsNoCertificateCheck": true
+    }
+}
+```
