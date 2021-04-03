@@ -67,10 +67,10 @@ Once configured, the middleware can be used in controllers to implement cookie-b
 ```C#
 [HttpPost]
 [AllowAnonymous]
-public ActionResult<ILdapUser> Login([FromForm] string username, [FromForm] string password) {
+public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [FromForm] string password) {
     try {
         var retval = this._authService.Login(username, password);
-        this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, retval.ToClaimsPrincipal());
+        await this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, retval.ToClaimsPrincipal());
         return this.Ok(retval);
     } catch {
         return this.Unauthorized();
