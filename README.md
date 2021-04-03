@@ -6,7 +6,7 @@
 
 This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The library is using [Novell's C#-only LDAP library](https://github.com/dsbenghe/Novell.Directory.Ldap.NETStandard) rather than the Windows-only DirectoryServices and is therefore running on Windows and Linux.
 
-Built-in user objects generated include commonly used claims like user name, actual names, e-mail addresses and group memberships. If necessary, you can also provide your own user object that uses a completely different mapping of LDAP attributes to claims.
+Built-in user objects are automatically mapped to Active Directory attributes and include commonly used claims like user name, actual names, e-mail addresses and group memberships. If necessary, you can also provide your own user object that uses a completely different mapping of LDAP attributes to claims.
 
 
 # Usage
@@ -34,7 +34,7 @@ The above code uses the default `LdapUser` object from the library, which provid
 public void ConfigureServices(IServiceCollection services) {
     // ...
     
-    // Add LDAP authentication with default LdapUser object.
+    // Add LDAP authentication with customised user object.
     {
         var options = new LdapOptions();
         this.Configuration.GetSection("LdapConfiguration").Bind(options);
@@ -84,9 +84,10 @@ The built-in `LdapUser` object provides a reasonably mapping of attributes in an
 The first one is by inheriting from `LdapUserBase`, which actually implements all of the behaviour of `LdapUser`. This way enables you to inherit most of this behaviour and override the mapping on a per-property base. As the mapping configured via attributes is not inherited, you can simply override a property and attach a new mapping like this:
 
 ```C#
-public sealed class MyUser : LdapUserBase {
+public sealed class CustomApplicationUser : LdapUserBase {
+
     /// <summary>
-    /// The account user's account name.
+    /// The user's account name.
     /// </summary>
     /// <remarks>
     /// Here, the &quot;userPrincipalName&quot; is used instead of
