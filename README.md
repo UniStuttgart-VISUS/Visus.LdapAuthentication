@@ -84,7 +84,7 @@ The built-in `LdapUser` object provides a reasonably mapping of attributes in an
 The first one is by inheriting from `LdapUserBase`, which actually implements all of the behaviour of `LdapUser`. This way enables you to inherit most of this behaviour and override the mapping on a per-property base. As the mapping configured via attributes is not inherited, you can simply override a property and attach a new mapping like this:
 
 ```C#
-public sealed class MyUser : LdapUserBase {
+public sealed class CustomApplicationUser : LdapUserBase {
     /// <summary>
     /// The account user's account name.
     /// </summary>
