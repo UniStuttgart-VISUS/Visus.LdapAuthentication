@@ -1,7 +1,8 @@
-# LDAP Authentication Middleware
+# ASP.NET Core LDAP Authentication Middleware
 This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The user objects generated also include commonly used claims like user name, actual names, e-mail addresses and group memberships.
 
 # Usage
+## Add the authentication service
 The authenication functionality is added in `ConfigureServices` via the following statements:
 
 ```C#
@@ -36,6 +37,7 @@ public void ConfigureServices(IServiceCollection services) {
 }
 ```
 
+## Configure the LDAP server
 The configuration section can have any name of your choice as long as it can be bound to `LdapConfiguration`. Alternatively, you can use your own implementation of `ILdapConfiguration`. The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
 
 ```JSON
@@ -52,14 +54,15 @@ The configuration section can have any name of your choice as long as it can be 
 }
 ```
 
+## Authenticate a user
 Once configured, the middleware can be used in controllers to implement cookie-based or JWT-based authorisation. An example for a cookie-based login method looks like:
 ```C#
 [HttpPost]
 [AllowAnonymous]
 public ActionResult<ILdapUser> Login([FromForm] string username, [FromForm] string password) {
     try {
-        var retval= this._authService.Login(username, password);
-        this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, etval.ToClaimsPrincipal());
+        var retval = this._authService.Login(username, password);
+        this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, retval.ToClaimsPrincipal());
         return this.Ok(retval);
     } catch {
         return this.Unauthorized();
