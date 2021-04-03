@@ -93,6 +93,7 @@ public sealed class MyUser : LdapUserBase {
     /// behave like the default <see cref="LdapUser" />.
     /// </remarks>
     [LdapAttribute(Schema.ActiveDirectory, "userPrincipalName")]
+    [Claim(ClaimTypes.WindowsAccountName)]
     public override string AccountName => base.AccountName;
 }
 ```
