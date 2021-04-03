@@ -85,8 +85,9 @@ The first one is by inheriting from `LdapUserBase`, which actually implements al
 
 ```C#
 public sealed class CustomApplicationUser : LdapUserBase {
+
     /// <summary>
-    /// The account user's account name.
+    /// The user's account name.
     /// </summary>
     /// <remarks>
     /// Here, the &quot;userPrincipalName&quot; is used instead of
