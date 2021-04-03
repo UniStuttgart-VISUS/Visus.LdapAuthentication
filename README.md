@@ -1,4 +1,7 @@
 # ASP.NET Core LDAP Authentication Middleware
+
+[![Build Status](https://visualisierungsinstitut.visualstudio.com/Visus.LdapAuthentication/_apis/build/status/UniStuttgart-VISUS.Visus.LdapAuthentication?branchName=main)](https://visualisierungsinstitut.visualstudio.com/Visus.LdapAuthentication/_build/latest?definitionId=6&branchName=main)
+
 This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The library is using Novell's C#-only LDAP library rather than the Windows-only DirectoryServices and is therefore running on Windows and Linux.
 
 Built-in user objects generated include commonly used claims like user name, actual names, e-mail addresses and group memberships. If necessary, you can also provide your own user object that uses a completely different mapping of LDAP attributes to claims.
