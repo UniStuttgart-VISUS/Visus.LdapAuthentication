@@ -84,7 +84,7 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         /// <remarks>
         /// For an Active Directory, this is typically something like
-        /// &quot;(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))&quot;
+        /// &quot;(&amp;(objectClass=user)(objectClass=person)(!(objectClass=computer)))&quot;
         /// </remarks>
         public string UsersFilter { get; set; }
 

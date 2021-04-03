@@ -57,10 +57,21 @@ namespace Visus.LdapAuthentication {
                     LdapAuthentication.Schema.ActiveDirectory,
                     new LdapMapping() {
                         DistinguishedNameAttribute = "distinguishedName",
-                        GroupsAttribute = "memberOf",
                         GroupIdentityAttribute = "objectSid",
                         GroupIdentityConverter = typeof(SidConverter).FullName,
+                        GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "primaryGroupID",
+                        UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
+                        UsersFilter = "(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))"
+                    }
+                },
+                {
+                    LdapAuthentication.Schema.IdentityManagementForUnix,
+                    new LdapMapping() {
+                        DistinguishedNameAttribute = "distinguishedName",
+                        GroupIdentityAttribute = "gidNumber",
+                        GroupsAttribute = "memberOf",
+                        PrimaryGroupAttribute = "gidNumber",
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
                         UsersFilter = "(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))"
                     }

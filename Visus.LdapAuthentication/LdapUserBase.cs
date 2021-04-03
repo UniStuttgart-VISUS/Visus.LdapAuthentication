@@ -24,12 +24,14 @@ namespace Visus.LdapAuthentication {
         #region Public properties
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "sAMAccountName")]
+        [LdapAttribute(Schema.IdentityManagementForUnix, "sAMAccountName")]
         [Claim(ClaimTypes.Name)]
         [Claim(ClaimTypes.WindowsAccountName)]
         public virtual string AccountName { get; internal set; }
 
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "givenName")]
+        [LdapAttribute(Schema.IdentityManagementForUnix, "givenName")]
         [Claim(ClaimTypes.GivenName)]
         public virtual string ChristianName { get; internal set; }
 
@@ -38,16 +40,19 @@ namespace Visus.LdapAuthentication {
 
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "displayName")]
+        [LdapAttribute(Schema.IdentityManagementForUnix, "displayName")]
         public virtual string DisplayName { get; internal set; }
 
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "mail")]
+        [LdapAttribute(Schema.IdentityManagementForUnix, "mail")]
         [Claim(ClaimTypes.Email)]
         public virtual string EmailAddress { get; internal set; }
 
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "objectSid",
             Converter = typeof(SidConverter))]
+        [LdapAttribute(Schema.IdentityManagementForUnix, "uidNumber")]
         [Claim(ClaimTypes.PrimarySid)]
         [Claim(ClaimTypes.Sid)]
         [Claim(ClaimTypes.NameIdentifier)]
@@ -68,6 +73,7 @@ namespace Visus.LdapAuthentication {
 
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "sn")]
+        [LdapAttribute(Schema.IdentityManagementForUnix, "sn")]
         [Claim(ClaimTypes.Surname)]
         public virtual string Surname { get; internal set; }
         #endregion

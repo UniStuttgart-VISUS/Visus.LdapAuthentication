@@ -82,5 +82,59 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.AreEqual("sn", prop.Value.Name);
             }
         }
+
+
+        [TestMethod]
+        public void TestIdmuAttributes() {
+            var props = LdapAttributeAttribute.GetLdapProperties<LdapUser>(Schema.IdentityManagementForUnix);
+
+            {
+                var prop = props.Where(p => p.Key.Name == nameof(LdapUser.AccountName)).SingleOrDefault();
+                Assert.IsNotNull(prop);
+                Assert.IsNotNull(prop.Key);
+                Assert.IsNotNull(prop.Value);
+                Assert.AreEqual("sAMAccountName", prop.Value.Name);
+            }
+
+            {
+                var prop = props.Where(p => p.Key.Name == nameof(LdapUser.ChristianName)).SingleOrDefault();
+                Assert.IsNotNull(prop);
+                Assert.IsNotNull(prop.Key);
+                Assert.IsNotNull(prop.Value);
+                Assert.AreEqual("givenName", prop.Value.Name);
+            }
+
+            {
+                var prop = props.Where(p => p.Key.Name == nameof(LdapUser.DisplayName)).SingleOrDefault();
+                Assert.IsNotNull(prop);
+                Assert.IsNotNull(prop.Key);
+                Assert.IsNotNull(prop.Value);
+                Assert.AreEqual("displayName", prop.Value.Name);
+            }
+
+            {
+                var prop = props.Where(p => p.Key.Name == nameof(LdapUser.EmailAddress)).SingleOrDefault();
+                Assert.IsNotNull(prop);
+                Assert.IsNotNull(prop.Key);
+                Assert.IsNotNull(prop.Value);
+                Assert.AreEqual("mail", prop.Value.Name);
+            }
+
+            {
+                var prop = props.Where(p => p.Key.Name == nameof(LdapUser.Identity)).SingleOrDefault();
+                Assert.IsNotNull(prop);
+                Assert.IsNotNull(prop.Key);
+                Assert.IsNotNull(prop.Value);
+                Assert.AreEqual("uidNumber", prop.Value.Name);
+            }
+
+            {
+                var prop = props.Where(p => p.Key.Name == nameof(LdapUser.Surname)).SingleOrDefault();
+                Assert.IsNotNull(prop);
+                Assert.IsNotNull(prop.Key);
+                Assert.IsNotNull(prop.Value);
+                Assert.AreEqual("sn", prop.Value.Name);
+            }
+        }
     }
 }

@@ -17,6 +17,13 @@ namespace Visus.LdapAuthentication {
         public const string ActiveDirectory = "Active Directory";
 
         /// <summary>
+        /// Identifies an Active Directory schema with Identity Management for
+        /// Unix installed and where the Unix attributes are used instead of
+        /// SIDs.
+        /// </summary>
+        public const string IdentityManagementForUnix = "IDMU";
+
+        /// <summary>
         /// Identifies an OpenLDAP schema.
         /// </summary>
         public const string OpenLdap = "OpenLDAP";
