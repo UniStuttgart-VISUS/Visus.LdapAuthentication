@@ -34,7 +34,7 @@ The above code uses the default `LdapUser` object from the library, which provid
 public void ConfigureServices(IServiceCollection services) {
     // ...
     
-    // Add LDAP authentication with default LdapUser object.
+    // Add LDAP authentication with customised user object.
     {
         var options = new LdapOptions();
         this.Configuration.GetSection("LdapConfiguration").Bind(options);
