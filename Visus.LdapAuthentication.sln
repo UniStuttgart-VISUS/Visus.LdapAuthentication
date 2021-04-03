@@ -5,10 +5,11 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visus.LdapAuthentication", "Visus.LdapAuthentication\Visus.LdapAuthentication.csproj", "{EA3F0535-EBE1-4037-A570-C08502E46A27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.LdapAuthentication.Tests", "Visus.LdapAuthentication.Tests\Visus.LdapAuthentication.Tests.csproj", "{51B49823-FC38-4CAC-8547-0B8E0D34FBDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visus.LdapAuthentication.Tests", "Visus.LdapAuthentication.Tests\Visus.LdapAuthentication.Tests.csproj", "{51B49823-FC38-4CAC-8547-0B8E0D34FBDB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BAA71DF0-03B7-45CF-94A1-E5916DE6BB9D}"
 	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yml = azure-pipelines.yml
 		README.md = README.md
 	EndProjectSection
 EndProject

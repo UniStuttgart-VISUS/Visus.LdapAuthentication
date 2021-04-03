@@ -86,7 +86,7 @@ public sealed class MyUser : LdapUserBase {
     /// <remarks>
     /// Here, the &quot;userPrincipalName&quot; is used instead of
     /// &quot;sAMAccountName&quot; used by <see cref="LdapUser" />. Furthermore,
-    /// Only the <see cref="ClaimTypes.WindowsAccountName" /> claim is set to
+    /// only the <see cref="ClaimTypes.WindowsAccountName" /> claim is set to
     /// this property, whereas <see cref="LdapUser" /> also sets
     /// <see cref="ClaimTypes.Name" />. All other attribute mappings and claim
     /// mappings are inherited from <see cref="LdapUserBase" /> and therefore
