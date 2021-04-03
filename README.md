@@ -1,5 +1,8 @@
 # ASP.NET Core LDAP Authentication Middleware
-This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The user objects generated also include commonly used claims like user name, actual names, e-mail addresses and group memberships.
+This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The library is using Novell's C#-only LDAP library rather than the Windows-only DirectoryServices and is therefore running on Windows and Linux.
+
+Built-in user objects generated include commonly used claims like user name, actual names, e-mail addresses and group memberships. If necessary, you can also provide your own user object that uses a completely different mapping of LDAP attributes to claims.
+
 
 # Usage
 ## Add the authentication service
@@ -69,3 +72,29 @@ public ActionResult<ILdapUser> Login([FromForm] string username, [FromForm] stri
     }
 }
 ```
+
+## Customising the user object
+The built-in `LdapUser` object provides a reasonably mapping of attributes in an Active Directory to user claims. There are two ways you can customise this behaviour.
+
+The first one is by inheriting from `LdapUserBase`, which actually implements all of the behaviour of `LdapUser`. This way enables you to inherit most of this behaviour and override the mapping on a per-property base. As the mapping configured via attributes is not inherited, you can simply override a property and attach a new mapping like this:
+
+```C#
+public sealed class MyUser : LdapUserBase {
+    /// <summary>
+    /// The account user's account name.
+    /// </summary>
+    /// <remarks>
+    /// Here, the &quot;userPrincipalName&quot; is used instead of
+    /// &quot;sAMAccountName&quot; used by <see cref="LdapUser" />. Furthermore,
+    /// Only the <see cref="ClaimTypes.WindowsAccountName" /> claim is set to
+    /// this property, whereas <see cref="LdapUser" /> also sets
+    /// <see cref="ClaimTypes.Name" />. All other attribute mappings and claim
+    /// mappings are inherited from <see cref="LdapUserBase" /> and therefore
+    /// behave like the default <see cref="LdapUser" />.
+    /// </remarks>
+    [LdapAttribute(Schema.ActiveDirectory, "userPrincipalName")]
+    public override string AccountName => base.AccountName;
+}
+```
+
+If you need an even higher level of customisation, you can provide a completely new implementation of `ILdapUser` and fully control the whole mapping of LDAP attributes to properties and claims. Before doing so, you should also consider whether you can achieve your goals by overriding one or more of `LdapUserBase.AddGroupClaims` and `LdapUserBase.AddPropertyClaims`.
