@@ -13,10 +13,10 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>ldap aspnet authentication netcoreapp3.1</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
-    <Version>1.1.0</Version>
-    <PackageReleaseNotes>Added LDAP schema für IDMU and possibility to filter claims passed from a user to a ClaimsIdentity.</PackageReleaseNotes>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <Version>1.2.0</Version>
+    <PackageReleaseNotes>Added PagingExtensions to support retrieving large number of users.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

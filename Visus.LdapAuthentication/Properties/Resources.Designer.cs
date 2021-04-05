@@ -70,6 +70,24 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Paging of LDAP search results must start at 0..
+        /// </summary>
+        public static string ErrorLdapPage {
+            get {
+                return ResourceManager.GetString("ErrorLdapPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The size of a page of LDAP search results must be at least 1..
+        /// </summary>
+        public static string ErrorLdapPageSize {
+            get {
+                return ResourceManager.GetString("ErrorLdapPageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given property &quot;{0}&quot; was not found..
         /// </summary>
         public static string ErrorPropertyNotFound {
