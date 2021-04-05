@@ -13,9 +13,9 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>ldap aspnet authentication netcoreapp3.1</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
-    <FileVersion>1.2.0.0</FileVersion>
-    <Version>1.2.0</Version>
+    <AssemblyVersion>1.2.1.0</AssemblyVersion>
+    <FileVersion>1.2.1.0</FileVersion>
+    <Version>1.2.1</Version>
     <PackageReleaseNotes>Added PagingExtensions to support retrieving large number of users.</PackageReleaseNotes>
   </PropertyGroup>
 

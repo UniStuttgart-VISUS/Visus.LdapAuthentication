@@ -146,6 +146,10 @@ namespace Visus.LdapAuthentication {
         /// the search results.</param>
         /// <param name="pageSize">The size of the result pages in number of
         /// entries.</param>
+        /// <param name="sortingAttribute">The attribute used to sort the
+        /// results. See
+        /// <see cref="AddPaging(LdapSearchConstraints, int, int, string)"/> for
+        /// more details on the sort key.</param>
         /// <param name="timeLimit">A time limit for the search. This parameter
         /// defaults to zero, which indicates an unlimited amount of search
         /// time.</param>
@@ -155,9 +159,10 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="pageSize"/>
         /// is less than 1.</exception>
-        public static IEnumerable<LdapEntry> Search(this LdapConnection that,
-                string @base, int scope, string filter, string[] attrs,
-                int pageSize, int timeLimit = 0) {
+        public static IEnumerable<LdapEntry> PagedSearch(
+                this LdapConnection that, string @base, int scope,
+                string filter, string[] attrs, int pageSize,
+                string sortingAttribute, int timeLimit = 0) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             var cntRead = 0;        // Number of entries already read.
@@ -169,7 +174,7 @@ namespace Visus.LdapAuthentication {
                 var constraints = new LdapSearchConstraints() {
                     TimeLimit = timeLimit
                 };
-                constraints.AddPaging(curPage, pageSize);
+                constraints.AddPaging(curPage, pageSize, sortingAttribute);
 
                 var results = that.Search(@base, scope, filter, attrs, false,
                     constraints);
