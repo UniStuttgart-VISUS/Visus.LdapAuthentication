@@ -135,14 +135,9 @@ Assuming that you have the embedded the user SID in the claims of an authenticat
 [Authorize]
 public ActionResult<ILdapUser> GetUser() {
     if (this.User != null) {
-        var retval = new LdapUser();
-
-        // Reflect the property storing the SID.
-        var idProperty = retval.GetType().GetProperty(nameof(LdapUser.Identity));
-
-        // Determine the claims we know that the authentication service might
-        // have stored the SID to.
-        var claims = ClaimAttribute.GetClaims(idProperty);
+        // Determine the claims we know that the authentication service has
+        // stored the SID to.
+        var claims = ClaimAttribute.GetClaims<LdapUser>(nameof(LdapUser.Identity));
 
         // Return the first valid SID that allows for reconstructing the user.
         foreach (var c in claims) {
