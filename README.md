@@ -65,6 +65,8 @@ The configuration section can have any name of your choice as long as it can be 
 ## Authenticate a user
 Once configured, the middleware can be used in controllers to implement cookie-based or JWT-based authorisation. An example for a cookie-based login method looks like:
 ```C#
+// Inject ILdapAuthenticationService to _authService field in constructor.
+
 [HttpPost]
 [AllowAnonymous]
 public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [FromForm] string password) {
@@ -127,20 +129,20 @@ public void ConfigureServices(IServiceCollection services) {
 Assuming that you have the embedded the user SID in the claims of an authentication cookie, you then can restore the user object from the cookie as follows:
 
 ```C#
+// Inject ILdapSearchService to _ldapSearchService field in constructor.
+
 [HttpGet]
 [Authorize]
 public ActionResult<ILdapUser> GetUser() {
     if (this.User != null) {
         var retval = new LdapUser();
 
-        // Determine where the SID is stored.
+        // Reflect the property storing the SID.
         var idProperty = retval.GetType().GetProperty(nameof(LdapUser.Identity));
-        var idAttribute = LdapAttributeAttribute.GetLdapAttribute(idProperty,
-            Visus.LdapAuthentication.Schema.ActiveDirectory);
 
         // Determine the claims we know that the authentication service might
         // have stored the SID to.
-        var claims = idProperty.GetCustomAttributes<ClaimAttribute>().Select(c => c.Name);
+        var claims = ClaimAttribute.GetClaims(idProperty);
 
         // Return the first valid SID that allows for reconstructing the user.
         foreach (var c in claims) {
