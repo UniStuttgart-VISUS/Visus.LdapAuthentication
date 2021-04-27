@@ -86,5 +86,53 @@ namespace Visus.LdapAuthentication {
                 return new LdapConnectionService(options, l);
             });
         }
+
+        /// <summary>
+        /// Adds an <see cref="ILdapSearchService"/> to the dependency injection
+        /// container.
+        /// </summary>
+        /// <typeparam name="TUser">The type of user to be created for the search
+        /// results, which also defines attributes like the unique identity in
+        /// combination with the global options from <see cref="ILdapOptions"/>.
+        /// </typeparam>
+        /// <param name="that">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">The LDAP options to be used for the connection
+        /// to the directory server.</param>
+        /// <returns><paramref name="that"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddLdapSearchService<TUser>(
+                this IServiceCollection that, ILdapOptions options)
+                where TUser : ILdapUser, new() {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+
+            return that.AddScoped<ILdapSearchService, LdapSearchService<TUser>>(
+                s => {
+                    var l = s.GetService<ILogger<LdapSearchService<TUser>>>();
+                    return new LdapSearchService<TUser>(options, l);
+            });
+        }
+
+        /// <summary>
+        /// Adds an <see cref="ILdapSearchService"/> to the dependency injection
+        /// container.
+        /// </summary>
+        /// <param name="that">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">The LDAP options to be used for the connection
+        /// to the directory server.</param>
+        /// <returns><paramref name="that"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddLdapSearchService(
+                this IServiceCollection that, ILdapOptions options) {
+            return that.AddLdapSearchService<LdapUser>(options);
+        }
     }
 }

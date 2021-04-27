@@ -168,7 +168,7 @@ namespace Visus.LdapAuthentication {
             var cntRead = 0;        // Number of entries already read.
             int? cntTotal = null;   // Total number of entries to be read.
             var curPage = 0;        // Current page.
-            LdapEntry entry = null; // Current entry to be emitted.
+            LdapEntry entry;        // Current entry to be emitted.
 
             do {
                 var constraints = new LdapSearchConstraints() {

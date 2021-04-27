@@ -61,6 +61,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An entry with a value of &quot;{1}&quot; for &quot;{0}&quot; does not exist in the directory..
+        /// </summary>
+        public static string ErrorEntryNotFound {
+            get {
+                return ResourceManager.GetString("ErrorEntryNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given byte sequence &quot;{0}&quot; does not represent a valid security identifier..
         /// </summary>
         public static string ErrorInvalidSid {

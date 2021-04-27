@@ -111,6 +111,23 @@ namespace Visus.LdapAuthentication {
         }
 
         /// <summary>
+        /// Converts the <see cref="ILdapOptions.IsSubtree"/> property of
+        /// <paramref name="that"/> into a scope constant from Novell LDAP.
+        /// </summary>
+        /// <param name="that">The options to get the search scope for.</param>
+        /// <returns><see cref="LdapConnection.ScopeSub"/> if
+        /// <see cref="ILdapOptions.IsSubtree"/> is <c>true</c>,
+        /// <see cref="LdapConnection.ScopeBase"/> otherwise.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c></exception>
+        public static int GetSearchScope(this ILdapOptions that) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            return that.IsSubtree
+                ? LdapConnection.ScopeSub
+                : LdapConnection.ScopeBase;
+        }
+
+        /// <summary>
         /// Performs verification of the server certificate.
         /// </summary>
         /// <param name="that">The configuration according to which the

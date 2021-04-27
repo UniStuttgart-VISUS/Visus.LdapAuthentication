@@ -26,8 +26,14 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="logger"></param>
+        /// <param name="options">The LDAP options that specify how to connect
+        /// to the directory server.</param>
+        /// <param name="logger">A logger for writing important messages.
+        /// </param>
+        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
         public LdapAuthenticationService(ILdapOptions options,
                 ILogger<LdapAuthenticationService<TUser>> logger) {
             this._logger = logger
