@@ -105,3 +105,54 @@ public sealed class CustomApplicationUser : LdapUserBase {
 ```
 
 If you need an even higher level of customisation, you can provide a completely new implementation of `ILdapUser` and fully control the whole mapping of LDAP attributes to properties and claims. Before doing so, you should also consider whether you can achieve your goals by overriding one or more of `LdapUserBase.AddGroupClaims` and `LdapUserBase.AddPropertyClaims`.
+
+## Searching users
+In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `ILdapOptions.User` with a password stored in `ILdapOptions.Password` can be used in conjuction with a `ILdapSearchService` to implement such a behaviour. First, configure the service:
+
+```C#
+public void ConfigureServices(IServiceCollection services) {
+    // ...
+    
+    // Add LDAP search service using service account.
+    {
+        var options = new LdapOptions();
+        this.Configuration.GetSection("LdapConfiguration").Bind(options);
+        services.AddLdapSearchService<LdapUser>(options);
+    }
+    
+    // ...
+}
+```
+
+Assuming that you have the embedded the user SID in the claims of an authentication cookie, you then can restore the user object from the cookie as follows:
+
+```C#
+[HttpGet]
+[Authorize]
+public ActionResult<ILdapUser> GetUser() {
+    if (this.User != null) {
+        var retval = new LdapUser();
+
+        // Determine where the SID is stored.
+        var idProperty = retval.GetType().GetProperty(nameof(LdapUser.Identity));
+        var idAttribute = LdapAttributeAttribute.GetLdapAttribute(idProperty,
+            Visus.LdapAuthentication.Schema.ActiveDirectory);
+
+        // Determine the claims we know that the authentication service might
+        // have stored the SID to.
+        var claims = idProperty.GetCustomAttributes<ClaimAttribute>().Select(c => c.Name);
+
+        // Return the first valid SID that allows for reconstructing the user.
+        foreach (var c in claims) {
+            var sid = this.User.FindFirstValue(c);
+            if (sid != null) {
+                return this._ldapSearchService.GetUserByIdentity(sid);
+            }
+        }
+    }
+
+    // If something went wrong, we assume that the (anonymous) user must not
+    // access the user details.
+    return this.Unauthorized();
+}
+```
