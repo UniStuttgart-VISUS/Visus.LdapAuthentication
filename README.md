@@ -142,8 +142,12 @@ public ActionResult<ILdapUser> GetUser() {
         // Return the first valid SID that allows for reconstructing the user.
         foreach (var c in claims) {
             var sid = this.User.FindFirstValue(c);
-            if (sid != null) {
-                return this._ldapSearchService.GetUserByIdentity(sid);
+            if (!string.IsNullOrEmpty(sid)) {
+                var retval = this._ldapSearchService.GetUserByIdentity(sid);
+
+                if (retval != null) {
+                    return this.Ok(retval);
+                }
             }
         }
     }
