@@ -13,10 +13,10 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>ldap aspnet authentication netcoreapp3.1</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
-    <Version>1.4.0</Version>
-    <PackageReleaseNotes>Added convenience methods for retrieving claims from user object type.</PackageReleaseNotes>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <FileVersion>1.5.0.0</FileVersion>
+    <Version>1.5.0</Version>
+    <PackageReleaseNotes>Added option to add a default domain to form UPNs from plain user names.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

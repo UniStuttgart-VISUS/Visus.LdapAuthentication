@@ -33,7 +33,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestGetUserByIdentity() {
-            if (this._testSecrets != null) {
+            if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
                     this._testSecrets.LdapOptions,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
@@ -45,7 +45,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestGetUsers() {
-            if (this._testSecrets != null) {
+            if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
                     this._testSecrets.LdapOptions,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());

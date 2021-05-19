@@ -14,6 +14,19 @@ namespace Visus.LdapAuthentication {
     public interface ILdapOptions {
 
         /// <summary>
+        /// Gets the default domain appended to a user name.
+        /// </summary>
+        /// <remarks>
+        /// Certain LDAP servers (like AD) might require the UPN instead of the
+        /// account name to be used for binding. If this property is set, the
+        /// <see cref="ILdapAuthenticationService.Login(string, string)"/>
+        /// method will check for plain account names and append this domain
+        /// to the user name. This will allow users to logon with their short
+        /// account name.
+        /// </remarks>
+        string DefaultDomain { get; }
+
+        /// <summary>
         /// Gets whether the certificate check is disabled for accessing the
         /// LDAP server.
         /// </summary>

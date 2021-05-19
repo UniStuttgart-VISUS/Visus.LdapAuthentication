@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-
+using System.Text.RegularExpressions;
 
 namespace Visus.LdapAuthentication {
 
@@ -101,6 +101,13 @@ namespace Visus.LdapAuthentication {
             Debug.Assert(that != null);
             Debug.Assert(logger != null);
 
+            var rxUpn = new Regex(@".+@.+");
+            if ((username != null)
+                    && !string.IsNullOrWhiteSpace(that.DefaultDomain)
+                    && !rxUpn.IsMatch(username)) {
+                username = $"{username}@{that.DefaultDomain}";
+            }
+
             logger.LogInformation(Properties.Resources.InfoBindingAsUser,
                 username);
             retval.Bind(username, password);
@@ -155,7 +162,7 @@ namespace Visus.LdapAuthentication {
             _ = logger ?? throw new ArgumentNullException(nameof(logger));
 
             if (that.IsNoCertificateCheck) {
-                logger.LogWarning("LDAP SSL certificate check has been"
+                logger.LogWarning("LDAP SSL certificate check has been "
                     + "disabled.");
                 return true;
             }

@@ -25,6 +25,9 @@ namespace Visus.LdapAuthentication {
 
         #region Public properties
         /// <inheritdoc />
+        public string DefaultDomain { get; set; }
+
+        /// <inheritdoc />
         public bool IsNoCertificateCheck { get; set; }
 
         /// <inheritdoc />

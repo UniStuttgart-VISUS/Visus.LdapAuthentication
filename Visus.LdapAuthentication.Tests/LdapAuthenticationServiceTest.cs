@@ -33,7 +33,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestLogin() {
-            if (this._testSecrets != null) {
+            if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapAuthenticationService<LdapUser>(
                     this._testSecrets.LdapOptions,
                     Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
