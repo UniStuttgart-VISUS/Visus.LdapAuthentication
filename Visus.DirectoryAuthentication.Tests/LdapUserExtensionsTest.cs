@@ -1,4 +1,4 @@
-﻿// <copyright file="LdapUserExtensionsTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="DirectoryUserExtensionsTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests {
 
     /// <summary>
     /// Tests <see cref="LdapUserExtensions"/>.

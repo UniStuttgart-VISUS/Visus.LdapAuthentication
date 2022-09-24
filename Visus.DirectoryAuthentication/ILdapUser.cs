@@ -1,4 +1,4 @@
-﻿// <copyright file="IDirectoryUser.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="ILdapUser.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -14,7 +14,7 @@ namespace Visus.DirectoryAuthentication {
     /// <summary>
     /// Interface for an application user object.
     /// </summary>
-    public interface IDirectoryUser {
+    public interface ILdapUser {
 
         /// <summary>
         /// Gets the unique account name of the user.

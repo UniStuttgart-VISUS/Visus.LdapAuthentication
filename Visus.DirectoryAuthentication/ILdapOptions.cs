@@ -3,6 +3,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Collections.Generic;
 
 
@@ -161,11 +162,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets the timeout for LDAP queries.
         /// </summary>
-        /// <remarks>
-        /// <para>This is currently not used.</para>
-        /// <para>A value of zero indicates an infinite timeout.</para>
-        /// </remarks>
-        int Timeout { get; }
+        TimeSpan Timeout { get; }
 
         /// <summary>
         /// Gets the LDAP user used to connect to the directory.

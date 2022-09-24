@@ -13,7 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.DirectoryAuthentication", "Visus.DirectoryAuthentication\Visus.DirectoryAuthentication.csproj", "{3375D21C-6E5E-4483-A7F5-B84A5D884AD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visus.DirectoryAuthentication", "Visus.DirectoryAuthentication\Visus.DirectoryAuthentication.csproj", "{3375D21C-6E5E-4483-A7F5-B84A5D884AD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.DirectoryAuthentication.Tests", "Visus.DirectoryAuthentication.Tests\Visus.DirectoryAuthentication.Tests.csproj", "{ED86AA3C-6140-49A3-B7AC-B67EA3677704}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{3375D21C-6E5E-4483-A7F5-B84A5D884AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3375D21C-6E5E-4483-A7F5-B84A5D884AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3375D21C-6E5E-4483-A7F5-B84A5D884AD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED86AA3C-6140-49A3-B7AC-B67EA3677704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED86AA3C-6140-49A3-B7AC-B67EA3677704}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED86AA3C-6140-49A3-B7AC-B67EA3677704}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED86AA3C-6140-49A3-B7AC-B67EA3677704}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

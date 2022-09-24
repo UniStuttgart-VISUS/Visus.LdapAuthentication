@@ -19,7 +19,7 @@ namespace Visus.DirectoryAuthentication {
     /// <summary>
     /// Base class for implementing custom users.
     /// </summary>
-    public abstract class DirectoryUserBase : IDirectoryUser {
+    public abstract class LdapUserBase : ILdapUser {
 
         #region Public properties
         /// <inheritdoc />
@@ -156,7 +156,7 @@ namespace Visus.DirectoryAuthentication {
                         SearchScope.Subtree,
                         mapping.RequiredGroupAttributes);
                     var response = (SearchResponse) connection.SendRequest(
-                        request);
+                        request, options.Timeout);
 
                     foreach (SearchResultEntry e in response.Entries) {
                         yield return e;

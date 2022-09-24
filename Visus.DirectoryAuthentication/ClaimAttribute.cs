@@ -13,7 +13,7 @@ namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// Marks a property as a claim that is automatically added by
-    /// <see cref="DirectoryUserBase"/>.
+    /// <see cref="LdapUserBase"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = true,

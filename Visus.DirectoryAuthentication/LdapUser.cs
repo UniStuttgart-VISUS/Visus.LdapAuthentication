@@ -12,10 +12,10 @@ namespace Visus.DirectoryAuthentication {
     /// <remarks>
     /// This implementation uses the attribute-based mapping of LDAP attributes
     /// to user properties and claims that is defined in
-    /// <see cref="DirectoryUserBase"/>. If you need a customised user object,
-    /// inherit from <see cref="DirectoryUserBase"/> instead of using this user
+    /// <see cref="LdapUserBase"/>. If you need a customised user object,
+    /// inherit from <see cref="LdapUserBase"/> instead of using this user
     /// object and customise the attribute mapping or override the whole
-    /// process by overloading <see cref="DirectoryUserBase.Assign"/>.
+    /// process by overloading <see cref="LdapUserBase.Assign"/>.
     /// </remarks>
-    public sealed class DirectoryUser : DirectoryUserBase { }
+    public sealed class LdapUser : LdapUserBase { }
 }
