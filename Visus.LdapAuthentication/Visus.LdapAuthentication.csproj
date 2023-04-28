@@ -11,12 +11,13 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
-    <PackageTags>ldap aspnet authentication net5</PackageTags>
+    <PackageTags>d</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.7.0.0</AssemblyVersion>
-    <FileVersion>1.7.0.0</FileVersion>
-    <Version>1.7.0</Version>
+    <AssemblyVersion>1.7.1.0</AssemblyVersion>
+    <FileVersion>1.7.1.0</FileVersion>
+    <Version>1.7.1</Version>
     <PackageReleaseNotes>Added the ability to set the authentication type of claims identities/principals created by the extension methods.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.14" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.14" />
     <PackageReference Include="Novell.Directory.Ldap.NETStandard" Version="3.6.0" />
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
