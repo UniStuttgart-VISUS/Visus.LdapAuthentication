@@ -13,10 +13,10 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>ldap aspnet authentication net5</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
-    <FileVersion>1.6.0.0</FileVersion>
-    <Version>1.6.0</Version>
-    <PackageReleaseNotes>Added option to add a default domain to form UPNs from plain user names.</PackageReleaseNotes>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
+    <Version>1.7.0</Version>
+    <PackageReleaseNotes>Added the ability to set the authentication type of claims identities/principals created by the extension methods.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
