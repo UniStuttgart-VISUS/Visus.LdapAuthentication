@@ -84,18 +84,28 @@ namespace Visus.LdapAuthentication {
 
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers() {
-            return this.GetUsers0(this._options.Mapping.UsersFilter);
+            return this.GetUsers0(this._options.Mapping.UsersFilter,
+                this._options.SearchBase, this._options.GetSearchScope());
         }
 
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers(string filter) {
-            if (string.IsNullOrWhiteSpace(filter)) {
-                return this.GetUsers();
+            return this.GetUsers(this._options.SearchBase,
+                this._options.GetSearchScope(), filter);
+        }
 
+        /// <inheritdoc />
+        public IEnumerable<ILdapUser> GetUsers(string searchBase,
+                 int searchScope, string filter) {
+            if (string.IsNullOrWhiteSpace(filter)) {
+                filter = this._options.Mapping.UsersFilter;
             } else {
                 filter = $"(&{this._options.Mapping.UsersFilter}{filter})";
-                return this.GetUsers0(filter);
             }
+
+            return this.GetUsers0(filter,
+                searchBase ?? this._options.SearchBase,
+                searchScope);
         }
         #endregion
 
@@ -133,10 +143,14 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Retrieves the users matching the given filter.
         /// </summary>
-        /// <param name="filter"></param>
+        /// <param name="filter">A filter on the users object.</param>
+        /// <param name="searchBase">The base of the LDAP search.</param>
+        /// <param name="searchScope">The search scope.</parmm>
         /// <returns></returns>
-        private IEnumerable<ILdapUser> GetUsers0(string filter) {
+        private IEnumerable<ILdapUser> GetUsers0(string filter,
+                string searchBase, int searchScope) {
             Debug.Assert(filter != null);
+            Debug.Assert(searchBase != null);
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
             var user = new TUser();
 
@@ -148,8 +162,8 @@ namespace Visus.LdapAuthentication {
             // Perform a paged search (there might be a lot of users, which
             // cannot be retruned at once.
             var entries = this.Connection.PagedSearch(
-                this._options.SearchBase,
-                this._options.GetSearchScope(),
+                searchBase,
+                searchScope,
                 filter,
                 user.RequiredAttributes.Concat(groupAttribs).ToArray(),
                 this._options.PageSize,
