@@ -41,6 +41,10 @@ namespace Visus.LdapAuthentication {
             this._options = options
                 ?? throw new ArgumentNullException(nameof(options));
         }
+
+        public object GetUserByIdentity(string existingUserIdentity) {
+            throw new NotImplementedException();
+        }
         #endregion
 
         /// <summary>

@@ -58,7 +58,7 @@ namespace Visus.LdapAuthentication {
             _ = identity ?? throw new ArgumentNullException(nameof(identity));
 
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
-            var retval = new LdapUser();
+            var retval = new TUser();
 
             // Determine the ID attribute.
             var idAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
