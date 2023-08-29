@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
@@ -80,11 +81,21 @@ namespace Visus.DirectoryAuthentication {
                 username = $"{username}@{that.DefaultDomain}";
             }
 
-            logger.LogInformation(Properties.Resources.InfoBindingAsUser,
-                username);
-            // TODO: On Windows, we could use Negotiate for the search service.
-            retval.AuthType = AuthType.Basic;
-            retval.Bind(new NetworkCredential(that.User, that.Password));
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                retval.AuthType = AuthType.Negotiate;
+            } else {
+                retval.AuthType = AuthType.Basic;
+            }
+
+            if (that.Password == null) {
+                logger.LogInformation(Properties.Resources.InfoBindCurrent);
+                retval.Bind();
+            } else {
+                logger.LogInformation(Properties.Resources.InfoBindingAsUser,
+                    username);
+                retval.Bind(new NetworkCredential(that.User, that.Password));
+            }
+
             logger.LogInformation(Properties.Resources.InfoBoundAsUser,
                 username);
 
