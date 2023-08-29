@@ -57,8 +57,10 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
         public ILdapUser Login(string username, string password) {
-            var connection = this._options.Connect(username, password,
-                this._logger);
+            // Note: It is important to pass a non-null password to make sure
+            // that end users do not authenticate as the server process.
+            var connection = this._options.Connect(username ?? string.Empty,
+                password ?? string.Empty, this._logger);
 
             var retval = new TUser();
             var request = this.GetRequest(retval, username);
@@ -83,8 +85,10 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
         public Task<ILdapUser> LoginAsync(string username, string password) {
-            var connection = this._options.Connect(username, password,
-                    this._logger);
+            // Note: It is important to pass a non-null password to make sure
+            // that end users do not authenticate as the server process.
+            var connection = this._options.Connect(username ?? string.Empty,
+                    password ?? string.Empty, this._logger);
 
             var retval = new TUser();
             var request = this.GetRequest(retval, username);

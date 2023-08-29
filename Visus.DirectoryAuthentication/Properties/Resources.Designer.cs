@@ -22,7 +22,7 @@ namespace Visus.DirectoryAuthentication.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Resources {
+    internal class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Visus.DirectoryAuthentication.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to An entry with a value of &quot;{1}&quot; for &quot;{0}&quot; does not exist in the directory..
         /// </summary>
-        public static string ErrorEntryNotFound {
+        internal static string ErrorEntryNotFound {
             get {
                 return ResourceManager.GetString("ErrorEntryNotFound", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to The given byte sequence &quot;{0}&quot; does not represent a valid security identifier..
         /// </summary>
-        public static string ErrorInvalidSid {
+        internal static string ErrorInvalidSid {
             get {
                 return ResourceManager.GetString("ErrorInvalidSid", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Paging of LDAP search results must start at 0..
         /// </summary>
-        public static string ErrorLdapPage {
+        internal static string ErrorLdapPage {
             get {
                 return ResourceManager.GetString("ErrorLdapPage", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to The size of a page of LDAP search results must be at least 1..
         /// </summary>
-        public static string ErrorLdapPageSize {
+        internal static string ErrorLdapPageSize {
             get {
                 return ResourceManager.GetString("ErrorLdapPageSize", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to The given property &quot;{0}&quot; was not found..
         /// </summary>
-        public static string ErrorPropertyNotFound {
+        internal static string ErrorPropertyNotFound {
             get {
                 return ResourceManager.GetString("ErrorPropertyNotFound", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to The given property &quot;{0}&quot; has no LDAP attribute mapped for the current schema &quot;{1}&quot;..
         /// </summary>
-        public static string ErrorPropertyNotMapped {
+        internal static string ErrorPropertyNotMapped {
             get {
                 return ResourceManager.GetString("ErrorPropertyNotMapped", resourceCulture);
             }
@@ -117,16 +117,25 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Login succeeded, but user information for &quot;{0}&quot; could not be found..
         /// </summary>
-        public static string ErrorUserNotFound {
+        internal static string ErrorUserNotFound {
             get {
                 return ResourceManager.GetString("ErrorUserNotFound", resourceCulture);
             }
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bind using the current credentials..
+        /// </summary>
+        internal static string InfoBindCurrent {
+            get {
+                return ResourceManager.GetString("InfoBindCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Performing LDAP bind as user &quot;{0}&quot;..
         /// </summary>
-        public static string InfoBindingAsUser {
+        internal static string InfoBindingAsUser {
             get {
                 return ResourceManager.GetString("InfoBindingAsUser", resourceCulture);
             }
@@ -135,7 +144,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Authenticated successfully as user &quot;{0}&quot;..
         /// </summary>
-        public static string InfoBoundAsUser {
+        internal static string InfoBoundAsUser {
             get {
                 return ResourceManager.GetString("InfoBoundAsUser", resourceCulture);
             }
@@ -144,7 +153,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Connecting to LDAP server {0}:{1}..
         /// </summary>
-        public static string InfoConnectingLdap {
+        internal static string InfoConnectingLdap {
             get {
                 return ResourceManager.GetString("InfoConnectingLdap", resourceCulture);
             }

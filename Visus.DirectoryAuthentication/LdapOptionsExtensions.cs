@@ -87,7 +87,7 @@ namespace Visus.DirectoryAuthentication {
                 retval.AuthType = AuthType.Basic;
             }
 
-            if (that.Password == null) {
+            if ((that.User == null) && (that.Password == null)) {
                 logger.LogInformation(Properties.Resources.InfoBindCurrent);
                 retval.Bind();
             } else {
