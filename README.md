@@ -91,7 +91,7 @@ You can, however, provide your own mapping in the JSON configuration like this:
     }
 }
 ```
-Alternatively, it is also possible to customise the `Mappings` property and select a custom schema by its name (the key in `Mappings`). Finally, if you set your `LdapConfiguration` in code, you can customise `LdapConfiguration.Mapping` or `LdapConfiguration.Mappings` from there.
+Alternatively, it is also possible to customise the `Mappings` property and select a custom schema by its name (the key in `Mappings`). Finally, if you set your `LdapOptions` in code, you can customise `LdapOptions.Mapping` or `LdapOptions.Mappings` from there.
 
 The following properties must/can be set via JSON:
 | Property | Description |
