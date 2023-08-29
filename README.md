@@ -46,7 +46,7 @@ public void ConfigureServices(IServiceCollection services) {
 ```
 
 ## Configure the LDAP server
-The configuration section can have any name of your choice as long as it can be bound to [`LdapConfiguration`](Visus.LdapAuthentication/LdapConfiguration.cs). Alternatively, you can use your own implementation of [`ILdapConfiguration`](Visus.LdapAuthentication/ILdapConfiguration.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
+The configuration section can have any name of your choice as long as it can be bound to [`LdapOptions`](Visus.LdapAuthentication/LdapOptions.cs). Alternatively, you can use your own implementation of [`ILdapOptions`](Visus.LdapAuthentication/ILdapOptions.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
 
 ```JSON
 {
