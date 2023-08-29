@@ -43,14 +43,15 @@ namespace Visus.LdapAuthentication {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            using var retval = new LdapConnection() {
-                SecureSocketLayer = that.IsSsl,
-            };
+            var options = new LdapConnectionOptions()
+                .ConfigureRemoteCertificateValidationCallback((s, c, a, e)
+                => that.VerifyServerCertificate(c, a, e, logger));
 
-            retval.UserDefinedServerCertValidationDelegate += (s, c, a, e)
-                => that.VerifyServerCertificate(c, a, e, logger);
+            if (that.IsSsl) {
+                options.UseSsl();
+            }
 
-            return retval;
+            return new LdapConnection(options);
         }
 
         /// <summary>
