@@ -13,10 +13,10 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>ldap aspnet authentication net5</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.9.0.0</AssemblyVersion>
-    <FileVersion>1.9.0.0</FileVersion>
-    <Version>1.9.0</Version>
-    <PackageReleaseNotes>Fixes an issue with setting properties on custom user classes.</PackageReleaseNotes>
+    <AssemblyVersion>1.10.0.0</AssemblyVersion>
+    <FileVersion>1.10.0.0</FileVersion>
+    <Version>1.10.0</Version>
+    <PackageReleaseNotes>Adds built-in support for the RFC 2307 LDAP schema.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
