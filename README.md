@@ -46,7 +46,7 @@ public void ConfigureServices(IServiceCollection services) {
 ```
 
 ## Configure the LDAP server
-The configuration section can have any name of your choice as long as it can be bound to [`LdapConfiguration`](Visus.LdapAuthenticaion/LdapConfiguration.cs). Alternatively, you can use your own implementation of [`ILdapConfiguration`](Visus.LdapAuthenticaion/ILdapConfiguration.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
+The configuration section can have any name of your choice as long as it can be bound to [`LdapConfiguration`](Visus.LdapAuthentication/LdapConfiguration.cs). Alternatively, you can use your own implementation of [`ILdapConfiguration`](Visus.LdapAuthentication/ILdapConfiguration.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
 
 ```JSON
 {
@@ -98,12 +98,12 @@ The following properties must/can be set via JSON:
 |----------|-------------|
 | DistinguishedNameAttribute | The name of the LDAP attribute holding the distinguished name. This property is required and should be "distinguishedName". |
 | GroupIdentityAttribute | The name of the LDAP attribute holding the unique identifier of a group. For Active Directory, this is typically the SID, whereas for POSIX, it is the GID number. This property is required. |
-| GroupIdentityConverter | If the group identity needs some conversion to be usable, provide the full path to your class implementing [`ILdapAttributeConverter`](Visus.LdapAuthenticaion/ILdapAttributeConverter.cs). |
+| GroupIdentityConverter | If the group identity needs some conversion to be usable, provide the full path to your class implementing [`ILdapAttributeConverter`](Visus.LdapAuthentication/ILdapAttributeConverter.cs). |
 | GroupsAttribute | The name of the LDAP attribute holding the list of groups a user is member of. This is "memberOf" in most scenarios. This property is required to create group claims. |
 | PrimaryGroupAttribute | The name of the LDAP attribute storing the primary group of a user. Both, Active Directory and OpenLDAP, distinguish between the primary group and other groups, so both attributes must be provided for all group claims to be found. This property is required to create group claims. |
 | RequiredGroupAttributes | An array of the attributes the library must load for group objects. This should typically not be customised as the library composes it from the other attributes set in the object. |
 | UserFilter | The LDAP filter that allows the library to select the user by the user name that is input into the login field. This should cover all inputs that allow the user to bind to the LDAP server. For instance, Active Directory does not only allow for binding via the user name (`sAMAccountName`), but also via user@domain (`userPrincipalName`), so both ways need to be specified in the `UserFilter`. Technically, users could also bind via the distinguished name, but this is typcially not relevant for real-world scenarios, so our built-in mapping does not include this. If you fail to specify the correct filter here, users might be able to authenticate (bind to the LDAP server), but the authentication in the library will fail because the user object cannot be retrieved. This property is required. |
-| UsersFilter | The LDAP filter that allows for selecting all users. Please note that for both, Active Directory and OpenLDAP, users are people and machines, so you want to filter on people only here. This property is required if you want to user [`ILdapSearchService`](Visus.LdapAuthenticaion/ILdapSearchService.cs). |
+| UsersFilter | The LDAP filter that allows for selecting all users. Please note that for both, Active Directory and OpenLDAP, users are people and machines, so you want to filter on people only here. This property is required if you want to user [`ILdapSearchService`](Visus.LdapAuthentication/ILdapSearchService.cs). |
 
 ## Authenticate a user
 Once configured, the middleware can be used in controllers to implement cookie-based or JWT-based authorisation. An example for a cookie-based login method looks like:
@@ -124,9 +124,9 @@ public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [Fr
 ```
 
 ## Customising the user object
-The built-in [`LdapUser`](Visus.LdapAuthenticaion/LdapUser.cs) object provides a reasonably mapping of attributes in an Active Directory to user claims. There are two ways you can customise this behaviour.
+The built-in [`LdapUser`](Visus.LdapAuthentication/LdapUser.cs) object provides a reasonably mapping of attributes in an Active Directory to user claims. There are two ways you can customise this behaviour.
 
-The first one is by inheriting from [`LdapUserBase`](Visus.LdapAuthenticaion/LdapUserBase.cs), which actually implements all of the behaviour of `LdapUser`. This way enables you to inherit most of this behaviour and override the mapping on a per-property base. As the mapping configured via attributes is not inherited, you can simply override a property and attach a new mapping like this:
+The first one is by inheriting from [`LdapUserBase`](Visus.LdapAuthentication/LdapUserBase.cs), which actually implements all of the behaviour of `LdapUser`. This way enables you to inherit most of this behaviour and override the mapping on a per-property base. As the mapping configured via attributes is not inherited, you can simply override a property and attach a new mapping like this:
 
 ```C#
 public sealed class CustomApplicationUser : LdapUserBase {
@@ -152,7 +152,7 @@ public sealed class CustomApplicationUser : LdapUserBase {
 If you need an even higher level of customisation, you can provide a completely new implementation of `ILdapUser` and fully control the whole mapping of LDAP attributes to properties and claims. Before doing so, you should also consider whether you can achieve your goals by overriding one or more of `LdapUserBase.AddGroupClaims` and `LdapUserBase.AddPropertyClaims`.
 
 ## Searching users
-In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `ILdapOptions.User` with a password stored in `ILdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](Visus.LdapAuthenticaion/ILdapSearchService.cs) to implement such a behaviour. First, configure the service:
+In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `ILdapOptions.User` with a password stored in `ILdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](Visus.LdapAuthentication/ILdapSearchService.cs) to implement such a behaviour. First, configure the service:
 
 ```C#
 public void ConfigureServices(IServiceCollection services) {
