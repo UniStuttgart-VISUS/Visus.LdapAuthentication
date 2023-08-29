@@ -1,19 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <Authors>Christoph Müller</Authors>
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
     <Product>ASP.NET Core LDAP Authentication Middleware</Product>
     <Description>This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The library is using .NET Core's internal System.DirectoryServices.Protocols and is running on Windows and Linux, but requires native LDAP libraries being installed.</Description>
-    <Copyright>Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.</Copyright>
+    <Copyright>Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
-    <PackageTags>ldap aspnet authentication netcoreapp3.1</PackageTags>
-    <PackageReleaseNotes>First version using  System.DirectoryServices.Protocols.</PackageReleaseNotes>
+    <PackageTags>directoryservices ldap aspnet authentication net5</PackageTags>
+    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
     <NeutralLanguage>en</NeutralLanguage>
     <UserSecretsId>e07a7441-ba97-46b5-9ce1-391f2c978578</UserSecretsId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
