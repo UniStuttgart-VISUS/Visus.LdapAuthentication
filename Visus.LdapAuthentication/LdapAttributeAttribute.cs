@@ -126,8 +126,18 @@ namespace Visus.LdapAuthentication {
                             Attribute = a
                         };
 
-            foreach(var p in props) {
-                retval[p.Property] = p.Attribute;
+            // Fix for issue #1: If the user is derived from LdapUserBase and
+            // the property is overridden, it does not have an accessible setter
+            // any more, so we have to use the base class.
+            var patchSetter = typeof(LdapUserBase).IsAssignableFrom(type);
+
+            foreach (var p in props) {
+                if (patchSetter && (p.Property?.SetMethod?.IsPublic != true)) {
+                    var pp = typeof(LdapUserBase).GetProperty(p.Property.Name);
+                    retval[pp ?? p.Property] = p.Attribute;
+                } else {
+                    retval[p.Property] = p.Attribute;
+                }
             }
 
             return retval;

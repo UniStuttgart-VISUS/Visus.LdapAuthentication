@@ -61,5 +61,22 @@ namespace Visus.LdapAuthentication.Tests {
             }
         }
 
+        [TestMethod]
+        public void TestCustomAuthenticationType() {
+            var user = new TestUser();
+
+            {
+                var identity = user.ToClaimsIdentity("Test");
+                Assert.IsNotNull(identity);
+                Assert.AreEqual(5, identity.Claims.Count());
+                Assert.IsTrue(identity.Claims.Any(c => c.Type == ClaimTypes.Name));
+                Assert.IsTrue(identity.Claims.Any(c => c.Type == ClaimTypes.GroupSid));
+                Assert.IsTrue(identity.Claims.Any(c => c.Value == "1"));
+                Assert.IsTrue(identity.Claims.Any(c => c.Value == "2"));
+                Assert.IsTrue(identity.Claims.Any(c => c.Value == "3"));
+                Assert.IsTrue(identity.Claims.Any(c => c.Value == "4"));
+                Assert.AreEqual("Test", identity.AuthenticationType);
+            }
+        }
     }
 }
