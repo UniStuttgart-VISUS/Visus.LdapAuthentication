@@ -11,7 +11,7 @@ Built-in user objects are automatically mapped to Active Directory attributes an
 
 # Usage
 ## Add the authentication service
-The authenication functionality is added in `ConfigureServices` via the following statements:
+The authentication functionality is added in `ConfigureServices` via the following statements:
 
 ```C#
 public void ConfigureServices(IServiceCollection services) {
