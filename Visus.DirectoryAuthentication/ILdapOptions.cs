@@ -1,5 +1,5 @@
 ﻿// <copyright file="ILdapOptions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
-    /// The configuration options for the LDAP server.
+    /// The configuration options for the directory server.
     /// </summary>
     public interface ILdapOptions {
 
@@ -162,6 +162,10 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets the timeout for LDAP queries.
         /// </summary>
+        /// <remarks>
+        /// <para>This is currently not used.</para>
+        /// <para>A value of <see cref="TimeSpan.Zero"/> indicates an infinite
+        /// timeout.</para></remarks>
         TimeSpan Timeout { get; }
 
         /// <summary>

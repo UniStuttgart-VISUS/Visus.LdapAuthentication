@@ -23,23 +23,23 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         public const string IdentityManagementForUnix = "IDMU";
 
-        /// <summary>
-        /// Identifies an OpenLDAP schema.
-        /// </summary>
-        /// <remarks>
-        /// This constant is provided for future use and has currently no
-        /// built-in schema provided.
-        /// </remarks>
-        public const string OpenLdap = "OpenLDAP";
+        ///// <summary>
+        ///// Identifies an OpenLDAP schema.
+        ///// </summary>
+        ///// <remarks>
+        ///// This constant is provided for future use and has currently no
+        ///// built-in schema provided.
+        ///// </remarks>
+        //public const string OpenLdap = "OpenLDAP";
 
-        /// <summary>
-        /// Idenfities an IETF RFC 2256 schema.
-        /// </summary>
-        /// <remarks>
-        /// This constant is provided for future use and has currently no
-        /// built-in schema provided.
-        /// </remarks>
-        public const string Rfc2256 = "RFC 2256";
+        ///// <summary>
+        ///// Idenfities an IETF RFC 2256 schema.
+        ///// </summary>
+        ///// <remarks>
+        ///// This constant is provided for future use and has currently no
+        ///// built-in schema provided.
+        ///// </remarks>
+        //public const string Rfc2256 = "RFC 2256";
 
         /// <summary>
         /// Idenfities an IETF RFC 2307 schema (&quot;An Approach for Using LDAP

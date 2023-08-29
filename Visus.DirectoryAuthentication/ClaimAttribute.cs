@@ -1,5 +1,5 @@
 ﻿// <copyright file="ClaimAttribute.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace Visus.DirectoryAuthentication {
 
-    /// <summary>
+        /// <summary>
     /// Marks a property as a claim that is automatically added by
     /// <see cref="LdapUserBase"/>.
     /// </summary>

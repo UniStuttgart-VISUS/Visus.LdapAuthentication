@@ -1,5 +1,5 @@
 ﻿// <copyright file="LdapAttributeAttribute.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -126,8 +126,15 @@ namespace Visus.DirectoryAuthentication {
                             Attribute = a
                         };
 
-            foreach(var p in props) {
-                retval[p.Property] = p.Attribute;
+            var patchSetter = typeof(LdapUserBase).IsAssignableFrom(type);
+
+            foreach (var p in props) {
+                if (patchSetter && (p.Property?.SetMethod?.IsPublic != true)) {
+                    var pp = typeof(LdapUserBase).GetProperty(p.Property.Name);
+                    retval[pp ?? p.Property] = p.Attribute;
+                } else {
+                    retval[p.Property] = p.Attribute;
+                }
             }
 
             return retval;

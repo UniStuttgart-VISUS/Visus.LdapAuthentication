@@ -22,7 +22,7 @@ namespace Visus.LdapAuthentication.Tests {
             public string Property1 { get; set; }
 
             [LdapAttribute(Schema.ActiveDirectory, "attribute2a")]
-            [LdapAttribute(Schema.OpenLdap, "attribute2b")]
+            [LdapAttribute(Schema.Rfc2307, "attribute2b")]
             public string Property2 { get; set; }
 
             public string Property3 { get; set; }
@@ -54,16 +54,16 @@ namespace Visus.LdapAuthentication.Tests {
             {
                 var pi = type.GetProperty(nameof(TestClass1.Property2));
                 Assert.IsNotNull(pi);
-                var att = LdapAttributeAttribute.GetLdapAttribute(pi, Schema.OpenLdap);
+                var att = LdapAttributeAttribute.GetLdapAttribute(pi, Schema.Rfc2307);
                 Assert.IsNotNull(att);
                 Assert.AreEqual(att.Name, "attribute2b");
-                Assert.AreEqual(att.Schema, Schema.OpenLdap);
+                Assert.AreEqual(att.Schema, Schema.Rfc2307);
             }
 
             {
                 var pi = type.GetProperty(nameof(TestClass1.Property3));
                 Assert.IsNotNull(pi);
-                var att = LdapAttributeAttribute.GetLdapAttribute(pi, Schema.Rfc2256);
+                var att = LdapAttributeAttribute.GetLdapAttribute(pi, Schema.IdentityManagementForUnix);
                 Assert.IsNull(att);
             }
 
@@ -108,26 +108,26 @@ namespace Visus.LdapAuthentication.Tests {
             }
 
             {
-                var att = LdapAttributeAttribute.GetLdapAttribute(type, nameof(TestClass1.Property2), Schema.OpenLdap);
+                var att = LdapAttributeAttribute.GetLdapAttribute(type, nameof(TestClass1.Property2), Schema.Rfc2307);
                 Assert.IsNotNull(att);
                 Assert.AreEqual(att.Name, "attribute2b");
-                Assert.AreEqual(att.Schema, Schema.OpenLdap);
+                Assert.AreEqual(att.Schema, Schema.Rfc2307);
             }
 
             {
-                var att = LdapAttributeAttribute.GetLdapAttribute<TestClass1>(nameof(TestClass1.Property2), Schema.OpenLdap);
+                var att = LdapAttributeAttribute.GetLdapAttribute<TestClass1>(nameof(TestClass1.Property2), Schema.Rfc2307);
                 Assert.IsNotNull(att);
                 Assert.AreEqual(att.Name, "attribute2b");
-                Assert.AreEqual(att.Schema, Schema.OpenLdap);
+                Assert.AreEqual(att.Schema, Schema.Rfc2307);
             }
 
             {
-                var att = LdapAttributeAttribute.GetLdapAttribute(type, nameof(TestClass1.Property2), Schema.Rfc2256);
+                var att = LdapAttributeAttribute.GetLdapAttribute(type, nameof(TestClass1.Property2), Schema.IdentityManagementForUnix);
                 Assert.IsNull(att);
             }
 
             {
-                var att = LdapAttributeAttribute.GetLdapAttribute<TestClass1>(nameof(TestClass1.Property2), Schema.Rfc2256);
+                var att = LdapAttributeAttribute.GetLdapAttribute<TestClass1>(nameof(TestClass1.Property2), Schema.IdentityManagementForUnix);
                 Assert.IsNull(att);
             }
 
@@ -163,28 +163,28 @@ namespace Visus.LdapAuthentication.Tests {
             }
 
             {
-                var props = LdapAttributeAttribute.GetLdapProperties(type, Schema.OpenLdap);
+                var props = LdapAttributeAttribute.GetLdapProperties(type, Schema.Rfc2307);
                 Assert.IsTrue(!props.Any(p => p.Key.Name == nameof(TestClass1.Property1)));
                 Assert.IsTrue(props.Any(p => p.Key.Name == nameof(TestClass1.Property2)));
                 Assert.IsTrue(!props.Any(p => p.Key.Name == nameof(TestClass1.Property3)));
-                Assert.IsTrue(props.All(p => p.Value.Schema == Schema.OpenLdap));
+                Assert.IsTrue(props.All(p => p.Value.Schema == Schema.Rfc2307));
             }
 
             {
-                var props = LdapAttributeAttribute.GetLdapProperties<TestClass1>(Schema.OpenLdap);
+                var props = LdapAttributeAttribute.GetLdapProperties<TestClass1>(Schema.Rfc2307);
                 Assert.IsTrue(!props.Any(p => p.Key.Name == nameof(TestClass1.Property1)));
                 Assert.IsTrue(props.Any(p => p.Key.Name == nameof(TestClass1.Property2)));
                 Assert.IsTrue(!props.Any(p => p.Key.Name == nameof(TestClass1.Property3)));
-                Assert.IsTrue(props.All(p => p.Value.Schema == Schema.OpenLdap));
+                Assert.IsTrue(props.All(p => p.Value.Schema == Schema.Rfc2307));
             }
 
             {
-                var props = LdapAttributeAttribute.GetLdapProperties(type, Schema.Rfc2256);
+                var props = LdapAttributeAttribute.GetLdapProperties(type, Schema.IdentityManagementForUnix);
                 Assert.IsTrue(!props.Any());
             }
 
             {
-                var props = LdapAttributeAttribute.GetLdapProperties<TestClass1>(Schema.Rfc2256);
+                var props = LdapAttributeAttribute.GetLdapProperties<TestClass1>(Schema.IdentityManagementForUnix);
                 Assert.IsTrue(!props.Any());
             }
         }

@@ -145,7 +145,7 @@ namespace Visus.LdapAuthentication {
                 groups = entry.GetAttribute(options.Mapping.GroupsAttribute)
                     ?.StringValueArray;
             } catch (KeyNotFoundException) {
-                // Entry has no group member ships.
+                // Entry has no group memberships.
                 yield break;
             }
 

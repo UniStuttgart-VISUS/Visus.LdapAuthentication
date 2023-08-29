@@ -1,5 +1,5 @@
 ﻿// <copyright file="LdapUserBase.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -25,6 +25,7 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "sAMAccountName")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "sAMAccountName")]
+        [LdapAttribute(Schema.Rfc2307, "uid")]
         [Claim(ClaimTypes.Name)]
         [Claim(ClaimTypes.WindowsAccountName)]
         public virtual string AccountName { get; internal set; }
@@ -32,6 +33,7 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "givenName")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "givenName")]
+        [LdapAttribute(Schema.Rfc2307, "givenName")]
         [Claim(ClaimTypes.GivenName)]
         public virtual string ChristianName { get; internal set; }
 
@@ -41,11 +43,13 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "displayName")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "displayName")]
+        [LdapAttribute(Schema.Rfc2307, "displayName")]
         public virtual string DisplayName { get; internal set; }
 
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "mail")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "mail")]
+        [LdapAttribute(Schema.Rfc2307, "mail")]
         [Claim(ClaimTypes.Email)]
         public virtual string EmailAddress { get; internal set; }
 
@@ -53,6 +57,7 @@ namespace Visus.DirectoryAuthentication {
         [LdapAttribute(Schema.ActiveDirectory, "objectSid",
             Converter = typeof(SidConverter))]
         [LdapAttribute(Schema.IdentityManagementForUnix, "uidNumber")]
+        [LdapAttribute(Schema.Rfc2307, "uidNumber")]
         [Claim(ClaimTypes.PrimarySid)]
         [Claim(ClaimTypes.Sid)]
         [Claim(ClaimTypes.NameIdentifier)]
@@ -74,6 +79,7 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "sn")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "sn")]
+        [LdapAttribute(Schema.Rfc2307, "sn")]
         [Claim(ClaimTypes.Surname)]
         public virtual string Surname { get; internal set; }
         #endregion
@@ -140,7 +146,7 @@ namespace Visus.DirectoryAuthentication {
                     .Cast<string>()
                     .ToArray();
             } catch (KeyNotFoundException) {
-                // Entry has no group member ships.
+                // Entry has no group memberships.
                 yield break;
             }
 
@@ -155,8 +161,10 @@ namespace Visus.DirectoryAuthentication {
                         $"({mapping.DistinguishedNameAttribute}={q})",
                         SearchScope.Subtree,
                         mapping.RequiredGroupAttributes);
-                    var response = (SearchResponse) connection.SendRequest(
-                        request, options.Timeout);
+                    var response = options.Timeout != TimeSpan.Zero
+                        ? (SearchResponse) connection.SendRequest(
+                            request, options.Timeout)
+                        : (SearchResponse) connection.SendRequest(request);
 
                     foreach (SearchResultEntry e in response.Entries) {
                         yield return e;
@@ -201,7 +209,6 @@ namespace Visus.DirectoryAuthentication {
         #endregion
 
         #region Protected methods
-
         /// <summary>
         /// Adds <see cref="Claims"/> from group memberships of
         /// <paramref name="entry"/>.

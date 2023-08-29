@@ -24,19 +24,34 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="sortKey"></param>
         /// <returns></returns>
         public static SearchRequest AddPaging(this SearchRequest that,
-                int currentPage,
                 int pageSize,
                 string sortKey = "distinguishedName") {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
-            //that.SetControls(new[] {
-            //    new LdapSortControl(new LdapSortKey(sortKey), true),
-            //    GetVirtualListControl(currentPage, pageSize)
-            //});
+            that.Controls.Add(new SortRequestControl(sortKey, false));
+            that.Controls.Add(new PageResultRequestControl(pageSize));
 
-            //return that;
+            return that;
+        }
 
-            throw new NotImplementedException("TODO");
+        /// <summary>
+        /// Adds paging controls continuing a previous request to the given
+        /// <see cref="SearchRequest"/>.
+        /// </summary>
+        /// <param name="that">The request to add the paging controls to.
+        /// </param>
+        /// <param name="cookie"></param>
+        /// <param name="sortKey"></param>
+        /// <returns></returns>
+        public static SearchRequest AddPaging(this SearchRequest that,
+                byte[] cookie,
+                string sortKey= "distinguishedName") {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+
+            that.Controls.Add(new SortRequestControl(sortKey, false));
+            that.Controls.Add(new PageResultRequestControl(cookie));
+
+            return that;
         }
 
         /// <summary>

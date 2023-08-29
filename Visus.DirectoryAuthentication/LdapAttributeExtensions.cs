@@ -12,7 +12,7 @@ namespace Visus.DirectoryAuthentication {
     /// <summary>
     /// Extension methods for <see cref="DirectoryAttribute"/>.
     /// </summary>
-    public static class DirectoryAttributeExtensions {
+    public static class LdapAttributeExtensions {
 
         /// <summary>
         /// Gets the string value of an attribute.
