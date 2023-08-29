@@ -78,6 +78,17 @@ namespace Visus.LdapAuthentication {
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
                         UsersFilter = "(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))"
                     }
+                },
+                {
+                    LdapAuthentication.Schema.Rfc2307,
+                    new LdapMapping() {
+                        DistinguishedNameAttribute = "distinguishedName",
+                        GroupIdentityAttribute = "gidNumber",
+                        GroupsAttribute = "memberOf",
+                        PrimaryGroupAttribute = "gidNumber",
+                        UserFilter = "(&(objectClass=posixAccount)(uid={0}))",
+                        UsersFilter = "(&(objectClass=posixAccount)(objectClass=person))"
+                    }
                 }
             };
 

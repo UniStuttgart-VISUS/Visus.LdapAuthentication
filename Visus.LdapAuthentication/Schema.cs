@@ -40,5 +40,15 @@ namespace Visus.LdapAuthentication {
         /// built-in schema provided.
         /// </remarks>
         public const string Rfc2256 = "RFC 2256";
+
+        /// <summary>
+        /// Idenfities an IETF RFC 2307 schema (&quot;An Approach for Using LDAP
+        /// as a Network Information Service&quot;).
+        /// </summary>
+        /// <remarks>
+        /// This schema has been created from the RFC and has not been tested by
+        /// the authors.
+        /// </remarks>
+        public const string Rfc2307 = "RFC 2307";
     }
 }
