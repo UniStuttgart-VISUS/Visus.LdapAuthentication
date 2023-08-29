@@ -143,9 +143,10 @@ namespace Visus.DirectoryAuthentication {
 
             try {
                 groups = entry.GetAttribute(options.Mapping.GroupsAttribute)
+                    .GetValues(typeof(string))
                     .Cast<string>()
                     .ToArray();
-            } catch (KeyNotFoundException) {
+            } catch /* TODO: More specific exception? */ {
                 // Entry has no group memberships.
                 yield break;
             }

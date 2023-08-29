@@ -3,7 +3,6 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-#if false
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -69,4 +68,3 @@ namespace Visus.DirectoryAuthentication.Tests {
         private readonly TestSecrets _testSecrets;
     }
 }
-#endif

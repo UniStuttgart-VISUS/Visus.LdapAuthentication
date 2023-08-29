@@ -15,7 +15,7 @@ namespace Visus.DirectoryAuthentication {
     /// <summary>
     /// Annotates properties of a <see cref="LdapUserBase"/> to enable the class
     /// retrieving the property values automatically from a
-    /// <see cref="Novell.Directory.Ldap.LdapEntry"/>.
+    /// <see cref="System.DirectoryServices.Protocols.SearchResultEntry"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = true,

@@ -4,11 +4,11 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
-using Novell.Directory.Ldap;
 using System;
+using System.DirectoryServices.Protocols;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// Generic LDAP connection service using the server and credentials
@@ -44,6 +44,7 @@ namespace Visus.LdapAuthentication {
         #region Public methods
         /// <inheritdoc />
         public LdapConnection Connect() {
+            // TODO: Add the option to connect with negotiate on Windows.
             return this.Options.Connect(this.Options.User,
                 this.Options.Password,
                 this._logger);
