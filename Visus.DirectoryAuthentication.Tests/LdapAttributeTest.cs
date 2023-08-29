@@ -1,5 +1,5 @@
 ﻿// <copyright file="LdapAttributeTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests {
 
     /// <summary>
     /// Tests <see cref="LdapAttributeAttribute"/>.

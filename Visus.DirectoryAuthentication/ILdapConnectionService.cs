@@ -3,10 +3,10 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Novell.Directory.Ldap;
+using System.DirectoryServices.Protocols;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// Interface of a service providing access to a configured LDAP connection.

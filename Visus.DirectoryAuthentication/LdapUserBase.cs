@@ -3,10 +3,10 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -14,7 +14,7 @@ using System.Security.Claims;
 using System.Text.Json.Serialization;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// Base class for implementing custom users.
@@ -86,7 +86,7 @@ namespace Visus.LdapAuthentication {
 
         #region Public methods
         /// <inheritdoc />
-        public void Assign(LdapEntry entry, LdapConnection connection,
+        public void Assign(SearchResultEntry entry, LdapConnection connection,
                 ILdapOptions options) {
             var props = LdapAttributeAttribute.GetLdapProperties(this.GetType(),
                 options?.Schema);
@@ -127,8 +127,8 @@ namespace Visus.LdapAuthentication {
         /// <paramref name="connection"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected static IEnumerable<LdapEntry> GetGroupMemberships(
-                LdapEntry entry,
+        protected static IEnumerable<SearchResultEntry> GetGroupMemberships(
+                SearchResultEntry entry,
                 LdapConnection connection,
                 ILdapOptions options) {
             _ = entry
@@ -142,30 +142,35 @@ namespace Visus.LdapAuthentication {
             var groups = (string[]) null;
 
             try {
-                groups = entry.GetAttribute(options.Mapping.GroupsAttribute)
-                    ?.StringValueArray;
-            } catch (KeyNotFoundException) {
+                var att = entry.GetAttribute(options.Mapping.GroupsAttribute);
+                if (att != null) {
+                    groups = att.GetValues(typeof(string))
+                        .Cast<string>()
+                        .ToArray();
+                }
+            } catch /* TODO: More specific exception? */ {
                 // Entry has no group memberships.
                 yield break;
             }
 
             if (groups != null) {
                 Debug.WriteLine($"Determining details of {groups.Length} "
-                    + $"groups that \"{entry.Dn}\" is member of.");
+                    + $"groups that \"{entry.DistinguishedName}\" is member "
+                    + "of.");
 
                 foreach (var g in groups) {
                     var q = g.EscapeLdapFilterExpression();
-
-                    var result = connection.Search(
-                        options.SearchBase,
-                        LdapConnection.ScopeSub,
+                    var request = new SearchRequest(options.SearchBase,
                         $"({mapping.DistinguishedNameAttribute}={q})",
-                        mapping.RequiredGroupAttributes,
-                        false);
+                        SearchScope.Subtree,
+                        mapping.RequiredGroupAttributes);
+                    var response = options.Timeout != TimeSpan.Zero
+                        ? (SearchResponse) connection.SendRequest(
+                            request, options.Timeout)
+                        : (SearchResponse) connection.SendRequest(request);
 
-                    if (result.HasMore()) {
-                        var group = result.Next();
-                        yield return group;
+                    foreach (SearchResultEntry e in response.Entries) {
+                        yield return e;
                     }
                 }
             } /* end if (groups != null) */
@@ -189,11 +194,11 @@ namespace Visus.LdapAuthentication {
         /// <paramref name="connection"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        private IEnumerable<LdapEntry> GetRecursiveGroupMemberships(
-                LdapEntry entry,
+        private IEnumerable<SearchResultEntry> GetRecursiveGroupMemberships(
+                SearchResultEntry entry,
                 LdapConnection connection,
                 ILdapOptions options) {
-            var stack = new Stack<LdapEntry>();
+            var stack = new Stack<SearchResultEntry>();
             stack.Push(entry);
 
             while (stack.Count > 0) {
@@ -207,7 +212,6 @@ namespace Visus.LdapAuthentication {
         #endregion
 
         #region Protected methods
-
         /// <summary>
         /// Adds <see cref="Claims"/> from group memberships of
         /// <paramref name="entry"/>.
@@ -215,7 +219,7 @@ namespace Visus.LdapAuthentication {
         /// <param name="entry"></param>
         /// <param name="connection"></param>
         /// <param name="schema"></param>
-        protected virtual void AddGroupClaims(LdapEntry entry,
+        protected virtual void AddGroupClaims(SearchResultEntry entry,
                 LdapConnection connection, ILdapOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
@@ -273,7 +277,7 @@ namespace Visus.LdapAuthentication {
         /// <param name="entry"></param>
         /// <param name="connection"></param>
         /// <param name="schema"></param>
-        protected virtual void AddPropertyClaims(LdapEntry entry,
+        protected virtual void AddPropertyClaims(SearchResultEntry entry,
                 LdapConnection connection, ILdapOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
