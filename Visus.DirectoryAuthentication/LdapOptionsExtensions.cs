@@ -7,7 +7,9 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 
@@ -42,6 +44,10 @@ namespace Visus.DirectoryAuthentication {
             var retval = new LdapConnection(id);
             retval.SessionOptions.SecureSocketLayer = that.IsSsl;
             retval.SessionOptions.ProtocolVersion = that.ProtocolVersion;
+            retval.SessionOptions.VerifyServerCertificate
+                = (con, cert) => that.VerifyServerCertificate(cert, logger);
+            // Cf. https://stackoverflow.com/questions/10336553/system-directoryservices-protocols-paged-get-all-users-code-suddenly-stopped-get
+            retval.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
 
             return retval;
         }
@@ -78,8 +84,6 @@ namespace Visus.DirectoryAuthentication {
                 username);
             // TODO: On Windows, we could use Negotiate for the search service.
             retval.AuthType = AuthType.Basic;
-            // Cf. https://stackoverflow.com/questions/10336553/system-directoryservices-protocols-paged-get-all-users-code-suddenly-stopped-get
-            retval.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
             retval.Bind(new NetworkCredential(that.User, that.Password));
             logger.LogInformation(Properties.Resources.InfoBoundAsUser,
                 username);
@@ -102,76 +106,61 @@ namespace Visus.DirectoryAuthentication {
             return that.IsSubtree ? SearchScope.Subtree : SearchScope.Base;
         }
 
-        ///// <summary>
-        ///// Performs verification of the server certificate.
-        ///// </summary>
-        ///// <param name="that">The configuration according to which the
-        ///// verification should be performed.</param>
-        ///// <param name="certificate">The server certificate to be verified.
-        ///// </param>
-        ///// <param name="chain">The certificate chain.</param>
-        ///// <param name="sslPolicyErrors">Any policy errors that have been
-        ///// discovered.</param>
-        ///// <param name="logger">A logger to write any problems and warnings
-        ///// to.</param>
-        ///// <returns><c>true</c> if the certificate is acceptable, <c>false</c>
-        ///// otherwise.</returns>
-        ///// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        ///// is <c>null</c></exception>
-        ///// <exception cref="ArgumentNullException">If <paramref name="logger"/>
-        ///// is <c>null</c></exception>
-        //public static bool VerifyServerCertificate(this ILdapOptions that,
-        //        X509Certificate certificate,
-        //        X509Chain chain,
-        //        SslPolicyErrors sslPolicyErrors,
-        //        ILogger logger) {
-        //    // See https://stackoverflow.com/questions/386982/novell-ldap-c-sharp-novell-directory-ldap-has-anybody-made-it-work
-        //    _ = that ?? throw new ArgumentNullException(nameof(that));
-        //    _ = logger ?? throw new ArgumentNullException(nameof(logger));
+        /// <summary>
+        /// Performs verification of the server certificate.
+        /// </summary>
+        /// <param name="that">The configuration according to which the
+        /// verification should be performed.</param>
+        /// <param name="certificate">The server certificate to be verified.
+        /// </param>
+        /// <param name="logger">A logger to write any problems and warnings
+        /// to.</param>
+        /// <returns><c>true</c> if the certificate is acceptable, <c>false</c>
+        /// otherwise.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c></exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
+        /// is <c>null</c></exception>
+        public static bool VerifyServerCertificate(this ILdapOptions that,
+                X509Certificate certificate,
+                ILogger logger) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            _ = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        //    if (that.IsNoCertificateCheck) {
-        //        logger.LogWarning("LDAP SSL certificate check has been "
-        //            + "disabled.");
-        //        return true;
-        //    }
+            if (that.IsNoCertificateCheck) {
+                logger.LogWarning("LDAP SSL certificate check has been "
+                    + "disabled.");
+                return true;
+            }
 
-        //    if (sslPolicyErrors != SslPolicyErrors.None) {
-        //        logger.LogInformation("LDAP SSL policy errors are: ",
-        //            sslPolicyErrors);
-        //        return false;
-        //    }
+            if (that.ServerCertificateIssuer != null) {
+                var issuer = that.ServerCertificateIssuer;
+                logger.LogInformation("Checking for LDAP server "
+                    + "certificate \"{0}\" being issued by \"{1}\".",
+                    certificate.Subject, issuer);
+                if (!string.Equals(certificate.Issuer, issuer,
+                        StringComparison.InvariantCultureIgnoreCase)) {
+                    return false;
+                }
+            }
 
-        //    if (that.RootCaThumbprint != null) {
-        //        var thumbprint = that.RootCaThumbprint;
-        //        logger.LogInformation("Checking for LDAP server "
-        //            + "certificate \"{0}\" being issued by derived from a root "
-        //            + "CA with thumbprint \"{1}\".", certificate.Subject,
-        //            thumbprint);
+            if (that.ServerThumbprint?.Any() == true) {
+                logger.LogInformation("Checking that LDAP server "
+                    + "certificate \"{0}\" has one of the following "
+                    + "thumbprints: {1}", certificate.Subject,
+                    string.Join(", ", that.ServerThumbprint));
 
-        //        var ca = chain.ChainElements.Cast<X509ChainElement>().Last();
-        //        if (!string.Equals(ca.Certificate.Thumbprint, thumbprint,
-        //                StringComparison.InvariantCultureIgnoreCase)) {
-        //            return false;
-        //        }
-        //    }
+                var match = from t in that.ServerThumbprint
+                            where string.Equals(t, certificate.GetCertHashString(),
+                                StringComparison.InvariantCultureIgnoreCase)
+                            select t;
 
-        //    if ((that.ServerThumbprint != null) && that.ServerThumbprint.Any()) {
-        //        logger.LogInformation("Checking that LDAP server "
-        //            + "certificate \"{0}\" has one of the following "
-        //            + "thumbprints: {1}", certificate.Subject,
-        //            string.Join(", ", that.ServerThumbprint));
+                if (!match.Any()) {
+                    return false;
+                }
+            }
 
-        //        var match = from t in that.ServerThumbprint
-        //                    where string.Equals(t, certificate.GetCertHashString(),
-        //                        StringComparison.InvariantCultureIgnoreCase)
-        //                    select t;
-
-        //        if (!match.Any()) {
-        //            return false;
-        //        }
-        //    }
-
-        //    return true;
-        //}
+            return true;
+        }
     }
 }

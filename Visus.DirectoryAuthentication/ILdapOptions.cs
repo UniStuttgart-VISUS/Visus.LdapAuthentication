@@ -123,17 +123,6 @@ namespace Visus.DirectoryAuthentication {
         int ProtocolVersion { get; }
 
         /// <summary>
-        /// Gets the thumbprint of the trusted root CA for the LDAP server.
-        /// </summary>
-        /// <remarks>
-        /// <para>If this property is <c>null</c>, the certificate chain will
-        /// not be checked, ie any root CA will be acceptable</para>
-        /// <para>This property is only relevant if <see cref="UseSsl"/> is
-        /// enabled.</para>
-        /// </remarks>
-        string RootCaThumbprint { get; }
-
-        /// <summary>
         /// Gets the name of the LDAP schema which is used by
         /// <see cref="LdapUserBase"/> to automatically retrieve the required
         /// properties.
@@ -149,6 +138,17 @@ namespace Visus.DirectoryAuthentication {
         /// Gets the host name or IP of the LDAP server.
         /// </summary>
         string Server { get; }
+
+        /// <summary>
+        /// Gets the acceptable issuer of the server certificate.
+        /// </summary>
+        /// <remarks>
+        /// <para>If this property is <c>null</c>, any issuer will be considered
+        /// acceptable.</para>
+        /// <para>This property is only relevant if <see cref="UseSsl"/> is
+        /// enabled.</para>
+        /// </remarks>
+        string ServerCertificateIssuer { get; }
 
         /// <summary>
         /// Gets the certificate thumbprints for the LDAP servers that are

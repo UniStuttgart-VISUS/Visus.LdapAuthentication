@@ -108,9 +108,6 @@ namespace Visus.DirectoryAuthentication {
         public int ProtocolVersion { get; set; } = 3;
 
         /// <inheritdoc />
-        public string RootCaThumbprint { get; set; }
-
-        /// <inheritdoc />
         public string Schema { get; set; }
 
         /// <inheritdoc />
@@ -118,6 +115,9 @@ namespace Visus.DirectoryAuthentication {
 
         /// <inheritdoc />
         public string Server { get; set; }
+
+        /// <inheritdoc />
+        public string ServerCertificateIssuer { get; set; }
 
         /// <inheritdoc />
         public string[] ServerThumbprint {
