@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
+using System.Threading.Tasks;
 
 
 namespace Visus.DirectoryAuthentication.Tests {
@@ -39,6 +40,18 @@ namespace Visus.DirectoryAuthentication.Tests {
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
+                Assert.IsNotNull(user, "Existing user was found.");
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetUserByIdentityAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = new LdapSearchService<LdapUser>(
+                    this._testSecrets.LdapOptions,
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var user = await service.GetUserByIdentityAsync(this._testSecrets.ExistingUserIdentity);
                 Assert.IsNotNull(user, "Existing user was found.");
             }
         }

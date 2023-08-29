@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
-
+using System.Threading.Tasks;
 
 namespace Visus.DirectoryAuthentication {
 
@@ -67,6 +67,74 @@ namespace Visus.DirectoryAuthentication {
                                select p).Single();
                 reqControl.Cookie = control.Cookie;
             } while (reqControl.Cookie.Length > 0) ;
+        }
+
+        /// <summary>
+        /// Sends an asynchronous request, possibly with a timeout,
+        /// provided the <paramref name="timeout"/> value is positive.
+        /// </summary>
+        /// <param name="that">The connection to send the request to.</param>
+        /// <param name="request">The request to send.</param>
+        /// <param name="timeout">The timeout, which has only an effect if it
+        /// is positive.</param>
+        /// <returns>The response from the server.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static Task<DirectoryResponse> SendRequestAsync(
+                this LdapConnection that, DirectoryRequest request,
+                TimeSpan timeout) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            return Task.Factory.FromAsync(
+               (cb, ctx) => {
+                   if (timeout > TimeSpan.Zero) {
+                       return that.BeginSendRequest(request, timeout,
+                           PartialResultProcessing.NoPartialResultSupport,
+                           cb, ctx);
+                   } else {
+                       return that.BeginSendRequest(request,
+                           PartialResultProcessing.NoPartialResultSupport,
+                           cb, ctx);
+                   }
+               }, that.EndSendRequest, null);
+        }
+
+        /// <summary>
+        /// Sends an asynchronous request, possibly with a timeout
+        /// provided via <see cref="ILdapOptions.Timeout"/>.
+        /// </summary>
+        /// <param name="that">The connection to send the request to.</param>
+        /// <param name="request">The request to send.</param>
+        /// <param name="options">The options object specifying the potential
+        /// timeout.</param>
+        /// <returns>The response from the server.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static Task<DirectoryResponse> SendRequestAsync(
+                this LdapConnection that, DirectoryRequest request,
+                ILdapOptions options) {
+            return that.SendRequestAsync(request,
+                options?.Timeout ?? TimeSpan.Zero);
+        }
+
+        /// <summary>
+        /// Sends a request with a timeout, provided the given
+        /// <see cref="ILdapOptions.Timeout"/> is greater than zero. Otherwise,
+        /// send the request without a timeout.
+        /// </summary>
+        /// <param name="that">The connection to send the request to.</param>
+        /// <param name="request">The request to send.</param>
+        /// <param name="options">The options object specifying the potential
+        /// timeout.</param>
+        /// <returns>The response from the server.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static DirectoryResponse SendRequest(
+                this LdapConnection that, DirectoryRequest request,
+                ILdapOptions options) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            return (options?.Timeout > TimeSpan.Zero)
+                ? that.SendRequest(request, options.Timeout)
+                : that.SendRequest(request);
         }
     }
 }

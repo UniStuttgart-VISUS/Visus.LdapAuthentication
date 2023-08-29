@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
-
+using System.Threading.Tasks;
 
 namespace Visus.DirectoryAuthentication {
 
@@ -29,6 +29,18 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="identity"/> is <c>null</c>.</exception>
         ILdapUser GetUserByIdentity(string identity);
+
+        /// <summary>
+        /// Asynchronously gets a user with the specified value for the identity
+        /// attribute.
+        /// </summary>
+        /// <param name="identity">The value of the identity attribute to
+        /// be searched.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="identity"/> is <c>null</c>.</exception>
+        Task<ILdapUser> GetUserByIdentityAsync(string identity);
 
         /// <summary>
         /// Gets all users from the directory that are in matching the search

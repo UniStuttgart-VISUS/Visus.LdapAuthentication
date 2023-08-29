@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
-
+using System.Threading.Tasks;
 
 namespace Visus.DirectoryAuthentication {
 
@@ -55,32 +55,38 @@ namespace Visus.DirectoryAuthentication {
 
         /// <inheritdoc />
         public ILdapUser GetUserByIdentity(string identity) {
-            _ = identity ?? throw new ArgumentNullException(nameof(identity));
-
-            var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
             var retval = new TUser();
-
-            // Determine the ID attribute.
-            var idAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
-                nameof(LdapUser.Identity), this._options.Schema);
-            var request = new SearchRequest(this._options.SearchBase,
-                $"({idAttribute.Name}={identity})",
-                this._options.GetSearchScope(),
-                retval.RequiredAttributes.Concat(groupAttribs).ToArray());
-
-            var result = (this._options.Timeout > TimeSpan.Zero)
-                ? this.Connection.SendRequest(request, this._options.Timeout)
-                : this.Connection.SendRequest(request);
+            var request = this.GetUserByIdentitySearchRequest(retval, identity);
+            var result = this.Connection.SendRequest(request, this._options);
 
             if ((result is SearchResponse s) &&  s.Any()) {
                 retval.Assign(s.Entries[0], this.Connection, this._options);
                 return retval;
 
             } else {
-                this._logger.LogError(Properties.Resources.ErrorEntryNotFound,
-                    idAttribute.Name, identity);
+                this.LogEntryNotFound(identity);
                 return null;
             }
+        }
+
+        /// <inheritdoc />
+        public Task<ILdapUser> GetUserByIdentityAsync(string identity) {
+            var retval = new TUser();
+            var request = this.GetUserByIdentitySearchRequest(retval, identity);
+            var timeout = this._options.Timeout;
+
+            return this.Connection.SendRequestAsync(request, timeout)
+                .ContinueWith<ILdapUser>(r => {
+                    if ((r.Result is SearchResponse s) && s.Any()) {
+                        retval.Assign(s.Entries[0], this.Connection,
+                            this._options);
+                        return retval;
+
+                    } else {
+                        this.LogEntryNotFound(identity);
+                        return null;
+                    }
+                });
         }
 
         /// <inheritdoc />
@@ -142,6 +148,29 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <summary>
+        /// Gets the <see cref="SearchRequest"/> for retrieving the properties
+        /// of <paramref name="user"/> for the user with the given
+        /// <paramref name="identity"/>.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="identity"></param>
+        /// <returns></returns>
+        private SearchRequest GetUserByIdentitySearchRequest(TUser user,
+                string identity) {
+            _ = identity ?? throw new ArgumentNullException(nameof(identity));
+            Debug.Assert(user != null);
+
+            var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
+            var idAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
+                nameof(LdapUser.Identity), this._options.Schema);
+
+            return new SearchRequest(this._options.SearchBase,
+                $"({idAttribute.Name}={identity})",
+                this._options.GetSearchScope(),
+                user.RequiredAttributes.Concat(groupAttribs).ToArray());
+        }
+
+        /// <summary>
         /// Retrieves the users matching the given filter.
         /// </summary>
         /// <param name="filter">A filter on the users object.</param>
@@ -177,6 +206,17 @@ namespace Visus.DirectoryAuthentication {
                 yield return user;
                 user = new TUser();
             }
+        }
+
+        /// <summary>
+        /// Logs that the entry with the specified Identity was not found.
+        /// </summary>
+        /// <param name="identity"></param>
+        private void LogEntryNotFound(string identity) {
+            var att = LdapAttributeAttribute.GetLdapAttribute<TUser>(
+                nameof(LdapUser.Identity), this._options.Schema);
+            this._logger.LogError(Properties.Resources.ErrorEntryNotFound,
+                att.Name, identity);
         }
         #endregion
 

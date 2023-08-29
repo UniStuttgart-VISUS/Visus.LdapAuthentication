@@ -3,6 +3,8 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System.Threading.Tasks;
+
 
 namespace Visus.DirectoryAuthentication {
 
@@ -14,9 +16,19 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Login the specified user.
         /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="username">The user name.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>The logged on use in case of success or <c>null</c> if the
+        /// login failed.</returns>
         ILdapUser Login(string username, string password);
+
+        /// <summary>
+        /// Asynchronously login the specified user.
+        /// </summary>
+        /// <param name="username">The user name.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>The logged on use in case of success or <c>null</c> if the
+        /// login failed.</returns>
+        Task<ILdapUser> LoginAsync(string username, string password);
     }
 }

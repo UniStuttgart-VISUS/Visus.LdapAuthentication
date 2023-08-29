@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Threading.Tasks;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -42,9 +43,9 @@ namespace Visus.DirectoryAuthentication {
                 ?? throw new ArgumentNullException(nameof(options));
         }
 
-        public object GetUserByIdentity(string existingUserIdentity) {
-            throw new NotImplementedException();
-        }
+        //public object GetUserByIdentity(string existingUserIdentity) {
+        //    throw new NotImplementedException();
+        //}
         #endregion
 
         /// <summary>
@@ -56,21 +57,13 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
         public ILdapUser Login(string username, string password) {
-            using var connection = this._options.Connect(username, password,
+            var connection = this._options.Connect(username, password,
                 this._logger);
 
             var retval = new TUser();
-            var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
-            var filter = string.Format(this._options.Mapping.UserFilter,
-                username);
-            var request = new SearchRequest(this._options.SearchBase,
-                filter,
-                this._options.GetSearchScope(),
-                retval.RequiredAttributes.Concat(groupAttribs).ToArray());
+            var request = this.GetRequest(retval, username);
 
-            var result = (this._options.Timeout > TimeSpan.Zero)
-                ? connection.SendRequest(request, this._options.Timeout)
-                : connection.SendRequest(request);
+            var result = connection.SendRequest(request, this._options);
 
             if ((result is SearchResponse s) && s.Any()) {
                 retval.Assign(s.Entries[0], connection, this._options);
@@ -82,6 +75,46 @@ namespace Visus.DirectoryAuthentication {
                 return null;
             }
         }
+
+        /// <summary>
+        /// Asynchronously performs <see cref="Login(string, string)"/>.
+        /// </summary>
+        /// <param name="username">The user name to logon with.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <returns>The user object in case of a successful login.</returns>
+        public Task<ILdapUser> LoginAsync(string username, string password) {
+            var connection = this._options.Connect(username, password,
+                    this._logger);
+
+            var retval = new TUser();
+            var request = this.GetRequest(retval, username);
+
+            return connection.SendRequestAsync(request, this._options)
+                .ContinueWith<ILdapUser>(r => {
+                    if ((r.Result is SearchResponse s) && s.Any()) {
+                        retval.Assign(s.Entries[0], connection, this._options);
+                        return retval;
+
+                    } else {
+                        this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+                            username);
+                        return null;
+                    }
+                });
+        }
+
+        #region Private methods
+        private SearchRequest GetRequest(TUser user, string username) {
+            var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
+            var filter = string.Format(this._options.Mapping.UserFilter,
+                username);
+            var retval = new SearchRequest(this._options.SearchBase,
+                filter,
+                this._options.GetSearchScope(),
+                user.RequiredAttributes.Concat(groupAttribs).ToArray());
+            return retval;
+        }
+        #endregion
 
         #region Private fields
         private readonly ILogger _logger;
