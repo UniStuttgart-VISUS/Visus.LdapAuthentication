@@ -41,6 +41,7 @@ namespace Visus.DirectoryAuthentication {
             var id = new LdapDirectoryIdentifier(that.Server, that.Port);
             var retval = new LdapConnection(id);
             retval.SessionOptions.SecureSocketLayer = that.IsSsl;
+            retval.SessionOptions.ProtocolVersion = that.ProtocolVersion;
 
             return retval;
         }
@@ -77,6 +78,8 @@ namespace Visus.DirectoryAuthentication {
                 username);
             // TODO: On Windows, we could use Negotiate for the search service.
             retval.AuthType = AuthType.Basic;
+            // Cf. https://stackoverflow.com/questions/10336553/system-directoryservices-protocols-paged-get-all-users-code-suddenly-stopped-get
+            retval.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
             retval.Bind(new NetworkCredential(that.User, that.Password));
             logger.LogInformation(Properties.Resources.InfoBoundAsUser,
                 username);

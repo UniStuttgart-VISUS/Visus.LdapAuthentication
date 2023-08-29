@@ -105,6 +105,9 @@ namespace Visus.DirectoryAuthentication {
         public int Port { get; set; } = 389;
 
         /// <inheritdoc />
+        public int ProtocolVersion { get; set; } = 3;
+
+        /// <inheritdoc />
         public string RootCaThumbprint { get; set; }
 
         /// <inheritdoc />

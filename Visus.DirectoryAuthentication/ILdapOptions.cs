@@ -62,11 +62,11 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <remarks>
         /// <para>Setting this flag will cause the LDAP queries use
-        /// <see cref="Novell.Directory.Ldap.LdapConnection.ScopeSub"/>.
+        /// <see cref="System.DirectoryServices.Protocols.SearchScope.Subtree"/>.
         /// Otherwise,
-        /// <see cref="Novell.Directory.Ldap.LdapConnection.ScopeBase"/> will
-        /// be used, ie all user accounts and groups must reside directly in
-        /// <see cref="SearchBase"/>.</para>
+        /// <see cref="System.DirectoryServices.Protocols.SearchScope.Base"/>
+        /// will be used, ie all user accounts and groups must reside directly
+        /// in <see cref="SearchBase"/>.</para>
         /// </remarks>
         bool IsSubtree { get; }
 
@@ -116,6 +116,11 @@ namespace Visus.DirectoryAuthentication {
         /// Gets the port of the LDAP server.
         /// </summary>
         int Port { get; }
+
+        /// <summary>
+        /// Gets the version of the LDAP protocol to request from the server.
+        /// </summary>
+        int ProtocolVersion { get; }
 
         /// <summary>
         /// Gets the thumbprint of the trusted root CA for the LDAP server.

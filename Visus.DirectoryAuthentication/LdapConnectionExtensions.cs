@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
+using System.Linq;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -31,9 +32,9 @@ namespace Visus.DirectoryAuthentication {
         /// results. See
         /// <see cref="AddPaging(LdapSearchConstraints, int, int, string)"/> for
         /// more details on the sort key.</param>
-        /// <param name="timeLimit">A time limit for the search. This parameter
-        /// defaults to zero, which indicates an unlimited amount of search
-        /// time.</param>
+        /// <param name="timeLimit">A time limit for the search. If this
+        /// parameter is <see cref="TimeSpan.Zero"/> or less, no timeout will
+        /// be used.</param>
         /// <returns>The entries matching the specified search parameters.
         /// </returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
@@ -46,49 +47,26 @@ namespace Visus.DirectoryAuthentication {
                 string sortingAttribute, TimeSpan timeLimit) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
-            var cntRead = 0;            // Number of entries already read.
-            int? cntTotal = null;       // Total number of entries to be read.
-            byte[] cookie = null;       // The cookie for the next page.
-            SearchResultEntry entry;    // Current entry to be emitted.
+            var request = new SearchRequest(@base, filter, scope, attrs);
+            var reqControl = request.AddPaging(pageSize, sortingAttribute);
 
             do {
-                var request = new SearchRequest(@base, filter, scope, attrs);
+                var results = (timeLimit > TimeSpan.Zero)
+                    ? that.SendRequest(request, timeLimit)
+                    : that.SendRequest(request);
 
-                if (cookie == null) {
-                    request.AddPaging(pageSize, sortingAttribute);
-                } else {
-                    request.AddPaging(cookie, sortingAttribute);
+                if (results is SearchResponse s) {
+                    foreach (SearchResultEntry e in s.Entries) {
+                        yield return e;
+                    }
                 }
 
-
-                //var constraints = new LdapSearchConstraints() {
-                //    TimeLimit = timeLimit
-                //};
-                //constraints.AddPaging(curPage, pageSize, sortingAttribute);
-
-                //var results = that.Search(@base, scope, filter, attrs, false,
-                //    constraints);
-                var results = that.SendRequest(request, timeLimit)
-                    as SearchResponse;
-
-
-                //while (results.HasMore()
-                //        && ((cntTotal == null) || (cntRead < cntTotal))) {
-                //    ++cntRead;
-
-                //    try {
-                //        entry = results.Next();
-                //    } catch (LdapReferralException) {
-                //        continue;
-                //    }
-
-                //    yield return entry;
-                //}
-
-                //++curPage;
-                //cntTotal = results.GetTotalCount();
-                yield break;
-            } while ((cntTotal != null) && (cntRead < cntTotal));
+                var control = (from c in results.Controls
+                               let p = c as PageResultResponseControl
+                               where (p != null)
+                               select p).Single();
+                reqControl.Cookie = control.Cookie;
+            } while (reqControl.Cookie.Length > 0) ;
         }
     }
 }

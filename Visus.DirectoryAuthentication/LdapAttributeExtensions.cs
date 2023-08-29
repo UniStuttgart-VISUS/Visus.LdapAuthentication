@@ -58,7 +58,10 @@ namespace Visus.DirectoryAuthentication {
         public static string ToString(this DirectoryAttribute that,
                 ILdapAttributeConverter converter,
                 object parameter = null) {
-            if (converter != null) {
+            if (that == null) {
+                return null;
+
+            } else if (converter != null) {
                 return converter.Convert(that, parameter) as string;
 
             } else if (that[0] is string s) {

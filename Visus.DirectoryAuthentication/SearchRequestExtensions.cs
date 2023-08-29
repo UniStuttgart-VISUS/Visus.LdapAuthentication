@@ -23,35 +23,18 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="pageSize"></param>
         /// <param name="sortKey"></param>
         /// <returns></returns>
-        public static SearchRequest AddPaging(this SearchRequest that,
+        public static PageResultRequestControl AddPaging(
+                this SearchRequest that,
                 int pageSize,
                 string sortKey = "distinguishedName") {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             that.Controls.Add(new SortRequestControl(sortKey, false));
-            that.Controls.Add(new PageResultRequestControl(pageSize));
+            var retval = new PageResultRequestControl(pageSize);
+            retval.IsCritical = false;
+            that.Controls.Add(retval);
 
-            return that;
-        }
-
-        /// <summary>
-        /// Adds paging controls continuing a previous request to the given
-        /// <see cref="SearchRequest"/>.
-        /// </summary>
-        /// <param name="that">The request to add the paging controls to.
-        /// </param>
-        /// <param name="cookie"></param>
-        /// <param name="sortKey"></param>
-        /// <returns></returns>
-        public static SearchRequest AddPaging(this SearchRequest that,
-                byte[] cookie,
-                string sortKey= "distinguishedName") {
-            _ = that ?? throw new ArgumentNullException(nameof(that));
-
-            that.Controls.Add(new SortRequestControl(sortKey, false));
-            that.Controls.Add(new PageResultRequestControl(cookie));
-
-            return that;
+            return retval;
         }
 
         /// <summary>

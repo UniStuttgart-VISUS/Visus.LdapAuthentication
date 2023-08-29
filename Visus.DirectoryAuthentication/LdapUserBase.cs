@@ -142,10 +142,12 @@ namespace Visus.DirectoryAuthentication {
             var groups = (string[]) null;
 
             try {
-                groups = entry.GetAttribute(options.Mapping.GroupsAttribute)
-                    .GetValues(typeof(string))
-                    .Cast<string>()
-                    .ToArray();
+                var att = entry.GetAttribute(options.Mapping.GroupsAttribute);
+                if (att != null) {
+                    groups = att.GetValues(typeof(string))
+                        .Cast<string>()
+                        .ToArray();
+                }
             } catch /* TODO: More specific exception? */ {
                 // Entry has no group memberships.
                 yield break;
