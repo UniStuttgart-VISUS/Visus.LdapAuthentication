@@ -185,6 +185,9 @@ namespace Visus.LdapAuthentication {
                 var ca = chain.ChainElements.Cast<X509ChainElement>().Last();
                 if (!string.Equals(ca.Certificate.Thumbprint, thumbprint,
                         StringComparison.InvariantCultureIgnoreCase)) {
+                    logger.LogError("The LDAP SSL certificate was issued via "
+                        + "the root CA {0}, which is different from the "
+                        + "expected one.", ca.Certificate.Thumbprint);
                     return false;
                 }
             }
@@ -201,6 +204,9 @@ namespace Visus.LdapAuthentication {
                             select t;
 
                 if (!match.Any()) {
+                    logger.LogError("The LDAP SSL certificate has the "
+                        + "thumbprint {0}, which is not one of the expected "
+                        + "ones.", certificate.GetHashCode());
                     return false;
                 }
             }

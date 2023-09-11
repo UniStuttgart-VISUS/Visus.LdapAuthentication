@@ -156,9 +156,9 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <remarks>
         /// <para>If this array is empty, any server certificate will be
-        /// accepted. Note that if <see cref="RootCaThumbprint"/> is set as
-        /// well, the server certificate must have been issued by the specified
-        /// root CA, ie both thumbprints must match.</para>
+        /// accepted. Note that if <see cref="ServerCertificateIssuer"/> is set
+        /// as well, the server certificate must have been issued by the
+        /// specified issuer, too.</para>
         /// <para>This property is only relevant if <see cref="UseSsl"/> is
         /// enabled.</para>
         /// </remarks>

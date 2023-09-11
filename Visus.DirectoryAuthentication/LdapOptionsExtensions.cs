@@ -144,6 +144,22 @@ namespace Visus.DirectoryAuthentication {
                 return true;
             }
 
+            // Convert to X509Certificate2, because it gives us access to the
+            // parsed dates.
+            var cert = new X509Certificate2(certificate);
+
+            if (DateTime.Now < cert.NotBefore) {
+                logger.LogError("The LDAP SSL certificate is not valid before "
+                    + cert.NotBefore);
+                return false;
+            }
+
+            if (DateTime.Now > cert.NotAfter) {
+                logger.LogError("The LDAP SSL certificate is not valid after "
+                    + cert.NotBefore);
+                return false;
+            }
+
             if (that.ServerCertificateIssuer != null) {
                 var issuer = that.ServerCertificateIssuer;
                 logger.LogInformation("Checking for LDAP server "
@@ -151,6 +167,9 @@ namespace Visus.DirectoryAuthentication {
                     certificate.Subject, issuer);
                 if (!string.Equals(certificate.Issuer, issuer,
                         StringComparison.InvariantCultureIgnoreCase)) {
+                    logger.LogError("The LDAP SSL certificate has not been "
+                        + "issued by {0}, but by {1}.", issuer,
+                        certificate.Issuer);
                     return false;
                 }
             }
@@ -167,6 +186,9 @@ namespace Visus.DirectoryAuthentication {
                             select t;
 
                 if (!match.Any()) {
+                    logger.LogError("The LDAP SSL certificate has the "
+                        + "thumbprint {0}, which is not one of the expected "
+                        + "ones.", certificate.GetHashCode());
                     return false;
                 }
             }
