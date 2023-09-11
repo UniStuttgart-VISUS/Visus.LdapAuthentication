@@ -18,6 +18,7 @@ Built-in user objects are automatically mapped to Active Directory attributes an
 1. [Authenticate a user](#authenticate-a-user)
 1. [Customising the user object](#customising-the-user-object)
 1. [Searching users](#searching-users)
+1. [Differences between LdapAuthentication and DirectoryAuthentication](#differences-between-ldapauthentication-and-directoryauthentication)
 
 ## Add the authentication service
 The authentication functionality is added in `ConfigureServices` in your `Startup` class via the following statements:
