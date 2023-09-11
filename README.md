@@ -223,5 +223,5 @@ public ActionResult<ILdapUser> GetUser() {
 
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
 1. The `ILdapOptions.Timeout` property is a `System.TimeSpan` rather than a number representing milliseconds. When configuring from JSON, use a string in the format "hh:mm:ss".
-1. `ILdapOptions.RootCaThumbprint` is not supported. You can only check for a specific `ILdapOptions.ServerThumbprint`.
+1. `ILdapOptions.RootCaThumbprint` is not supported. You can, however, check the immediate issuer of the server's certificate using `ILdapOptions.ServerCertificateIssuer`.
 1. TODO: Bind using Windows credentials.
