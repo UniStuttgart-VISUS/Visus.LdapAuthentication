@@ -4,12 +4,9 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace Visus.LdapAuthentication.Tests {
-
 
     /// <summary>
     /// Tests for <see cref="LdapOptions"/>.

@@ -8,8 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Visus.DirectoryAuthentication.Tests {
 
+namespace Visus.DirectoryAuthentication.Tests {
 
     /// <summary>
     /// Tests for <see cref="LdapOptions"/>.

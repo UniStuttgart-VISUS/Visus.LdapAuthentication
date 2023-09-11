@@ -3,6 +3,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+
 namespace Visus.LdapAuthentication {
 
     /// <summary>

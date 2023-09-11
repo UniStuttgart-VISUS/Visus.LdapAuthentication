@@ -9,6 +9,7 @@ using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
@@ -66,7 +67,7 @@ namespace Visus.DirectoryAuthentication {
                                where (p != null)
                                select p).Single();
                 reqControl.Cookie = control.Cookie;
-            } while (reqControl.Cookie.Length > 0) ;
+            } while (reqControl.Cookie.Length > 0);
         }
 
         /// <summary>

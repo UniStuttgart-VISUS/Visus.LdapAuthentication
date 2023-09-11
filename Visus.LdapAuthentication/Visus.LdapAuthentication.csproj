@@ -15,8 +15,8 @@
     <NeutralLanguage>en</NeutralLanguage>
     <AssemblyVersion>1.10.0.0</AssemblyVersion>
     <FileVersion>1.10.0.0</FileVersion>
-    <Version>1.10.0</Version>
-    <PackageReleaseNotes>Adds built-in support for the RFC 2307 LDAP schema.</PackageReleaseNotes>
+    <Version>1.11.0</Version>
+    <PackageReleaseNotes>Added the ability to search DNs.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Security.Claims;
 
+
 namespace Visus.LdapAuthentication.Tests {
 
     /// <summary>

@@ -6,6 +6,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
+
 namespace Visus.DirectoryAuthentication.Tests {
 
     /// <summary>
