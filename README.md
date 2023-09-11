@@ -12,8 +12,14 @@ Built-in user objects are automatically mapped to Active Directory attributes an
 
 
 # Usage
+1. [Add the authentication service](#add-the-authentication-service)
+1. [Configure the LDAP server](#configure-the-ldap-server)
+1. [Authenticate a user](#authenticate-a-user)
+1. [Customising the user object](#customising-the-user-object)
+1. [Searching users](#searching-users)
+
 ## Add the authentication service
-The authentication functionality is added in `ConfigureServices` via the following statements:
+The authentication functionality is added in `ConfigureServices` in your `Startup` class via the following statements:
 
 ```C#
 public void ConfigureServices(IServiceCollection services) {
@@ -30,7 +36,7 @@ public void ConfigureServices(IServiceCollection services) {
 }
 ```
 
-The above code uses the default `LdapUser` object from the library, which provides the most commonly used user claims. If you need additional claims or differently mapped claims, you can create your own user class either by inheriting from `LdapUserBase` and customising its behaviour or by implementing `ILdapUser` from scratch. The configuration would look like the following in this case:
+The above code uses the default `LdapUser` object from the library, which provides the most commonly used user claims. If you need additional claims or differently mapped claims, you can create your own user class either by inheriting from `LdapUserBase` and [customising its behaviour](#customising-the-user-object) or by implementing `ILdapUser` from scratch. The configuration would look like the following in this case:
 
 ```C#
 public void ConfigureServices(IServiceCollection services) {
@@ -111,6 +117,9 @@ The following properties must/can be set via JSON:
 Once configured, the middleware can be used in controllers to implement cookie-based or JWT-based authorisation. An example for a cookie-based login method looks like:
 ```C#
 // Inject ILdapAuthenticationService to _authService field in constructor.
+public MyLoginController(ILdapAuthenticationService authService) {
+    this._authService = authService;
+}
 
 [HttpPost]
 [AllowAnonymous]
@@ -175,6 +184,9 @@ Assuming that you have the embedded the user SID in the claims of an authenticat
 
 ```C#
 // Inject ILdapSearchService to _ldapSearchService field in constructor.
+public MyLoginController(ILdapSearchService searchService) {
+    this._ldapSearchService = searchService;
+}
 
 [HttpGet]
 [Authorize]
