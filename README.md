@@ -251,6 +251,7 @@ public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [Fr
 > We do not have Visus.DirectoryAuthentication in production yet, so it has only been tested using artificial test cases.
 
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
+1. `System.DirectorySerices.Protocols` requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must have been installed. Please note that P/Invoke requires the [name of the library being hard-coded]([https://decovar.dev/blog/2022/06/16/dotnet-ldap-authentication/#platform-specific-dependencies](https://github.com/dotnet/runtime/issues/69456), which might be a problem. There are basically [two ways for you to resolve this](https://decovar.dev/blog/2022/06/16/dotnet-ldap-authentication/#platform-specific-dependencies), which is installing the expected version or by creating a symlink that pretends the current version is the expected one.
 1. The `ILdapOptions.Timeout` property is a `System.TimeSpan` rather than a number representing milliseconds. When configuring from JSON, use a string in the format "hh:mm:ss".
 1. `ILdapOptions.RootCaThumbprint` is not supported. You can, however, check the immediate issuer of the server's certificate using `ILdapOptions.ServerCertificateIssuer`.
 1. TODO: Bind using Windows credentials.
