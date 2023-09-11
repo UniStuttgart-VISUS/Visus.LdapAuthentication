@@ -2,6 +2,7 @@
 
 [![Build Status](https://visualisierungsinstitut.visualstudio.com/Visus.LdapAuthentication/_apis/build/status/UniStuttgart-VISUS.Visus.LdapAuthentication?branchName=main)](https://visualisierungsinstitut.visualstudio.com/Visus.LdapAuthentication/_build/latest?definitionId=6&branchName=main)
 [![Visus.LdapAuthenticationVersion](https://buildstats.info/nuget/Visus.LdapAuthentication)](https://www.nuget.org/packages/Visus.LdapAuthentication)
+[![Visus.DirectoryAuthenticationVersion](https://buildstats.info/nuget/Visus.DirectoryAuthentication)](https://www.nuget.org/packages/Visus.DirectoryAuthentication)
 
 
 This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The library is using [Novell's C#-only LDAP library](https://github.com/dsbenghe/Novell.Directory.Ldap.NETStandard) rather than the Windows-only DirectoryServices and is therefore running on Windows and Linux.
@@ -214,3 +215,12 @@ public ActionResult<ILdapUser> GetUser() {
     return this.Unauthorized();
 }
 ```
+
+## Differences between LdapAuthentication and DirectoryAuthentication
+> **Warning**
+> We do not have Visus.DirectoryAuthentication in production yet, so it has only been tested using artificial test cases.
+
+[Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
+1. The `ILdapOptions.Timeout` property is a `System.TimeSpan` rather than a number representing milliseconds. When configuring from JSON, use a string in the format "hh:mm:ss".
+1. `ILdapOptions.RootCaThumbprint` is not supported. You can only check for a specific `ILdapOptions.ServerThumbprint`.
+1. TODO: Bind using Windows credentials.
