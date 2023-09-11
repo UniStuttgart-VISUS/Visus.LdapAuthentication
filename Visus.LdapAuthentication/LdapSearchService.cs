@@ -54,6 +54,26 @@ namespace Visus.LdapAuthentication {
         }
 
         /// <inheritdoc />
+        public IEnumerable<string> GetDistinguishedNames(string filter) {
+            _ = filter ?? throw new ArgumentNullException(nameof(filter));
+
+            // Perform a paged search (there might be a lot of matching entries
+            // which cannot be returned at once).
+            var entries = this.Connection.PagedSearch(
+                this._options.SearchBase,
+                this._options.GetSearchScope(),
+                filter,
+                Array.Empty<string>(),
+                this._options.PageSize,
+                "CN",
+                this._options.Timeout);
+
+            foreach (var e in entries) {
+                yield return e.Dn;
+            }
+        }
+
+        /// <inheritdoc />
         public ILdapUser GetUserByIdentity(string identity) {
             _ = identity ?? throw new ArgumentNullException(nameof(identity));
 
@@ -160,7 +180,7 @@ namespace Visus.LdapAuthentication {
                 nameof(LdapUser.Identity), this._options.Schema);
 
             // Perform a paged search (there might be a lot of users, which
-            // cannot be retruned at once.
+            // cannot be retruned at once).
             var entries = this.Connection.PagedSearch(
                 searchBase,
                 searchScope,

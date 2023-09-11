@@ -187,7 +187,7 @@ Assuming that you have the embedded the user SID in the claims of an authenticat
 ```C#
 // Inject ILdapSearchService to _ldapSearchService field in constructor.
 public MyLoginController(ILdapSearchService searchService) {
-    this._ldapSearchService = searchService;
+    this._searchService = searchService;
 }
 
 [HttpGet]
@@ -202,7 +202,7 @@ public ActionResult<ILdapUser> GetUser() {
         foreach (var c in claims) {
             var sid = this.User.FindFirstValue(c);
             if (!string.IsNullOrEmpty(sid)) {
-                var retval = this._ldapSearchService.GetUserByIdentity(sid);
+                var retval = this._searchService.GetUserByIdentity(sid);
 
                 if (retval != null) {
                     return this.Ok(retval);
@@ -214,6 +214,35 @@ public ActionResult<ILdapUser> GetUser() {
     // If something went wrong, we assume that the (anonymous) user must not
     // access the user details.
     return this.Unauthorized();
+}
+```
+
+You may also want to use the search service if your LDAP server requires users to bind using their distinguished name, but you do not want to force them to remember this name. In this case, you can perform a search for another attribute and retrieve the distinguished name of a matching entry. For example:
+
+```C#
+// Inject ILdapAuthenticationService and ILdapSearchService in constructor.
+public MyLoginController(ILdapAuthenticationService authService, ILdapSearchService searchService) {
+    this._authService = authService;
+    this._searchService = searchService;
+}
+
+[HttpPost]
+[AllowAnonymous]
+public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [FromForm] string password) {
+    try {
+        // Retrieve the distinguished name for the user name in an RFC 2307
+        // schema. Please note that you should call .Single() on the result
+        // in order to prevent users hijacking other accounts in case your
+        // filter was poorly designed like here. For instance, the user could
+        // insert the wild card character "*" as his name and then the random
+        // first match would be returned, which is not what we want.
+        var dn = this._searchService.GetDistinguishedNames($"(&(objectClass=posixAccount)(uid={username}))").Single();
+        var retval = this._authService.Login(dn, password);
+        await this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, retval.ToClaimsPrincipal(CookieAuthenticationDefaults.AuthenticationScheme));
+        return this.Ok(retval);
+    } catch {
+        return this.Unauthorized();
+    }
 }
 ```
 

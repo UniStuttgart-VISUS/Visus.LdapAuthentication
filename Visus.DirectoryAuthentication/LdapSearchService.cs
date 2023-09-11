@@ -54,6 +54,26 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
+        public IEnumerable<string> GetDistinguishedNames(string filter) {
+            _ = filter ?? throw new ArgumentNullException(nameof(filter));
+
+            // Perform a paged search (there might be a lot of matching entries
+            // which cannot be returned at once).
+            var entries = this.Connection.PagedSearch(
+                this._options.SearchBase,
+                this._options.GetSearchScope(),
+                filter,
+                Array.Empty<string>(),
+                this._options.PageSize,
+                "CN",
+                this._options.Timeout);
+
+            foreach (var e in entries) {
+                yield return e.DistinguishedName;
+            }
+        }
+
+        /// <inheritdoc />
         public ILdapUser GetUserByIdentity(string identity) {
             var retval = new TUser();
             var request = this.GetUserByIdentitySearchRequest(retval, identity);

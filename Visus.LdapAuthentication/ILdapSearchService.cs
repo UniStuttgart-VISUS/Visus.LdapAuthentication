@@ -19,6 +19,21 @@ namespace Visus.LdapAuthentication {
     public interface ILdapSearchService {
 
         /// <summary>
+        /// Gets the distinguished names of the entries matching the specified
+        /// LDAP <paramref name="filter"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method can be used if your directory requires users to bind
+        /// using a distinguished name, but you do not want them to input this
+        /// name, but a value of another LDAP attribute that is easier to
+        /// remember.
+        /// </remarks>
+        /// <param name="filter">An LDAP filter expression.</param>
+        /// <returns>The distinguished names of all entries in the directory
+        /// matching the given search criteria.</returns>
+        IEnumerable<string> GetDistinguishedNames(string filter);
+
+        /// <summary>
         /// Gets a user with the specified value for the identity attribute.
         /// </summary>
         /// <param name="identity">The value of the identity attribute to

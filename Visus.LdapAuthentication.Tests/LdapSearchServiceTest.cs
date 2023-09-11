@@ -65,6 +65,21 @@ namespace Visus.LdapAuthentication.Tests {
             }
         }
 
+        [TestMethod]
+        public void TestGetDistinguishedNames() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = new LdapSearchService<LdapUser>(
+                    this._testSecrets.LdapOptions,
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
+                    nameof(LdapUser.AccountName),
+                    this._testSecrets.LdapOptions.Schema);
+                var users = service.GetDistinguishedNames($"({att.Name}={this._testSecrets.ExistingUserAccount})");
+                Assert.IsTrue(users.Any(), "Search returned at least one DN.");
+            }
+        }
+
         private readonly TestSecrets _testSecrets;
     }
 }
