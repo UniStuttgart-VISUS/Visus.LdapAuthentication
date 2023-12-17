@@ -42,7 +42,7 @@ namespace Visus.LdapAuthentication {
         [Obsolete("Use SearchBases instead.")]
         public bool IsSubtree {
             get {
-                var scope = this.SearchBases.FirstOrDefault()?.Scope;
+                var scope = this.SearchBases?.FirstOrDefault()?.Scope;
                 return (scope == SearchScope.Sub);
             }
             set {
@@ -129,7 +129,7 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         [Obsolete("Use SearchBases instead.")]
         public string SearchBase {
-            get => this._searchBases.FirstOrDefault()?.DistinguishedName;
+            get => this._searchBases?.FirstOrDefault()?.DistinguishedName;
             set {
                 if (this._searchBases == null) {
                     this._searchBases = new[] { new SearchBase(value) };
