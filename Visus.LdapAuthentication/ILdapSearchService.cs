@@ -1,8 +1,10 @@
 ﻿// <copyright file="ILdapSearchService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Collections.Generic;
 
 
@@ -74,7 +76,43 @@ namespace Visus.LdapAuthentication {
         IEnumerable<ILdapUser> GetUsers(string filter);
 
         /// <summary>
-        /// Gets all users from teh directory that are matching the search
+        /// Gets all users from the directory that match the search criteria
+        /// configured in <see cref="ILdapOptions"/> used by the application
+        /// <i>and</i> the specified LDAP <paramref name="filter"/> while
+        /// overriding the search bases from the <see cref="ILdapOptions"/>
+        /// with the given ones.
+        /// </summary>
+        /// <param name="searchBases">The search bases to look in. It is safe
+        /// to pass <c>null</c>, in which case the search bases from the
+        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <param name="filter">An LDAP filter expression that is combined
+        /// with the global search criteria for users.</param>
+        /// <returns>All users in the directory matching the given search
+        /// criteria.</returns>
+        IEnumerable<ILdapUser> GetUsers(IEnumerable<SearchBase> searchBases,
+            string filter);
+
+        /// <summary>
+        /// Gets all users from the directory that are matching the search
+        /// critiera configured in the <see cref="ILdapOptions"/> used by the
+        /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
+        /// while overriding the search base from the <see cref="ILdapOptions"/>
+        /// with the given one.
+        /// </summary>
+        /// <param name="searchBase">The search base to look in. It is safe to
+        /// pass <c>null</c>, in which case the search base from the configured
+        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <param name="searchScope">Overrides the search scope from the
+        /// configured <see cref="ILdapOptions"/>.</param>
+        /// <param name="filter">An LDAP filter expression that is combined
+        /// with the global search criteria for users.</param>
+        /// <returns>All users in the directory matching the given search
+        /// criteria.</returns>
+        public IEnumerable<ILdapUser> GetUsers(string searchBase,
+            SearchScope searchScope, string filter);
+
+        /// <summary>
+        /// Gets all users from the directory that are matching the search
         /// critiera configured in the <see cref="ILdapOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
         /// while overriding the search base from the <see cref="ILdapOptions"/>
@@ -92,6 +130,7 @@ namespace Visus.LdapAuthentication {
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
+        [Obsolete("Use the strongly typed variant of this method.")]
         public IEnumerable<ILdapUser> GetUsers(string searchBase,
             int searchScope, string filter);
     }

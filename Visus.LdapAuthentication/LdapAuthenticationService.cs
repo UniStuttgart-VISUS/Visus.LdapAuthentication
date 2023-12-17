@@ -1,10 +1,10 @@
 ﻿// <copyright file="LdapAuthenticationService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
-using Novell.Directory.Ldap;
 using System;
 using System.Linq;
 
@@ -63,26 +63,23 @@ namespace Visus.LdapAuthentication {
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
             var filter = string.Format(this._options.Mapping.UserFilter,
                 username);
-            var scope = this._options.IsSubtree
-                ? LdapConnection.ScopeSub
-                : LdapConnection.ScopeBase;
 
-            var result = connection.Search(
-                this._options.SearchBase,
-                scope,
-                filter,
-                retval.RequiredAttributes.Concat(groupAttribs).ToArray(),
-                false);
+            foreach (var b in this._options.SearchBases) {
+                var result = connection.Search(
+                    b,
+                    filter,
+                    retval.RequiredAttributes.Concat(groupAttribs).ToArray(),
+                    false);
 
-            if (result.HasMore()) {
-                retval.Assign(result.Next(), connection, this._options);
-                return retval;
-
-            } else {
-                this._logger.LogError(Properties.Resources.ErrorUserNotFound,
-                    username);
-                return null;
+                if (result.HasMore()) {
+                    retval.Assign(result.Next(), connection, this._options);
+                    return retval;
+                }
             }
+
+            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+                username);
+            return null;
         }
 
         #region Private fields

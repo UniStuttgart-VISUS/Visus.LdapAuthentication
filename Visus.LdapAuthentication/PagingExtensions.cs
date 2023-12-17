@@ -137,10 +137,7 @@ namespace Visus.LdapAuthentication {
         /// <param name="that">The <see cref="LdapConnection"/> to be used
         /// for the search.</param>
         /// <param name="base">The base DN to start the search at.</param>
-        /// <param name="scope">The search scope, which should be one of
-        /// <see cref="LdapConnection.ScopeBase"/>,
-        /// <see cref="LdapConnection.ScopeOne"/> or
-        /// <see cref="LdapConnection.ScopeSub"/>.</param>
+        /// <param name="scope">The search scope.</param>
         /// <param name="filter">The search filter.</param>
         /// <param name="attrs">The list of LDAP attributes to be loaded for
         /// the search results.</param>
@@ -160,7 +157,7 @@ namespace Visus.LdapAuthentication {
         /// <exception cref="ArgumentException">If <paramref name="pageSize"/>
         /// is less than 1.</exception>
         public static IEnumerable<LdapEntry> PagedSearch(
-                this LdapConnection that, string @base, int scope,
+                this LdapConnection that, string @base, SearchScope scope,
                 string filter, string[] attrs, int pageSize,
                 string sortingAttribute, int timeLimit = 0) {
             _ = that ?? throw new ArgumentNullException(nameof(that));

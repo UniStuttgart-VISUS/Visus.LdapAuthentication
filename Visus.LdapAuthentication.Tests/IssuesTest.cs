@@ -1,5 +1,6 @@
 ﻿// <copyright file="IssuesTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -53,6 +54,65 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.IsNotNull(user, "Existing user was found.");
                 Assert.AreEqual("CN=Person,CN=Schema,CN=Configuration,DC=visus,DC=uni-stuttgart,DC=de", user.DisplayName);
             }
+        }
+        #endregion
+
+        #region Issue #7
+        [TestMethod]
+        public void Test7SearchBase() {
+            {
+                var b = new SearchBase();
+                Assert.IsNotNull(b.DistinguishedName, "DN is not null");
+                Assert.AreEqual(SearchScope.Sub, b.Scope, "Default scope is sub");
+            }
+
+            {
+                var b = new SearchBase(SearchScope.Base);
+                Assert.IsNotNull(b.DistinguishedName, "DN is not null");
+                Assert.AreEqual(SearchScope.Base, b.Scope, "Scope set");
+            }
+
+            {
+                var expected = "DC=visus, DC=uni-stuttgart, DC=de";
+                var b = new SearchBase(expected);
+                Assert.AreEqual(expected, b.DistinguishedName, "DN set");
+                Assert.AreEqual(SearchScope.Sub, b.Scope, "Default scope is sub");
+            }
+
+            {
+                var expected = "DC=visus, DC=uni-stuttgart, DC=de";
+                var b = new SearchBase(expected, SearchScope.Base);
+                Assert.AreEqual(expected, b.DistinguishedName, "DN set");
+                Assert.AreEqual(SearchScope.Base, b.Scope, "Scope set");
+            }
+        }
+
+        [TestMethod]
+        public void Test7LdapOptions() {
+            {
+                var o = new LdapOptions();
+                Assert.IsNotNull(o.SearchBases, "SearchBases initialised");
+                Assert.IsNotNull(o.SearchBases.Length, "One element by default");
+                Assert.IsNotNull(o.SearchBases[0].DistinguishedName, "DN is not null");
+                Assert.AreEqual(SearchScope.Sub, o.SearchBases[0].Scope, "Default scope is sub");
+#pragma warning disable CS0618
+                Assert.AreSame(o.SearchBase, o.SearchBases[0].DistinguishedName, "Old search base is first of new ones");
+#pragma warning restore CS0618
+            }
+
+            {
+                var dn = "DC=visus, DC=uni-stuttgart,DC=de";
+                var o = new LdapOptions();
+                Assert.AreEqual(string.Empty, o.SearchBases[0].DistinguishedName, "No search base initialised");
+                Assert.AreEqual(SearchScope.Sub, o.SearchBases[0].Scope, "Default scope");
+#pragma warning disable CS0618
+                o.SearchBase = dn;
+                Assert.AreSame(o.SearchBase, o.SearchBases[0].DistinguishedName, "First element updated");
+                o.IsSubtree = false;
+                Assert.AreEqual(SearchScope.Base, o.SearchBases[0].Scope, "Non-recursive set");
+#pragma warning restore CS0618
+            }
+
         }
         #endregion
 

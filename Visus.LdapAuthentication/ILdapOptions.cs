@@ -1,8 +1,10 @@
 ﻿// <copyright file="ILdapOptions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Collections.Generic;
 
 
@@ -67,6 +69,9 @@ namespace Visus.LdapAuthentication {
         /// be used, ie all user accounts and groups must reside directly in
         /// <see cref="SearchBase"/>.</para>
         /// </remarks>
+        [Obsolete("Use SearchBases to specify one or more search scopes. "
+            + "This property will be removed in future versions of the "
+            + "interface.")]
         bool IsSubtree { get; }
 
         /// <summary>
@@ -137,7 +142,15 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Gets the starting point of any directory search.
         /// </summary>
+        [Obsolete("Use SearchBases to specify one or more search scopes. "
+            + "This property will be removed in future versions of the "
+            + "interface.")]
         string SearchBase { get; }
+
+        /// <summary>
+        /// Gets the starting points and scopes of any directory search.
+        /// </summary>
+        SearchBase[] SearchBases { get; }
 
         /// <summary>
         /// Gets the host name or IP of the LDAP server.

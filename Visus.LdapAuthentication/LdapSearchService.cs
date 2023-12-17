@@ -1,5 +1,6 @@
 ﻿// <copyright file="LdapSearchService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -57,19 +58,21 @@ namespace Visus.LdapAuthentication {
         public IEnumerable<string> GetDistinguishedNames(string filter) {
             _ = filter ?? throw new ArgumentNullException(nameof(filter));
 
-            // Perform a paged search (there might be a lot of matching entries
-            // which cannot be returned at once).
-            var entries = this.Connection.PagedSearch(
-                this._options.SearchBase,
-                this._options.GetSearchScope(),
-                filter,
-                Array.Empty<string>(),
-                this._options.PageSize,
-                "CN",
-                this._options.Timeout);
+            foreach (var b in this._options.SearchBases) {
+                // Perform a paged search (there might be a lot of matching
+                // entries which cannot be returned at once).
+                var entries = this.Connection.PagedSearch(
+                    b.DistinguishedName,
+                    b.Scope,
+                    filter,
+                    Array.Empty<string>(),
+                    this._options.PageSize,
+                    "CN",
+                    this._options.Timeout);
 
-            foreach (var e in entries) {
-                yield return e.Dn;
+                foreach (var e in entries) {
+                    yield return e.Dn;
+                }
             }
         }
 
@@ -84,39 +87,40 @@ namespace Visus.LdapAuthentication {
             var idAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
                 nameof(LdapUser.Identity), this._options.Schema);
 
-            var entries = this.Connection.Search(
-                this._options.SearchBase,
-                this._options.GetSearchScope(),
-                $"{idAttribute.Name}={identity}",
-                retval.RequiredAttributes.Concat(groupAttribs).ToArray(),
-                false);
+            foreach (var b in this._options.SearchBases) {
+                var entries = this.Connection.Search(
+                    b,
+                    $"{idAttribute.Name}={identity}",
+                    retval.RequiredAttributes.Concat(groupAttribs).ToArray(),
+                    false);
 
-            if (entries.HasMore()) {
-                retval.Assign(entries.Next(), this.Connection, this._options);
-                return retval;
-
-            } else {
-                this._logger.LogError(Properties.Resources.ErrorEntryNotFound,
-                    idAttribute.Name, identity);
-                return null;
+                if (entries.HasMore()) {
+                    retval.Assign(entries.Next(), this.Connection,
+                        this._options);
+                    return retval;
+                }
             }
+
+            this._logger.LogError(Properties.Resources.ErrorEntryNotFound,
+                idAttribute.Name, identity);
+            return null;
         }
 
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers() {
             return this.GetUsers0(this._options.Mapping.UsersFilter,
-                this._options.SearchBase, this._options.GetSearchScope());
+                this._options.SearchBases);
         }
 
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers(string filter) {
-            return this.GetUsers(this._options.SearchBase,
-                this._options.GetSearchScope(), filter);
+            return this.GetUsers(this._options.SearchBases, filter);
         }
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers(string searchBase,
-                 int searchScope, string filter) {
+        public IEnumerable<ILdapUser> GetUsers(
+                IEnumerable<SearchBase> searchBases,
+                string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
                 filter = this._options.Mapping.UsersFilter;
             } else {
@@ -124,8 +128,21 @@ namespace Visus.LdapAuthentication {
             }
 
             return this.GetUsers0(filter,
-                searchBase ?? this._options.SearchBase,
-                searchScope);
+                searchBases ?? this._options.SearchBases);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<ILdapUser> GetUsers(string searchBase,
+                SearchScope searchScope, string filter) {
+            return this.GetUsers(
+                new[] { new SearchBase(searchBase, searchScope) },
+                filter);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<ILdapUser> GetUsers(string searchBase,
+                 int searchScope, string filter) {
+            return this.GetUsers(searchBase, (SearchScope) searchScope, filter);
         }
         #endregion
 
@@ -164,13 +181,13 @@ namespace Visus.LdapAuthentication {
         /// Retrieves the users matching the given filter.
         /// </summary>
         /// <param name="filter">A filter on the users object.</param>
-        /// <param name="searchBase">The base of the LDAP search.</param>
-        /// <param name="searchScope">The search scope.</parmm>
+        /// <param name="searchBases">The base and scope of the LDAP search.
+        /// </param>
         /// <returns></returns>
         private IEnumerable<ILdapUser> GetUsers0(string filter,
-                string searchBase, int searchScope) {
+                IEnumerable<SearchBase> searchBases) {
             Debug.Assert(filter != null);
-            Debug.Assert(searchBase != null);
+            Debug.Assert(searchBases != null);
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
             var user = new TUser();
 
@@ -179,22 +196,25 @@ namespace Visus.LdapAuthentication {
             var sortAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
                 nameof(LdapUser.Identity), this._options.Schema);
 
-            // Perform a paged search (there might be a lot of users, which
-            // cannot be retruned at once).
-            var entries = this.Connection.PagedSearch(
-                searchBase,
-                searchScope,
-                filter,
-                user.RequiredAttributes.Concat(groupAttribs).ToArray(),
-                this._options.PageSize,
-                sortAttribute.Name,
-                this._options.Timeout);
+            foreach (var b in searchBases) {
+                // Perform a paged search (there might be a lot of users, which
+                // cannot be retruned at once).
+                var entries = this.Connection.PagedSearch(
+                    b.DistinguishedName,
+                    b.Scope,
+                    filter,
+                    user.RequiredAttributes.Concat(groupAttribs).ToArray(),
+                    this._options.PageSize,
+                    sortAttribute.Name,
+                    this._options.Timeout);
 
-            // Convert LDAP entries to user objects.
-            foreach (var e in entries) {
-                user.Assign(e, this.Connection, this._options);
-                yield return user;
-                user = new TUser();
+                // Convert LDAP entries to user objects.
+                foreach (var e in entries) {
+                    user.Assign(e, this.Connection, this._options);
+                    yield return user;
+                    user = new TUser();
+                }
+
             }
         }
         #endregion

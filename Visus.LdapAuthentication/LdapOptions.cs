@@ -1,10 +1,12 @@
 ﻿// <copyright file="LdapOptions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 
 namespace Visus.LdapAuthentication {
@@ -20,6 +22,7 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         public LdapOptions() {
             this.PageSize = 1000;   // Reasonable default for AD.
+            this.SearchBases = new[] { new SearchBase() };
         }
         #endregion
 
@@ -37,7 +40,21 @@ namespace Visus.LdapAuthentication {
         public bool IsSsl { get; set; }
 
         /// <inheritdoc />
-        public bool IsSubtree { get; set; } = true;
+        [Obsolete("Use SearchBases instead.")]
+        public bool IsSubtree {
+            get {
+                var scope = this.SearchBases.FirstOrDefault()?.Scope;
+                return (scope == SearchScope.Sub);
+            }
+            set {
+                var scope = value ? SearchScope.Sub : SearchScope.Base;
+                if (this.SearchBases == null) {
+                    this.SearchBases = new[] { new SearchBase(scope) };
+                } else {
+                    this.SearchBases[0].Scope = scope;
+                }
+            }
+        }
 
         /// <inheritdoc />
         public LdapMapping Mapping {
@@ -111,7 +128,20 @@ namespace Visus.LdapAuthentication {
         public string Schema { get; set; }
 
         /// <inheritdoc />
-        public string SearchBase { get; set; }
+        [Obsolete("Use SearchBases instead.")]
+        public string SearchBase {
+            get => this.SearchBases.FirstOrDefault()?.DistinguishedName;
+            set {
+                if (this.SearchBases == null) {
+                    this.SearchBases = new[] { new SearchBase(value) };
+                } else {
+                    this.SearchBases[0].DistinguishedName = value;
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public SearchBase[] SearchBases { get; set; }
 
         /// <inheritdoc />
         public string Server { get; set; }
