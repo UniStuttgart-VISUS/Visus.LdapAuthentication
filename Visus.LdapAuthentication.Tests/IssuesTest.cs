@@ -92,23 +92,37 @@ namespace Visus.LdapAuthentication.Tests {
             {
                 var o = new LdapOptions();
                 Assert.IsNotNull(o.SearchBases, "SearchBases initialised");
-                Assert.IsNotNull(o.SearchBases.Length, "One element by default");
-                Assert.IsNotNull(o.SearchBases[0].DistinguishedName, "DN is not null");
-                Assert.AreEqual(SearchScope.Sub, o.SearchBases[0].Scope, "Default scope is sub");
-#pragma warning disable CS0618
-                Assert.AreSame(o.SearchBase, o.SearchBases[0].DistinguishedName, "Old search base is first of new ones");
-#pragma warning restore CS0618
+                Assert.AreEqual(0, o.SearchBases.Length, "SearchBases empty");
             }
 
             {
                 var dn = "DC=visus, DC=uni-stuttgart,DC=de";
                 var o = new LdapOptions();
-                Assert.AreEqual(string.Empty, o.SearchBases[0].DistinguishedName, "No search base initialised");
-                Assert.AreEqual(SearchScope.Sub, o.SearchBases[0].Scope, "Default scope");
+                Assert.IsNotNull(o.SearchBases, "SearchBases initialised");
+                Assert.AreEqual(0, o.SearchBases.Length, "SearchBases empty");
 #pragma warning disable CS0618
                 o.SearchBase = dn;
+                Assert.AreEqual(1, o.SearchBases.Length, "Single SearchBase created.");
+                Assert.AreSame(o.SearchBase, o.SearchBases[0].DistinguishedName, "First element set");
+                o.IsSubtree = false;
+                Assert.AreEqual(1, o.SearchBases.Length, "No additional SearchBase created.");
+                Assert.AreEqual(SearchScope.Base, o.SearchBases[0].Scope, "Non-recursive set");
+#pragma warning restore CS0618
+            }
+
+            {
+                var dn = "DC=visus, DC=uni-stuttgart,DC=de";
+                var o = new LdapOptions() {
+                    SearchBases = new[] { new SearchBase() }
+                };
+                Assert.IsNotNull(o.SearchBases, "SearchBases initialised");
+                Assert.AreEqual(1, o.SearchBases.Length, "SearchBases holds one element");
+#pragma warning disable CS0618
+                o.SearchBase = dn;
+                Assert.AreEqual(1, o.SearchBases.Length, "No additional SearchBase created.");
                 Assert.AreSame(o.SearchBase, o.SearchBases[0].DistinguishedName, "First element updated");
                 o.IsSubtree = false;
+                Assert.AreEqual(1, o.SearchBases.Length, "No additional SearchBase created.");
                 Assert.AreEqual(SearchScope.Base, o.SearchBases[0].Scope, "Non-recursive set");
 #pragma warning restore CS0618
             }

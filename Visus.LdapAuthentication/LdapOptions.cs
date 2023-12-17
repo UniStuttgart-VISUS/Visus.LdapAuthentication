@@ -22,7 +22,6 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         public LdapOptions() {
             this.PageSize = 1000;   // Reasonable default for AD.
-            this.SearchBases = new[] { new SearchBase() };
         }
         #endregion
 
@@ -48,10 +47,10 @@ namespace Visus.LdapAuthentication {
             }
             set {
                 var scope = value ? SearchScope.Sub : SearchScope.Base;
-                if (this.SearchBases == null) {
-                    this.SearchBases = new[] { new SearchBase(scope) };
+                if (this._searchBases == null) {
+                    this._searchBases = new[] { new SearchBase(scope) };
                 } else {
-                    this.SearchBases[0].Scope = scope;
+                    this._searchBases[0].Scope = scope;
                 }
             }
         }
@@ -130,18 +129,21 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         [Obsolete("Use SearchBases instead.")]
         public string SearchBase {
-            get => this.SearchBases.FirstOrDefault()?.DistinguishedName;
+            get => this._searchBases.FirstOrDefault()?.DistinguishedName;
             set {
-                if (this.SearchBases == null) {
-                    this.SearchBases = new[] { new SearchBase(value) };
+                if (this._searchBases == null) {
+                    this._searchBases = new[] { new SearchBase(value) };
                 } else {
-                    this.SearchBases[0].DistinguishedName = value;
+                    this._searchBases[0].DistinguishedName = value;
                 }
             }
         }
 
         /// <inheritdoc />
-        public SearchBase[] SearchBases { get; set; }
+        public SearchBase[] SearchBases {
+            get => this._searchBases ?? Array.Empty<SearchBase>();
+            set => this._searchBases = value;
+        }
 
         /// <inheritdoc />
         public string Server { get; set; }
@@ -165,6 +167,7 @@ namespace Visus.LdapAuthentication {
         #region Private fields
         private LdapMapping _mapping;
         private int _pageSize;
+        private SearchBase[] _searchBases;
         private int _timeout;
         #endregion
     }
