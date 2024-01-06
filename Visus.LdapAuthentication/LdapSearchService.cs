@@ -93,17 +93,13 @@ namespace Visus.LdapAuthentication {
                     $"{idAttribute.Name}={identity}",
                     retval.RequiredAttributes.Concat(groupAttribs).ToArray(),
                     false);
-                try {
-                    if (entries.HasMore()) {
-                        retval.Assign(entries.Next(), this.Connection,
-                            this._options);
+
+                if (entries.HasMore()) {
+                    var entry = entries.NextEntry(this._logger);
+                    if (entry != null) {
+                        retval.Assign(entry, this.Connection, this._options);
                         return retval;
                     }
-                } catch (Exception ex) {
-                    // Note: this should not be necessary, but unfortunately,
-                    // the result set does say that there are more entries
-                    // albeit it is actually empty ...
-                    this._logger.LogDebug(ex.Message);
                 }
             }
 

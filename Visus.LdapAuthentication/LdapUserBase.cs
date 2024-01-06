@@ -166,8 +166,10 @@ namespace Visus.LdapAuthentication {
                             false);
 
                         if (result.HasMore()) {
-                            var group = result.Next();
-                            yield return group;
+                            var group = result.NextEntry();
+                            if (group != null) {
+                                yield return group;
+                            }
                         }
                     }
                 }

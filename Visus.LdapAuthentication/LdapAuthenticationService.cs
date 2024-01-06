@@ -72,9 +72,11 @@ namespace Visus.LdapAuthentication {
                     false);
 
                 if (result.HasMore()) {
-                    var entry = result.Next();
-                    retval.Assign(entry, connection, this._options);
-                    return retval;
+                    var entry = result.NextEntry(this._logger);
+                    if (entry != null) {
+                        retval.Assign(entry, connection, this._options);
+                        return retval;
+                    }
                 }
             }
 

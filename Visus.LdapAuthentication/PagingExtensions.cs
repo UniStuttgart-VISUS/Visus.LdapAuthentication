@@ -184,6 +184,9 @@ namespace Visus.LdapAuthentication {
                         entry = results.Next();
                     } catch (LdapReferralException) {
                         continue;
+                    } catch (LdapException) {
+                        // Empty search result.
+                        continue;
                     }
 
                     yield return entry;
