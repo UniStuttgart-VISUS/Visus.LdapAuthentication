@@ -22,6 +22,7 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         public LdapOptions() {
             this.PageSize = 1000;   // Reasonable default for AD.
+            this._searchBase = new SearchBase();
         }
         #endregion
 
@@ -32,27 +33,25 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         public bool IsNoCertificateCheck { get; set; }
 
+        /// <summary>
+        /// Gets whether a legacy single search base has been configured.
+        /// </summary>
+        public bool IsLegacySearchBase => !string.IsNullOrEmpty(
+            this._searchBase?.DistinguishedName);
+
         /// <inheritdoc />
         public bool IsRecursiveGroupMembership { get; set; }
 
         /// <inheritdoc />
         public bool IsSsl { get; set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the legacy search scope setting.
+        /// </summary>
         [Obsolete("Use SearchBases instead.")]
         public bool IsSubtree {
-            get {
-                var scope = this.SearchBases?.FirstOrDefault()?.Scope;
-                return (scope == SearchScope.Sub);
-            }
-            set {
-                var scope = value ? SearchScope.Sub : SearchScope.Base;
-                if (this._searchBases == null) {
-                    this._searchBases = new[] { new SearchBase(scope) };
-                } else {
-                    this._searchBases[0].Scope = scope;
-                }
-            }
+            get => (this._searchBase.Scope == SearchScope.Sub);
+            set => this._searchBase.IsSubtree = value;
         }
 
         /// <inheritdoc />
@@ -129,20 +128,40 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         [Obsolete("Use SearchBases instead.")]
         public string SearchBase {
-            get => this._searchBases?.FirstOrDefault()?.DistinguishedName;
-            set {
-                if (this._searchBases == null) {
-                    this._searchBases = new[] { new SearchBase(value) };
-                } else {
-                    this._searchBases[0].DistinguishedName = value;
-                }
-            }
+            get => this._searchBase.DistinguishedName;
+            set => this._searchBase.DistinguishedName = value;
         }
 
         /// <inheritdoc />
         public SearchBase[] SearchBases {
-            get => this._searchBases ?? Array.Empty<SearchBase>();
-            set => this._searchBases = value;
+            get {
+                // This wild construct is for making sure that all deployments
+                // that have appsettings using the single SearchBase continue
+                // to work and new deployments can use multip SearchBases by
+                // setting the new property.
+                var haveCurrent = (this._searchBases?.Length > 0);
+                var haveLegacy = this.IsLegacySearchBase;
+
+                if (haveCurrent) {
+                    return this._searchBases;
+
+                } else if (haveLegacy) {
+                    return new[] { this._searchBase };
+
+                } else {
+                    return Array.Empty<SearchBase>();
+                }
+            }
+            set {
+                // This is a wild hack that prevents the single SearchBase form
+                // being applied to the array during bind. Unfortunately,
+                // ASP.NET Core iterates over all bindable properties, retrieves
+                // their default value and re-assigns it, which would break the
+                // getter implementation above.
+                if ((value?.Length != 1) || (value[0] != this._searchBase)) {
+                    this._searchBases = value;
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -167,6 +186,7 @@ namespace Visus.LdapAuthentication {
         #region Private fields
         private LdapMapping _mapping;
         private int _pageSize;
+        private SearchBase _searchBase;
         private SearchBase[] _searchBases;
         private int _timeout;
         #endregion

@@ -5,6 +5,8 @@
 // <author>Christoph Müller</author>
 
 
+using System;
+
 namespace Visus.LdapAuthentication {
 
     /// <summary>
@@ -20,9 +22,7 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        public SearchBase() : this(SearchScope.Sub) {
-            this.DistinguishedName = string.Empty;
-        }
+        public SearchBase() : this(string.Empty, SearchScope.Sub) { }
 
         /// <summary>
         /// Initialises a new instance.
@@ -32,15 +32,30 @@ namespace Visus.LdapAuthentication {
         /// <param name="scope">The scope of the search. This parameter defaults
         /// to <see cref="SearchScope.Sub"/>.</param>
         public SearchBase(string dn, SearchScope scope = SearchScope.Sub) {
-            this.DistinguishedName = dn ?? string.Empty;
+            this.DistinguishedName = dn
+                ?? throw new ArgumentNullException(nameof(dn));
             this.Scope = scope;
         }
 
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="scope">The scope of the search</param>
-        public SearchBase(SearchScope scope) : this(string.Empty, scope) { }
+        /// <param name="dn">The distinguished name of the location where the
+        /// search should begin.</param>
+        /// <param name="sub">If <c>true</c>, set the scope of the search to
+        /// <see cref="SearchScope.Sub"/>, to <see cref="SearchScope.Base"/>
+        /// otherwise.</param>
+        public SearchBase(string dn, bool sub) {
+            this.DistinguishedName = dn
+                ?? throw new ArgumentNullException(nameof(dn));
+            this.IsSubtree = sub;
+        }
+
+        ///// <summary>
+        ///// Initialises a new instance.
+        ///// </summary>
+        ///// <param name="scope">The scope of the search</param>
+        //public SearchBase(SearchScope scope) : this(string.Empty, scope) { }
         #endregion
 
         #region Public properties
@@ -54,6 +69,16 @@ namespace Visus.LdapAuthentication {
         /// Gets or sets the scope of the search.
         /// </summary>
         public SearchScope Scope { get; set; }
+        #endregion
+
+        #region Internal properties
+        /// <summary>
+        /// Gets or sets whether the whole subtree should be searched.
+        /// </summary>
+        internal bool IsSubtree {
+            get => (this.Scope == SearchScope.Sub);
+            set => this.Scope = value ? SearchScope.Sub : SearchScope.Base;
+        }
         #endregion
     }
 }

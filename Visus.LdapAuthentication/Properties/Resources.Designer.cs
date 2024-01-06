@@ -61,6 +61,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You cannot set &quot;SearchBases&quot; and the legacy option &quot;SearchBase&quot; at the same time. Move all LDAP search bases to the new &quot;SearchBases&quot; property..
+        /// </summary>
+        public static string ErrorAmbiguousSearchScope {
+            get {
+                return ResourceManager.GetString("ErrorAmbiguousSearchScope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An entry with a value of &quot;{1}&quot; for &quot;{0}&quot; does not exist in the directory..
         /// </summary>
         public static string ErrorEntryNotFound {

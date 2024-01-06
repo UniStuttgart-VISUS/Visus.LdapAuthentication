@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ErrorAmbiguousSearchScope" xml:space="preserve">
+    <value>You cannot set "SearchBases" and the legacy option "SearchBase" at the same time. Move all LDAP search bases to the new "SearchBases" property.</value>
+  </data>
   <data name="ErrorEntryNotFound" xml:space="preserve">
     <value>An entry with a value of "{1}" for "{0}" does not exist in the directory.</value>
   </data>
