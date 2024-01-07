@@ -1,5 +1,6 @@
 ﻿// <copyright file="LdapUserBase.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -160,20 +161,22 @@ namespace Visus.DirectoryAuthentication {
 
                 foreach (var g in groups) {
                     var q = g.EscapeLdapFilterExpression();
-                    var request = new SearchRequest(options.SearchBase,
-                        $"({mapping.DistinguishedNameAttribute}={q})",
-                        SearchScope.Subtree,
-                        mapping.RequiredGroupAttributes);
-                    var response = options.Timeout != TimeSpan.Zero
-                        ? (SearchResponse) connection.SendRequest(
-                            request, options.Timeout)
-                        : (SearchResponse) connection.SendRequest(request);
 
-                    foreach (SearchResultEntry e in response.Entries) {
-                        yield return e;
+                    foreach (var b in options.SearchBase) {
+                        var req = new SearchRequest(b.DistinguishedName,
+                            $"({mapping.DistinguishedNameAttribute}={q})",
+                            SearchScope.Subtree,
+                            mapping.RequiredGroupAttributes);
+                        var res = connection.SendRequest(req, options);
+
+                        if (res is SearchResponse r) {
+                            foreach (SearchResultEntry e in r.Entries) {
+                                yield return e;
+                            }
+                        }
                     }
                 }
-            } /* end if (groups != null) */
+            } /* if (groups != null) */
         }
 
         /// <summary>

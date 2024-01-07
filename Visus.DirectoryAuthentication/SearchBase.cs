@@ -4,25 +4,23 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-
 using System;
+using System.DirectoryServices.Protocols;
 
-namespace Visus.LdapAuthentication {
+
+namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// Specifies the base DN and <see cref="SearchScope"/> of one search
     /// location in <see cref="ILdapOptions"/>.
     /// </summary>
-    /// <remarks>
-    /// <para>This class is part of enhancement #7.</para>
-    /// </remarks>
     public sealed class SearchBase {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        public SearchBase() : this(string.Empty, SearchScope.Sub) { }
+        public SearchBase() : this(string.Empty, SearchScope.Subtree) { }
 
         /// <summary>
         /// Initialises a new instance.
@@ -31,31 +29,11 @@ namespace Visus.LdapAuthentication {
         /// search should begin.</param>
         /// <param name="scope">The scope of the search. This parameter defaults
         /// to <see cref="SearchScope.Sub"/>.</param>
-        public SearchBase(string dn, SearchScope scope = SearchScope.Sub) {
+        public SearchBase(string dn, SearchScope scope = SearchScope.Subtree) {
             this.DistinguishedName = dn
                 ?? throw new ArgumentNullException(nameof(dn));
             this.Scope = scope;
         }
-
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        /// <param name="dn">The distinguished name of the location where the
-        /// search should begin.</param>
-        /// <param name="sub">If <c>true</c>, set the scope of the search to
-        /// <see cref="SearchScope.Sub"/>, to <see cref="SearchScope.Base"/>
-        /// otherwise.</param>
-        public SearchBase(string dn, bool sub) {
-            this.DistinguishedName = dn
-                ?? throw new ArgumentNullException(nameof(dn));
-            this.IsSubtree = sub;
-        }
-
-        ///// <summary>
-        ///// Initialises a new instance.
-        ///// </summary>
-        ///// <param name="scope">The scope of the search</param>
-        //public SearchBase(SearchScope scope) : this(string.Empty, scope) { }
         #endregion
 
         #region Public properties
@@ -69,16 +47,6 @@ namespace Visus.LdapAuthentication {
         /// Gets or sets the scope of the search.
         /// </summary>
         public SearchScope Scope { get; set; }
-        #endregion
-
-        #region Internal properties
-        /// <summary>
-        /// Gets or sets whether the whole subtree should be searched.
-        /// </summary>
-        internal bool IsSubtree {
-            get => (this.Scope == SearchScope.Sub);
-            set => this.Scope = value ? SearchScope.Sub : SearchScope.Base;
-        }
         #endregion
     }
 }

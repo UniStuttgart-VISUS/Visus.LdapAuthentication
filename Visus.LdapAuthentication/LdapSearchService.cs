@@ -185,7 +185,8 @@ namespace Visus.LdapAuthentication {
         /// <param name="filter">A filter on the users object.</param>
         /// <param name="searchBases">The base and scope of the LDAP search.
         /// </param>
-        /// <returns></returns>
+        /// <returns>The users found at the specified locations in the
+        /// directory.</returns>
         private IEnumerable<ILdapUser> GetUsers0(string filter,
                 IEnumerable<SearchBase> searchBases) {
             Debug.Assert(filter != null);

@@ -1,5 +1,6 @@
 ﻿// <copyright file="LdapOptions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2022 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -35,9 +36,6 @@ namespace Visus.DirectoryAuthentication {
 
         /// <inheritdoc />
         public bool IsSsl { get; set; }
-
-        /// <inheritdoc />
-        public bool IsSubtree { get; set; } = true;
 
         /// <inheritdoc />
         public LdapMapping Mapping {
@@ -111,7 +109,13 @@ namespace Visus.DirectoryAuthentication {
         public string Schema { get; set; }
 
         /// <inheritdoc />
-        public string SearchBase { get; set; }
+        public SearchBase[] SearchBase {
+            get;
+            set;
+        } = Array.Empty<SearchBase>();
+
+        /// <inheritdoc />
+        IEnumerable<SearchBase> ILdapOptions.SearchBase => this.SearchBase;
 
         /// <inheritdoc />
         public string Server { get; set; }

@@ -1,5 +1,6 @@
 ﻿// <copyright file="ILdapOptions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -55,20 +56,6 @@ namespace Visus.DirectoryAuthentication {
         /// Get whether the LDAP connection uses SSL or not.
         /// </summary>
         bool IsSsl { get; }
-
-        /// <summary>
-        /// Gets whether the <see cref="LdapSearchBase"/> is searched
-        /// recursively or not.
-        /// </summary>
-        /// <remarks>
-        /// <para>Setting this flag will cause the LDAP queries use
-        /// <see cref="System.DirectoryServices.Protocols.SearchScope.Subtree"/>.
-        /// Otherwise,
-        /// <see cref="System.DirectoryServices.Protocols.SearchScope.Base"/>
-        /// will be used, ie all user accounts and groups must reside directly
-        /// in <see cref="SearchBase"/>.</para>
-        /// </remarks>
-        bool IsSubtree { get; }
 
         /// <summary>
         /// Gets the global LDAP mapping for the selected schema.
@@ -130,9 +117,9 @@ namespace Visus.DirectoryAuthentication {
         string Schema { get; }
 
         /// <summary>
-        /// Gets the starting point of any directory search.
+        /// Gets the starting point(s) of any directory search.
         /// </summary>
-        string SearchBase { get; }
+        IEnumerable<SearchBase> SearchBase { get; }
 
         /// <summary>
         /// Gets the host name or IP of the LDAP server.
