@@ -62,7 +62,12 @@ The configuration section can have any name of your choice as long as it can be 
 {
     "LdapConfiguration": {
         "Server": "dc.your-domain.de",
-        "SearchBase": "DC=your-domain,DC=de",
+        "SearchBases": [
+            {
+                "DistinguishedName": "DC=your-domain,DC=de",
+                "Scope": "Sub"
+            }
+        ],
         "Schema": "Active Directory",
         "IsRecursiveGroupMembership": true,
         "Port": 636,
