@@ -22,11 +22,11 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Only searches the DN below the base DN.
         /// </summary>
-        One = LdapConnection.ScopeOne,
+        OneLevel = LdapConnection.ScopeOne,
 
         /// <summary>
         /// Recursively searches the base DN and all of its children.
         /// </summary>
-        Sub = LdapConnection.ScopeSub
+        Subtree = LdapConnection.ScopeSub
     }
 }

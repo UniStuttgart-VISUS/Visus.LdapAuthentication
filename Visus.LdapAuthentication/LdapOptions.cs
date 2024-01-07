@@ -50,7 +50,7 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         [Obsolete("Use SearchBases instead.")]
         public bool IsSubtree {
-            get => (this._searchBase.Scope == SearchScope.Sub);
+            get => (this._searchBase.Scope == SearchScope.Subtree);
             set => this._searchBase.IsSubtree = value;
         }
 

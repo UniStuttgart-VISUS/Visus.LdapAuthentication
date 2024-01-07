@@ -65,14 +65,14 @@ namespace Visus.LdapAuthentication.Tests {
                 var b = new SearchBase();
                 Assert.IsNotNull(b.DistinguishedName, "DN is not null");
                 Assert.IsTrue(b.IsSubtree, "Default behaviour not changed compared to legacy implementation");
-                Assert.AreEqual(SearchScope.Sub, b.Scope, "Default scope is sub");
+                Assert.AreEqual(SearchScope.Subtree, b.Scope, "Default scope is sub");
             }
 
             {
                 var expected = "DC=visus, DC=uni-stuttgart, DC=de";
                 var b = new SearchBase(expected);
                 Assert.AreEqual(expected, b.DistinguishedName, "DN set");
-                Assert.AreEqual(SearchScope.Sub, b.Scope, "Default scope is sub");
+                Assert.AreEqual(SearchScope.Subtree, b.Scope, "Default scope is sub");
             }
 
             {

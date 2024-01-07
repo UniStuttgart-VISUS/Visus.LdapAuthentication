@@ -22,7 +22,7 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        public SearchBase() : this(string.Empty, SearchScope.Sub) { }
+        public SearchBase() : this(string.Empty, SearchScope.Subtree) { }
 
         /// <summary>
         /// Initialises a new instance.
@@ -30,8 +30,8 @@ namespace Visus.LdapAuthentication {
         /// <param name="dn">The distinguished name of the location where the
         /// search should begin.</param>
         /// <param name="scope">The scope of the search. This parameter defaults
-        /// to <see cref="SearchScope.Sub"/>.</param>
-        public SearchBase(string dn, SearchScope scope = SearchScope.Sub) {
+        /// to <see cref="SearchScope.Subtree"/>.</param>
+        public SearchBase(string dn, SearchScope scope = SearchScope.Subtree) {
             this.DistinguishedName = dn
                 ?? throw new ArgumentNullException(nameof(dn));
             this.Scope = scope;
@@ -43,7 +43,7 @@ namespace Visus.LdapAuthentication {
         /// <param name="dn">The distinguished name of the location where the
         /// search should begin.</param>
         /// <param name="sub">If <c>true</c>, set the scope of the search to
-        /// <see cref="SearchScope.Sub"/>, to <see cref="SearchScope.Base"/>
+        /// <see cref="SearchScope.Subtree"/>, to <see cref="SearchScope.Base"/>
         /// otherwise.</param>
         public SearchBase(string dn, bool sub) {
             this.DistinguishedName = dn
@@ -76,8 +76,8 @@ namespace Visus.LdapAuthentication {
         /// Gets or sets whether the whole subtree should be searched.
         /// </summary>
         internal bool IsSubtree {
-            get => (this.Scope == SearchScope.Sub);
-            set => this.Scope = value ? SearchScope.Sub : SearchScope.Base;
+            get => (this.Scope == SearchScope.Subtree);
+            set => this.Scope = value ? SearchScope.Subtree : SearchScope.Base;
         }
         #endregion
     }

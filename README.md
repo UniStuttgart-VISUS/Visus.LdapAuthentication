@@ -65,7 +65,7 @@ The configuration section can have any name of your choice as long as it can be 
         "SearchBases": [
             {
                 "DistinguishedName": "DC=your-domain,DC=de",
-                "Scope": "Sub"
+                "Scope": "Subtree"
             }
         ],
         "Schema": "Active Directory",
@@ -77,7 +77,7 @@ The configuration section can have any name of your choice as long as it can be 
 }
 ```
 
-Note that `Scope` is implicitly "Sub" for the search bases. If you do not want to modify this, you can use `{ "DistinguishedName": "DC=your-domain,DC=de" }` omitting the scope instead.
+Note that `Scope` is implicitly "Subtree" for the search bases. If you do not want to modify this, you can use `{ "DistinguishedName": "DC=your-domain,DC=de" }` omitting the scope instead.
 
 While you can fully customise the properties and claims the library loads for a user (see below), there are certain things that must be provided. This is controlled via the `Schema` property in the JSON above. The schema selects the [`LdapMapping`](Visus.LdapAuthentication/LdapMapping.cs) the library uses the select users and determine group membership. We provide several built-in schemas for frequently used LDAP servers, namely "Active Directory" for Active Directory Domain Services, "IDMU" for Active Directory with Identity Management for Unix installed and "RFC 2307" for this RFC, which is the schema typically used be OpenLDAP servers.
 
@@ -261,5 +261,5 @@ public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [Fr
 1. `System.DirectorySerices.Protocols` requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must have been installed. Please note that P/Invoke requires the [name of the library being hard-coded](https://github.com/dotnet/runtime/issues/69456), which might be a problem. There are basically [two ways for you to resolve this](https://decovar.dev/blog/2022/06/16/dotnet-ldap-authentication/#platform-specific-dependencies), which is installing the expected version or by creating a symlink that pretends the current version is the expected one.
 1. The `ILdapOptions.Timeout` property is a `System.TimeSpan` rather than a number representing milliseconds. When configuring from JSON, use a string in the format "hh:mm:ss".
 1. `ILdapOptions.RootCaThumbprint` is not supported. You can, however, check the immediate issuer of the server's certificate using `ILdapOptions.ServerCertificateIssuer`.
-1. `ILdapOptions` does not provide the legacy string-based `SearchBase` option, but must be configured with the new structured `SearchBase` object. **This is a breaking change compared to version 0.4.0!**
+1. `ILdapOptions` does not provide the legacy string-based `SearchBase` option, but must be configured with the new structured `SearchBase` object. **This is a breaking change compared to version 0.4.0!** Note that the "Scope" is directly using the `System.DirectoryServices.Protocols.SearchScope` enumeration.
 1. TODO: Bind using Windows credentials.
