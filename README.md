@@ -77,6 +77,8 @@ The configuration section can have any name of your choice as long as it can be 
 }
 ```
 
+Note that `Scope` is implicitly "Sub" for the search bases. If you do not want to modify this, you can use `{ "DistinguishedName": "DC=your-domain,DC=de" }` omitting the scope instead.
+
 While you can fully customise the properties and claims the library loads for a user (see below), there are certain things that must be provided. This is controlled via the `Schema` property in the JSON above. The schema selects the [`LdapMapping`](Visus.LdapAuthentication/LdapMapping.cs) the library uses the select users and determine group membership. We provide several built-in schemas for frequently used LDAP servers, namely "Active Directory" for Active Directory Domain Services, "IDMU" for Active Directory with Identity Management for Unix installed and "RFC 2307" for this RFC, which is the schema typically used be OpenLDAP servers.
 
 The built-in schemas are hard-coded in the library like this:
