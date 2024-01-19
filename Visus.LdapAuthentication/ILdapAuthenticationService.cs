@@ -13,11 +13,44 @@ namespace Visus.LdapAuthentication {
     public interface ILdapAuthenticationService {
 
         /// <summary>
-        /// Login the specified user.
+        /// Performs an LDAP bind using the specified credentials and retrieves
+        /// the LDAP entry with the account name <paramref name="username"/> in
+        /// case the bind succeeds.
         /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="username">The user name to authenticate. Depending on
+        /// the LDAP server used, this might need to be a distinguished name.
+        /// </param>
+        /// <param name="password">The password of the user, which is used to
+        /// bind against the LDAP server for checking whether it is correct.
+        /// </param>
+        /// <returns>A user object holding the properties of a successfully
+        /// authenticated user, <c>null</c> if the login failed.</returns>
         ILdapUser Login(string username, string password);
+    }
+
+
+    /// <summary>
+    /// Strongly typed variant of <see cref="ILdapAuthenticationService"/>.
+    /// </summary>
+    /// <typeparam name="TUser">The type of user that is to be retrieved on
+    /// successful login.</typeparam>
+    public interface ILdapAuthenticationService<TUser>
+            : ILdapAuthenticationService where TUser : class, ILdapUser {
+
+        /// <summary>
+        /// Performs an LDAP bind using the specified credentials and retrieves
+        /// the LDAP entry with the account name <paramref name="username"/> in
+        /// case the bind succeeds.
+        /// </summary>
+        /// <param name="username">The user name to authenticate. Depending on
+        /// the LDAP server used, this might need to be a distinguished name.
+        /// </param>
+        /// <param name="password">The password of the user, which is used to
+        /// bind against the LDAP server for checking whether it is correct.
+        /// </param>
+        /// <returns>A user object holding the properties of a successfully
+        /// authenticated user, <c>null</c> if the login failed.</returns>
+        new TUser Login(string username, string password);
+
     }
 }

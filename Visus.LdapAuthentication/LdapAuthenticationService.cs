@@ -20,7 +20,8 @@ namespace Visus.LdapAuthentication {
     /// <see cref="LdapUserBase"/> rather than a custom implementation of
     /// <see cref="ILdapUser"/>.</typeparam>
     public sealed class LdapAuthenticationService<TUser>
-            : ILdapAuthenticationService where TUser : ILdapUser, new() {
+            : ILdapAuthenticationService<TUser>
+            where TUser : class, ILdapUser, new() {
 
         #region Public constructors
         /// <summary>
@@ -47,15 +48,8 @@ namespace Visus.LdapAuthentication {
         //}
         #endregion
 
-        /// <summary>
-        /// Performs an LDAP bind using the specified credentials and retrieves
-        /// the LDAP entry with the account name <paramref name="username"/> in
-        /// case the bind succeeds.
-        /// </summary>
-        /// <param name="username">The user name to logon with.</param>
-        /// <param name="password">The password of the user.</param>
-        /// <returns>The user object in case of a successful login.</returns>
-        public ILdapUser Login(string username, string password) {
+        /// <inheritdoc />
+        public TUser Login(string username, string password) {
             using var connection = this._options.Connect(username, password,
                 this._logger);
 
@@ -84,6 +78,11 @@ namespace Visus.LdapAuthentication {
                 username);
             return null;
         }
+
+        /// <inheritdoc />
+        ILdapUser ILdapAuthenticationService.Login(string username,
+                string password)
+            => this.Login(username, password);
 
         #region Private fields
         private readonly ILogger _logger;
