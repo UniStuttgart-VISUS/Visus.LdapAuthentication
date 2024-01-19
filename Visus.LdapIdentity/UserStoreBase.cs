@@ -6,7 +6,9 @@
 
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.LdapAuthentication;
@@ -15,7 +17,8 @@ using Visus.LdapAuthentication;
 namespace Visus.LdapIdentity {
 
     public abstract class UserStoreBase<TUser>
-            : IUserEmailStore<TUser>,
+            : IUserClaimStore<TUser>,
+            IUserEmailStore<TUser>,
             IUserLockoutStore<TUser>,
             IPasswordHasher<TUser>,
             IUserPasswordStore<TUser>,
@@ -24,12 +27,21 @@ namespace Visus.LdapIdentity {
             where TUser : class, ILdapUser {
 
         #region Public properties
-        public IQueryable<TUser> Users => throw new NotImplementedException();
+        /// <inheritdoc />
+        public IQueryable<TUser> Users
+            => this._ldapSearch.GetUsers().AsQueryable();
         #endregion
 
         #region Public methods
+        public Task AddClaimsAsync(TUser user,
+                IEnumerable<Claim> claims,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
         public Task<IdentityResult> CreateAsync(TUser user,
                 CancellationToken cancellationToken) {
+            //return IdentityResult.Failed()
             throw new NotImplementedException();
         }
 
@@ -38,9 +50,7 @@ namespace Visus.LdapIdentity {
             throw new NotImplementedException();
         }
 
-        public void Dispose() {
-            throw new NotImplementedException();
-        }
+        public void Dispose() { }
 
         public Task<TUser> FindByEmailAsync(string normalizedEmail,
                 CancellationToken cancellationToken) {
@@ -48,8 +58,8 @@ namespace Visus.LdapIdentity {
         }
 
         /// <summary>
-        /// Gets the <see cref="ILdapUser"/> from the unique ID that is stored
-        /// in <see cref="ILdapUser.Identity"/>.
+        /// Gets the <see cref="TUser"/> from the unique ID that is stored
+        /// in <see cref="TUser.Identity"/>.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="cancellationToken"></param>
@@ -57,12 +67,11 @@ namespace Visus.LdapIdentity {
         public Task<TUser> FindByIdAsync(string userId,
                 CancellationToken cancellationToken) {
             _ = userId ?? throw new ArgumentNullException(nameof(userId));
-            this._ldapSearch.GetUserByIdentity(userId);
-            throw new NotImplementedException();
+            return Task.FromResult(this._ldapSearch.GetUserByIdentity(userId));
         }
 
         /// <summary>
-        /// Gets the <see cref="ILdapUser"/> for the user name that is
+        /// Gets the <see cref="TUser"/> for the user name that is
         /// requested from the user at login.
         /// </summary>
         /// <param name="normalizedUserName"></param>
@@ -72,13 +81,17 @@ namespace Visus.LdapIdentity {
                 CancellationToken cancellationToken) {
             _ = normalizedUserName
                 ?? throw new ArgumentNullException(nameof(normalizedUserName));
-            //this._ldapSearch.GetUserByIdentity()
             throw new NotImplementedException();
         }
 
         //AccountLockoutTime,LastBadPasswordAttempt,BadPwdCount,LockedOut
 
         public Task<int> GetAccessFailedCountAsync(TUser user,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task<IList<Claim>> GetClaimsAsync(TUser user,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException();
         }
@@ -138,6 +151,11 @@ namespace Visus.LdapIdentity {
             throw new NotImplementedException();
         }
 
+        public Task<IList<TUser>> GetUsersForClaimAsync(Claim claim,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
         public string HashPassword(TUser user, string password) {
             _ = user ?? throw new ArgumentNullException(nameof(user));
             _ = password ?? throw new ArgumentNullException(nameof(password));
@@ -151,6 +169,19 @@ namespace Visus.LdapIdentity {
         }
 
         public Task<int> IncrementAccessFailedCountAsync(TUser user,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveClaimsAsync(TUser user,
+                IEnumerable<Claim> claims,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task ReplaceClaimAsync(TUser user,
+                Claim claim,
+                Claim newClaim,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException();
         }
@@ -233,7 +264,7 @@ namespace Visus.LdapIdentity {
 
         #region Private fields
         private readonly ILdapAuthenticationService _ldapAuth;
-        private readonly ILdapSearchService _ldapSearch;
+        private readonly ILdapSearchService<TUser> _ldapSearch;
         #endregion
     }
 }

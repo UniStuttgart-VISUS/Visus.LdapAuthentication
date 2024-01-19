@@ -107,12 +107,12 @@ namespace Visus.LdapAuthentication {
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public static IServiceCollection AddLdapSearchService<TUser>(
                 this IServiceCollection that, ILdapOptions options)
-                where TUser : ILdapUser, new() {
+                where TUser : class, ILdapUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
-            return that.AddScoped<ILdapSearchService, LdapSearchService<TUser>>(
-                s => {
+            return that.AddScoped<ILdapSearchService<TUser>,
+                LdapSearchService<TUser>>(s => {
                     var l = s.GetService<ILogger<LdapSearchService<TUser>>>();
                     return new LdapSearchService<TUser>(options, l);
             });

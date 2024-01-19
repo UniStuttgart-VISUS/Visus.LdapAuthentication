@@ -22,7 +22,7 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         public LdapOptions() {
             this.PageSize = 1000;   // Reasonable default for AD.
-            this.IsSubtree = true;  // Backward compatibility.
+            this._searchScope = SearchScope.Subtree;
         }
         #endregion
 
