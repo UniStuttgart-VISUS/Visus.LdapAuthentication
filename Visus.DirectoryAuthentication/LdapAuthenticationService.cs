@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
@@ -116,17 +117,22 @@ namespace Visus.DirectoryAuthentication {
 
         #region Private methods
         private SearchRequest GetRequest(TUser user, string username,
-                SearchBase searchBase) {
+                string searchBase, SearchScope scope) {
             Debug.Assert(searchBase != null);
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
             var filter = string.Format(this._options.Mapping.UserFilter,
                 username);
-            var retval = new SearchRequest(searchBase.DistinguishedName,
+            var retval = new SearchRequest(searchBase,
                 filter,
-                searchBase.Scope,
+                scope,
                 user.RequiredAttributes.Concat(groupAttribs).ToArray());
             return retval;
         }
+
+        private SearchRequest GetRequest(TUser user, string username,
+                KeyValuePair<string, SearchScope> searchBase)
+            => this.GetRequest(user, username, searchBase.Key,
+                searchBase.Value);
         #endregion
 
         #region Private fields

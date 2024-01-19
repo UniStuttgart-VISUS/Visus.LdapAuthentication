@@ -8,7 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 
 
@@ -60,62 +61,40 @@ namespace Visus.LdapAuthentication.Tests {
 
         #region Issue #7
         [TestMethod]
-        public void Test7SearchBase() {
-            {
-                var b = new SearchBase();
-                Assert.IsNotNull(b.DistinguishedName, "DN is not null");
-                Assert.IsTrue(b.IsSubtree, "Default behaviour not changed compared to legacy implementation");
-                Assert.AreEqual(SearchScope.Subtree, b.Scope, "Default scope is sub");
-            }
-
-            {
-                var expected = "DC=visus, DC=uni-stuttgart, DC=de";
-                var b = new SearchBase(expected);
-                Assert.AreEqual(expected, b.DistinguishedName, "DN set");
-                Assert.AreEqual(SearchScope.Subtree, b.Scope, "Default scope is sub");
-            }
-
-            {
-                var expected = "DC=visus, DC=uni-stuttgart, DC=de";
-                var b = new SearchBase(expected, SearchScope.Base);
-                Assert.AreEqual(expected, b.DistinguishedName, "DN set");
-                Assert.AreEqual(SearchScope.Base, b.Scope, "Scope set");
-            }
-        }
-
-        [TestMethod]
         public void Test7LdapOptions() {
             {
                 var o = new LdapOptions();
                 Assert.IsNotNull(o.SearchBases, "SearchBases initialised");
-                Assert.AreEqual(0, o.SearchBases.Length, "SearchBases empty");
+                Assert.AreEqual(0, o.SearchBases.Count, "SearchBases empty");
             }
 
             {
                 var dn = "DC=visus, DC=uni-stuttgart,DC=de";
                 var o = new LdapOptions();
                 Assert.IsNotNull(o.SearchBases, "SearchBases initialised");
-                Assert.AreEqual(0, o.SearchBases.Length, "SearchBases empty");
+                Assert.AreEqual(0, o.SearchBases.Count, "SearchBases empty");
 #pragma warning disable CS0618
                 o.SearchBase = dn;
-                Assert.AreEqual(1, o.SearchBases.Length, "Single SearchBase created.");
-                Assert.AreSame(((ILdapOptions) o).SearchBase, o.SearchBases[0].DistinguishedName, "First element set");
+                Assert.AreEqual(1, o.SearchBases.Count, "Single SearchBase created.");
+                Assert.AreSame(((ILdapOptions) o).SearchBase, o.SearchBases.Keys.First(), "First element set");
                 o.IsSubtree = false;
-                Assert.AreEqual(1, o.SearchBases.Length, "No additional SearchBase created.");
-                Assert.AreEqual(SearchScope.Base, o.SearchBases[0].Scope, "Non-recursive set");
+                Assert.AreEqual(1, o.SearchBases.Count, "No additional SearchBase created.");
+                Assert.AreEqual(SearchScope.Base, o.SearchBases.Values.First(), "Non-recursive set");
 #pragma warning restore CS0618
             }
 
             {
                 var dn = "DC=visus, DC=uni-stuttgart,DC=de";
                 var o = new LdapOptions() {
-                    SearchBases = new[] { new SearchBase("DC=vis,DC=uni-stuttgart,DC=de") }
+                    SearchBases = new Dictionary<string, SearchScope>() {
+                        { "DC=vis,DC=uni-stuttgart,DC=de", SearchScope.Subtree }
+                    }
                 };
                 Assert.IsNotNull(o.SearchBases, "SearchBases initialised");
-                Assert.AreEqual(1, o.SearchBases.Length, "SearchBases holds one element");
+                Assert.AreEqual(1, o.SearchBases.Count, "SearchBases holds one element");
 #pragma warning disable CS0618
                 o.SearchBase = dn;
-                Assert.AreEqual(1, o.SearchBases.Length, "Setting legacy SearchBase does not affect SearchBases");
+                Assert.AreEqual(1, o.SearchBases.Count, "Setting legacy SearchBase does not affect SearchBases");
 #pragma warning restore CS0618
             }
 

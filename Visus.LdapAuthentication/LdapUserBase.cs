@@ -159,7 +159,7 @@ namespace Visus.LdapAuthentication {
 
                     foreach (var b in options.SearchBases) {
                         var result = connection.Search(
-                            b.DistinguishedName,
+                            b.Key,
                             LdapConnection.ScopeSub,
                             $"({mapping.DistinguishedNameAttribute}={q})",
                             mapping.RequiredGroupAttributes,

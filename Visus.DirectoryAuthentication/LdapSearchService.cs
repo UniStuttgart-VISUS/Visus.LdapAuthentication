@@ -63,8 +63,8 @@ namespace Visus.DirectoryAuthentication {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
                 var entries = this.Connection.PagedSearch(
-                    b.DistinguishedName,
-                    b.Scope,
+                    b.Key,
+                    b.Value,
                     filter,
                     Array.Empty<string>(),
                     this._options.PageSize,
@@ -131,7 +131,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers(
-                IEnumerable<SearchBase> searchBases,
+                IDictionary<string, SearchScope> searchBases,
                 string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
                 filter = this._options.Mapping.UsersFilter;
@@ -185,7 +185,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="searchBase"></param>
         /// <returns></returns>
         private SearchRequest GetUserByIdentitySearchRequest(TUser user,
-                string identity, SearchBase searchBase) {
+                string identity, KeyValuePair<string, SearchScope> searchBase) {
             _ = identity ?? throw new ArgumentNullException(nameof(identity));
             Debug.Assert(user != null);
 
@@ -193,9 +193,9 @@ namespace Visus.DirectoryAuthentication {
             var idAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
                 nameof(LdapUser.Identity), this._options.Schema);
 
-            return new SearchRequest(searchBase.DistinguishedName,
+            return new SearchRequest(searchBase.Key,
                 $"({idAttribute.Name}={identity})",
-                searchBase.Scope,
+                searchBase.Value,
                 user.RequiredAttributes.Concat(groupAttribs).ToArray());
         }
 
@@ -208,7 +208,7 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>The users found at the specified locations in the
         /// directory.</returns>
         private IEnumerable<ILdapUser> GetUsers0(string filter,
-                IEnumerable<SearchBase> searchBases) {
+                IDictionary<string, SearchScope> searchBases) {
             Debug.Assert(filter != null);
             Debug.Assert(searchBases != null);
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
@@ -223,8 +223,8 @@ namespace Visus.DirectoryAuthentication {
                 // Perform a paged search (there might be a lot of users, which
                 // cannot be retruned at once.
                 var entries = this.Connection.PagedSearch(
-                b.DistinguishedName,
-                b.Scope,
+                b.Key,
+                b.Value,
                 filter,
                 user.RequiredAttributes.Concat(groupAttribs).ToArray(),
                 this._options.PageSize,

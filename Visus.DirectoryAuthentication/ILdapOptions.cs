@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.DirectoryServices.Protocols;
 
 namespace Visus.DirectoryAuthentication {
 
@@ -119,7 +119,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets the starting point(s) of any directory search.
         /// </summary>
-        IEnumerable<SearchBase> SearchBase { get; }
+        IDictionary<string, SearchScope> SearchBase { get; }
 
         /// <summary>
         /// Gets the host name or IP of the LDAP server.

@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Novell.Directory.Ldap;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 
@@ -27,12 +28,12 @@ namespace Visus.LdapAuthentication {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ILdapSearchResults Search(this LdapConnection that,
-                SearchBase @base,
+                KeyValuePair<string, SearchScope> @base,
                 string filter,
                 string[] attrs,
                 bool typesOnly = false) {
-            return that.Search(@base.DistinguishedName, (int) @base.Scope,
-                filter, attrs, typesOnly);
+            return that.Search(@base.Key, (int) @base.Value, filter, attrs,
+                typesOnly);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

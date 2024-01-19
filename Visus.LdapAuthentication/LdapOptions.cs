@@ -22,7 +22,7 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         public LdapOptions() {
             this.PageSize = 1000;   // Reasonable default for AD.
-            this._searchBase = new SearchBase();
+            this.IsSubtree = true;  // Backward compatibility.
         }
         #endregion
 
@@ -37,7 +37,7 @@ namespace Visus.LdapAuthentication {
         /// Gets whether a legacy single search base has been configured.
         /// </summary>
         public bool IsLegacySearchBase => !string.IsNullOrEmpty(
-            this._searchBase?.DistinguishedName);
+            this._searchBase);
 
         /// <inheritdoc />
         public bool IsRecursiveGroupMembership { get; set; }
@@ -50,8 +50,10 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         [Obsolete("Use SearchBases instead.")]
         public bool IsSubtree {
-            get => (this._searchBase.Scope == SearchScope.Subtree);
-            set => this._searchBase.IsSubtree = value;
+            get => (this._searchScope == SearchScope.Subtree);
+            set => this._searchScope = value
+                ? SearchScope.Subtree
+                : SearchScope.Base;
         }
 
         /// <inheritdoc />
@@ -128,28 +130,30 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         [Obsolete("Use SearchBases instead.")]
         public string SearchBase {
-            get => this._searchBase.DistinguishedName;
-            set => this._searchBase.DistinguishedName = value;
+            get => this._searchBase;
+            set => this._searchBase = value;
         }
 
         /// <inheritdoc />
-        public SearchBase[] SearchBases {
+        public IDictionary<string, SearchScope> SearchBases {
             get {
                 // This wild construct is for making sure that all deployments
                 // that have appsettings using the single SearchBase continue
                 // to work and new deployments can use multip SearchBases by
                 // setting the new property.
-                var haveCurrent = (this._searchBases?.Length > 0);
+                var haveCurrent = (this._searchBases?.Count > 0);
                 var haveLegacy = this.IsLegacySearchBase;
 
                 if (haveCurrent) {
                     return this._searchBases;
 
                 } else if (haveLegacy) {
-                    return new[] { this._searchBase };
+                    return new Dictionary<string, SearchScope>() {
+                        { this._searchBase, this._searchScope }
+                    };
 
                 } else {
-                    return Array.Empty<SearchBase>();
+                    return new Dictionary<string, SearchScope>();
                 }
             }
             set {
@@ -158,7 +162,8 @@ namespace Visus.LdapAuthentication {
                 // ASP.NET Core iterates over all bindable properties, retrieves
                 // their default value and re-assigns it, which would break the
                 // getter implementation above.
-                if ((value?.Length != 1) || (value[0] != this._searchBase)) {
+                if ((value?.Count != 1)
+                        || (value.Keys?.First() != this._searchBase)) {
                     this._searchBases = value;
                 }
             }
@@ -186,8 +191,9 @@ namespace Visus.LdapAuthentication {
         #region Private fields
         private LdapMapping _mapping;
         private int _pageSize;
-        private SearchBase _searchBase;
-        private SearchBase[] _searchBases;
+        private string _searchBase;
+        private IDictionary<string, SearchScope> _searchBases;
+        private SearchScope _searchScope;
         private int _timeout;
         #endregion
     }

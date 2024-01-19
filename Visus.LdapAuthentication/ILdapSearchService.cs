@@ -89,7 +89,8 @@ namespace Visus.LdapAuthentication {
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
-        IEnumerable<ILdapUser> GetUsers(IEnumerable<SearchBase> searchBases,
+        IEnumerable<ILdapUser> GetUsers(
+            IDictionary<string, SearchScope> searchBases,
             string filter);
 
         /// <summary>

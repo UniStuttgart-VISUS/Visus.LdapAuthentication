@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using System.Collections.Generic;
+using System.DirectoryServices.Protocols;
 using System.Threading.Tasks;
 
 
@@ -102,7 +103,7 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
         public IEnumerable<ILdapUser> GetUsers(
-            IEnumerable<SearchBase> searchBases,
+            IDictionary<string, SearchScope> searchBases,
             string filter);
     }
 }

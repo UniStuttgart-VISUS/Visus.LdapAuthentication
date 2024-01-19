@@ -163,7 +163,7 @@ namespace Visus.DirectoryAuthentication {
                     var q = g.EscapeLdapFilterExpression();
 
                     foreach (var b in options.SearchBase) {
-                        var req = new SearchRequest(b.DistinguishedName,
+                        var req = new SearchRequest(b.Key,
                             $"({mapping.DistinguishedNameAttribute}={q})",
                             SearchScope.Subtree,
                             mapping.RequiredGroupAttributes);

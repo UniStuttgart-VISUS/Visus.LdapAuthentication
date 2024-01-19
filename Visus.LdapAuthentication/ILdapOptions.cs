@@ -150,7 +150,7 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Gets the starting points and scopes of any directory search.
         /// </summary>
-        SearchBase[] SearchBases { get; }
+        IDictionary<string, SearchScope> SearchBases { get; }
 
         /// <summary>
         /// Gets the host name or IP of the LDAP server.

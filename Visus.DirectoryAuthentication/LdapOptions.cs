@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.DirectoryServices.Protocols;
 
 namespace Visus.DirectoryAuthentication {
 
@@ -109,13 +109,10 @@ namespace Visus.DirectoryAuthentication {
         public string Schema { get; set; }
 
         /// <inheritdoc />
-        public SearchBase[] SearchBase {
+        public IDictionary<string, SearchScope> SearchBase {
             get;
             set;
-        } = Array.Empty<SearchBase>();
-
-        /// <inheritdoc />
-        IEnumerable<SearchBase> ILdapOptions.SearchBase => this.SearchBase;
+        } = new Dictionary<string, SearchScope>();
 
         /// <inheritdoc />
         public string Server { get; set; }

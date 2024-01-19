@@ -62,8 +62,8 @@ namespace Visus.LdapAuthentication {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
                 var entries = this.Connection.PagedSearch(
-                    b.DistinguishedName,
-                    b.Scope,
+                    b.Key,
+                    b.Value,
                     filter,
                     Array.Empty<string>(),
                     this._options.PageSize,
@@ -121,7 +121,7 @@ namespace Visus.LdapAuthentication {
 
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers(
-                IEnumerable<SearchBase> searchBases,
+                IDictionary<string, SearchScope> searchBases,
                 string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
                 filter = this._options.Mapping.UsersFilter;
@@ -136,9 +136,10 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers(string searchBase,
                 SearchScope searchScope, string filter) {
-            return this.GetUsers(
-                new[] { new SearchBase(searchBase, searchScope) },
-                filter);
+            var scopes = new Dictionary<string, SearchScope>() {
+                {searchBase, searchScope }
+            };
+            return this.GetUsers(scopes, filter);
         }
 
         /// <inheritdoc />
@@ -188,7 +189,7 @@ namespace Visus.LdapAuthentication {
         /// <returns>The users found at the specified locations in the
         /// directory.</returns>
         private IEnumerable<ILdapUser> GetUsers0(string filter,
-                IEnumerable<SearchBase> searchBases) {
+                IDictionary<string, SearchScope> searchBases) {
             Debug.Assert(filter != null);
             Debug.Assert(searchBases != null);
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
@@ -203,8 +204,8 @@ namespace Visus.LdapAuthentication {
                 // Perform a paged search (there might be a lot of users, which
                 // cannot be retruned at once).
                 var entries = this.Connection.PagedSearch(
-                    b.DistinguishedName,
-                    b.Scope,
+                    b.Key,
+                    b.Value,
                     filter,
                     user.RequiredAttributes.Concat(groupAttribs).ToArray(),
                     this._options.PageSize,
