@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Visus.LdapAuthentication\Visus.LdapAuthentication.csproj" />
+    <ProjectReference Include="..\Visus.LdapIdentity\Visus.LdapIdentity.csproj" />
   </ItemGroup>
 
 </Project>
