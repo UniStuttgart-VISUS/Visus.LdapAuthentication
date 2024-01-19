@@ -25,7 +25,8 @@ namespace Visus.DirectoryAuthentication {
     /// combination with the global options from <see cref="ILdapOptions"/>.
     /// </typeparam>
     public sealed class LdapSearchService<TUser>
-            : ILdapSearchService, IDisposable where TUser : ILdapUser, new() {
+            : ILdapSearchService<TUser>, IDisposable
+            where TUser : class, ILdapUser, new() {
 
         #region Public constructors
         /// <summary>
@@ -78,7 +79,7 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
-        public ILdapUser GetUserByIdentity(string identity) {
+        public TUser GetUserByIdentity(string identity) {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBase) {
@@ -98,7 +99,11 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
-        public async Task<ILdapUser> GetUserByIdentityAsync(string identity) {
+        ILdapUser ILdapSearchService.GetUserByIdentity(string identity)
+            => this.GetUserByIdentity(identity);
+
+        /// <inheritdoc />
+        public async Task<TUser> GetUserByIdentityAsync(string identity) {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBase) {
@@ -119,18 +124,30 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers() {
-            return this.GetUsers0(this._options.Mapping.UsersFilter,
+        async Task<ILdapUser> ILdapSearchService.GetUserByIdentityAsync(
+                string identity)
+            => await this.GetUserByIdentityAsync(identity);
+
+        /// <inheritdoc />
+        public IEnumerable<TUser> GetUsers()
+            => this.GetUsers0(this._options.Mapping.UsersFilter,
                 this._options.SearchBase);
-        }
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers(string filter) {
-            return this.GetUsers(this._options.SearchBase, filter);
-        }
+        IEnumerable<ILdapUser> ILdapSearchService.GetUsers()
+            => this.GetUsers0(this._options.Mapping.UsersFilter,
+                this._options.SearchBase);
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers(
+        public IEnumerable<TUser> GetUsers(string filter)
+            => this.GetUsers(this._options.SearchBase, filter);
+
+        /// <inheritdoc />
+        IEnumerable<ILdapUser> ILdapSearchService.GetUsers(string filter)
+            => this.GetUsers(this._options.SearchBase, filter);
+
+        /// <inheritdoc />
+        public IEnumerable<TUser> GetUsers(
                 IDictionary<string, SearchScope> searchBases,
                 string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
@@ -142,12 +159,18 @@ namespace Visus.DirectoryAuthentication {
             return this.GetUsers0(filter,
                 searchBases ?? this._options.SearchBase);
         }
+
+        /// <inheritdoc />
+        IEnumerable<ILdapUser> ILdapSearchService.GetUsers(
+                IDictionary<string, SearchScope> searchBases,
+                string filter)
+            => this.GetUsers(searchBases, filter);
         #endregion
 
-        #region Private Properties
-        /// <summary>
-        /// Gets the lazily established connection to the directory service.
-        /// </summary>
+            #region Private Properties
+            /// <summary>
+            /// Gets the lazily established connection to the directory service.
+            /// </summary>
         private LdapConnection Connection {
             get {
                 if (this._connection == null) {
@@ -207,7 +230,7 @@ namespace Visus.DirectoryAuthentication {
         /// </param>
         /// <returns>The users found at the specified locations in the
         /// directory.</returns>
-        private IEnumerable<ILdapUser> GetUsers0(string filter,
+        private IEnumerable<TUser> GetUsers0(string filter,
                 IDictionary<string, SearchScope> searchBases) {
             Debug.Assert(filter != null);
             Debug.Assert(searchBases != null);

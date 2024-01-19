@@ -15,21 +15,53 @@ namespace Visus.DirectoryAuthentication {
     public interface ILdapAuthenticationService {
 
         /// <summary>
-        /// Login the specified user.
+        /// Performs an LDAP bind using the specified credentials and retrieves
+        /// the LDAP entry with the account name <paramref name="username"/> in
+        /// case the bind succeeds.
         /// </summary>
-        /// <param name="username">The user name.</param>
-        /// <param name="password">The password.</param>
-        /// <returns>The logged on use in case of success or <c>null</c> if the
-        /// login failed.</returns>
+        /// <param name="username">The user name to logon with.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <returns>The user object in case of a successful login.</returns>
         ILdapUser Login(string username, string password);
 
         /// <summary>
-        /// Asynchronously login the specified user.
+        /// Performs an asynchronous LDAP bind using the specified credentials
+        /// and retrieves the LDAP entry with the account name
+        /// <paramref name="username"/> in case the bind succeeds.
         /// </summary>
-        /// <param name="username">The user name.</param>
-        /// <param name="password">The password.</param>
-        /// <returns>The logged on use in case of success or <c>null</c> if the
-        /// login failed.</returns>
+        /// <param name="username">The user name to logon with.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <returns>The user object in case of a successful login.</returns>
         Task<ILdapUser> LoginAsync(string username, string password);
+    }
+
+
+    /// <summary>
+    /// Strongly typed variant of <see cref="ILdapAuthenticationService"/>.
+    /// </summary>
+    /// <typeparam name="TUser">The type of user that is to be retrieved on
+    /// successful login.</typeparam>
+    public interface ILdapAuthenticationService<TUser>
+            : ILdapAuthenticationService where TUser : class, ILdapUser {
+
+        /// <summary>
+        /// Performs an asynchronous LDAP bind using the specified credentials
+        /// and retrieves the LDAP entry with the account name
+        /// <paramref name="username"/> in case the bind succeeds.
+        /// </summary>
+        /// <param name="username">The user name to logon with.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <returns>The user object in case of a successful login.</returns>
+        new TUser Login(string username, string password);
+
+        /// <summary>
+        /// Performs an LDAP bind using the specified credentials and retrieves
+        /// the LDAP entry with the account name <paramref name="username"/> in
+        /// case the bind succeeds.
+        /// </summary>
+        /// <param name="username">The user name to logon with.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <returns>The user object in case of a successful login.</returns>
+        new Task<TUser> LoginAsync(string username, string password);
     }
 }

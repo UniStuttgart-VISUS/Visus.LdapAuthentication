@@ -24,7 +24,8 @@ namespace Visus.DirectoryAuthentication {
     /// <see cref="LdapUserBase"/> rather than a custom implementation of
     /// <see cref="ILdapUser"/>.</typeparam>
     public sealed class LdapAuthenticationService<TUser>
-            : ILdapAuthenticationService where TUser : ILdapUser, new() {
+            : ILdapAuthenticationService<TUser>
+            where TUser : class, ILdapUser, new() {
 
         #region Public constructors
         /// <summary>
@@ -45,22 +46,11 @@ namespace Visus.DirectoryAuthentication {
             this._options = options
                 ?? throw new ArgumentNullException(nameof(options));
         }
-
-        //public object GetUserByIdentity(string existingUserIdentity) {
-        //    throw new NotImplementedException();
-        //}
         #endregion
 
         #region Public methods
-        /// <summary>
-        /// Performs an LDAP bind using the specified credentials and retrieves
-        /// the LDAP entry with the account name <paramref name="username"/> in
-        /// case the bind succeeds.
-        /// </summary>
-        /// <param name="username">The user name to logon with.</param>
-        /// <param name="password">The password of the user.</param>
-        /// <returns>The user object in case of a successful login.</returns>
-        public ILdapUser Login(string username, string password) {
+        /// <inheritdoc />
+        public TUser Login(string username, string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._options.Connect(username ?? string.Empty,
@@ -83,13 +73,13 @@ namespace Visus.DirectoryAuthentication {
             return null;
         }
 
-        /// <summary>
-        /// Asynchronously performs <see cref="Login(string, string)"/>.
-        /// </summary>
-        /// <param name="username">The user name to logon with.</param>
-        /// <param name="password">The password of the user.</param>
-        /// <returns>The user object in case of a successful login.</returns>
-        public async Task<ILdapUser> LoginAsync(string username,
+        /// <inheritdoc />
+        ILdapUser ILdapAuthenticationService.Login(string username,
+                string password)
+            => this.Login(username, password);
+
+        /// <inheritdoc />
+        public async Task<TUser> LoginAsync(string username,
                 string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
@@ -113,6 +103,11 @@ namespace Visus.DirectoryAuthentication {
                 username);
             return null;
         }
+
+        /// <inheritdoc />
+        async Task<ILdapUser> ILdapAuthenticationService.LoginAsync(
+                string username, string password)
+            => await this.LoginAsync(username, password);
         #endregion
 
         #region Private methods
