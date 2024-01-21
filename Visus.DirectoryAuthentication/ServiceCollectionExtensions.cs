@@ -38,23 +38,21 @@ namespace Visus.DirectoryAuthentication {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
-            that.AddScoped<ILdapAuthenticationService<TUser>,
+            return that.AddScoped<ILdapAuthenticationService,
+                    LdapAuthenticationService<TUser>>(
+                s => {
+                    var l = s.GetService<ILogger<LdapAuthenticationService<
+                        TUser>>>();
+                    return new LdapAuthenticationService<TUser>(options, l);
+                })
+
+                .AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser>>(
                 s => {
                     var l = s.GetService<ILogger<LdapAuthenticationService<
                         TUser>>>();
                     return new LdapAuthenticationService<TUser>(options, l);
                 });
-
-            that.AddScoped<ILdapAuthenticationService,
-                    LdapAuthenticationService<TUser>>(
-                s => {
-                    var l = s.GetService<ILogger<LdapAuthenticationService<
-                        TUser>>>();
-                    return new LdapAuthenticationService<TUser>(options, l);
-                });
-
-            return that;
         }
 
         /// <summary>
@@ -77,8 +75,10 @@ namespace Visus.DirectoryAuthentication {
                 this IServiceCollection that)
                 where TUser : class, ILdapUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
-            return that.AddScoped<ILdapAuthenticationService<TUser>,
-                LdapAuthenticationService<TUser>>();
+            return that.AddScoped<ILdapAuthenticationService,
+                    LdapAuthenticationService<TUser>>()
+                .AddScoped<ILdapAuthenticationService<TUser>,
+                    LdapAuthenticationService<TUser>>();
         }
 
         /// <summary>
@@ -166,30 +166,6 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Adds the given <see cref="IConfigurationSection"/> as
-        /// <see cref="ILdapOptions"/>.
-        /// </summary>
-        /// <typeparam name="TOptions">The actual type of the configuration that
-        /// is to be instantiated.</typeparam>
-        /// <param name="that">The service collection to add the options to.
-        /// </param>
-        /// <param name="section">The configuration section mapped to the LDAP
-        /// options.</param>
-        /// <returns><paramref name="that"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="section"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapOptions<TOptions>(
-                this IServiceCollection that, IConfigurationSection section)
-                where TOptions : class, ILdapOptions {
-            _ = that ?? throw new ArgumentNullException(nameof(that));
-            _ = section ?? throw new ArgumentNullException(nameof(section));
-            return that.Configure<ILdapOptions>(section)
-                .Configure<TOptions>(section);
-        }
-
-        /// <summary>
-        /// Adds the given <see cref="IConfigurationSection"/> as
         /// <see cref="LdapOptions"/>.
         /// </summary>
         /// <param name="section">The configuration section mapped to the LDAP
@@ -205,36 +181,6 @@ namespace Visus.DirectoryAuthentication {
             _ = section ?? throw new ArgumentNullException(nameof(section));
             return that.Configure<ILdapOptions>(section)
                 .Configure<LdapOptions>(section);
-        }
-
-        /// <summary>
-        /// Adds the given specified <paramref name="section"/> of the
-        /// <see cref="IConfiguration"/> as <see cref="ILdapOptions"/>.
-        /// </summary>
-        /// <typeparam name="TOptions">The actual type of the configuration that
-        /// is to be instantiated.</typeparam>
-        /// <param name="that">The service collection to add the options to.
-        /// </param>
-        /// <param name="configuration">The configuration holding the LDAP
-        /// section.</param>
-        /// <param name="section">The name of the section holding the LDAP
-        /// options. This parameter defaults to &quot;LdapOptions&quot;.</param>
-        /// <returns><paramref name="that"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="configuration"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapOptions<TOptions>(
-                this IServiceCollection that,
-                IConfiguration configuration,
-                string section = "LdapOptions")
-                where TOptions : class, ILdapOptions {
-            _ = that
-                ?? throw new ArgumentNullException(nameof(that));
-            _ = configuration
-                ?? throw new ArgumentNullException(nameof(configuration));
-            var s = configuration.GetSection(section ?? "LdapOptions");
-            return that.AddLdapOptions<TOptions>(s);
         }
 
         /// <summary>
@@ -259,7 +205,7 @@ namespace Visus.DirectoryAuthentication {
             _ = configuration
                 ?? throw new ArgumentNullException(nameof(configuration));
             var s = configuration.GetSection(section ?? "LdapOptions");
-            return that.AddLdapOptions<LdapOptions>(s);
+            return that.AddLdapOptions(s);
         }
 
         /// <summary>
@@ -285,19 +231,17 @@ namespace Visus.DirectoryAuthentication {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
-            that.AddScoped<ILdapSearchService<TUser>, LdapSearchService<TUser>>(
+            return that.AddScoped<ILdapSearchService, LdapSearchService<TUser>>(
+                s => {
+                    var l = s.GetService<ILogger<LdapSearchService<TUser>>>();
+                    return new LdapSearchService<TUser>(options, l);
+                })
+
+                .AddScoped<ILdapSearchService<TUser>, LdapSearchService<TUser>>(
                 s => {
                     var l = s.GetService<ILogger<LdapSearchService<TUser>>>();
                     return new LdapSearchService<TUser>(options, l);
                 });
-
-            that.AddScoped<ILdapSearchService, LdapSearchService<TUser>>(
-                s => {
-                    var l = s.GetService<ILogger<LdapSearchService<TUser>>>();
-                    return new LdapSearchService<TUser>(options, l);
-                });
-
-            return that;
         }
 
         /// <summary>
@@ -322,8 +266,10 @@ namespace Visus.DirectoryAuthentication {
                 this IServiceCollection that)
                 where TUser : class, ILdapUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
-            return that.AddScoped<ILdapSearchService<TUser>,
-                LdapSearchService<TUser>>();
+            return that.AddScoped<ILdapSearchService,
+                    LdapSearchService<TUser>>()
+                .AddScoped<ILdapSearchService<TUser>,
+                    LdapSearchService<TUser>>();
         }
 
         /// <summary>

@@ -42,7 +42,7 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="options"></param>
         /// <param name="logger"></param>
-        public LdapConnectionService(IOptions<ILdapOptions> options,
+        public LdapConnectionService(IOptions<LdapOptions> options,
                 ILogger<LdapConnectionService> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));

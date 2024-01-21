@@ -59,7 +59,7 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAuthenticationService(IOptions<ILdapOptions> options,
+        public LdapAuthenticationService(IOptions<LdapOptions> options,
                 ILogger<LdapAuthenticationService<TUser>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
