@@ -41,16 +41,18 @@ namespace Visus.DirectoryAuthentication {
             that.AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser>>(
                 s => {
-                    var l = s.GetService<ILogger<LdapAuthenticationService<TUser>>>();
+                    var l = s.GetService<ILogger<LdapAuthenticationService<
+                        TUser>>>();
                     return new LdapAuthenticationService<TUser>(options, l);
-            });
+                });
 
             that.AddScoped<ILdapAuthenticationService,
                     LdapAuthenticationService<TUser>>(
                 s => {
-                    var l = s.GetService<ILogger<LdapAuthenticationService<TUser>>>();
+                    var l = s.GetService<ILogger<LdapAuthenticationService<
+                        TUser>>>();
                     return new LdapAuthenticationService<TUser>(options, l);
-            });
+                });
 
             return that;
         }
