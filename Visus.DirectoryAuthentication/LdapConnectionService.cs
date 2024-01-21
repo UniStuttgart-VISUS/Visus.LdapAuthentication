@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.DirectoryServices.Protocols;
 
@@ -33,6 +34,19 @@ namespace Visus.DirectoryAuthentication {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this.Options = options
+                ?? throw new ArgumentNullException(nameof(options));
+        }
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="logger"></param>
+        public LdapConnectionService(IOptions<ILdapOptions> options,
+                ILogger<LdapConnectionService> logger) {
+            this._logger = logger
+                ?? throw new ArgumentNullException(nameof(logger));
+            this.Options = options.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
         #endregion

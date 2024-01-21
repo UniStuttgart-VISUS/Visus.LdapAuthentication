@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,6 +45,25 @@ namespace Visus.DirectoryAuthentication {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._options = options
+                ?? throw new ArgumentNullException(nameof(options));
+        }
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="options">The LDAP options that specify how to connect
+        /// to the directory server.</param>
+        /// <param name="logger">A logger for writing important messages.
+        /// </param>
+        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public LdapAuthenticationService(IOptions<ILdapOptions> options,
+                ILogger<LdapAuthenticationService<TUser>> logger) {
+            this._logger = logger
+                ?? throw new ArgumentNullException(nameof(logger));
+            this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
         #endregion

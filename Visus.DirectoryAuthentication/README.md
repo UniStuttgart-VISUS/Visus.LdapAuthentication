@@ -19,14 +19,11 @@ using Visus.DirectoryServices;
 
 public void ConfigureServices(IServiceCollection services) {
     // ...
-    
+
     // Add LDAP authentication with default LdapUser object.
-    {
-        var options = new LdapOptions();
-        this.Configuration.GetSection("LdapConfiguration").Bind(options);
-        services.AddLdapAuthenticationService(options);
-    }
-    
+    services.AddLdapOptions(this.Configuration, "LdapConfiguration");
+    services.AddLdapAuthenticationService();
+
     // ...
 }
 ```
@@ -39,14 +36,11 @@ using Visus.DirectoryServices;
 
 public void ConfigureServices(IServiceCollection services) {
     // ...
-    
+
     // Add LDAP authentication with customised user object.
-    {
-        var options = new LdapOptions();
-        this.Configuration.GetSection("LdapConfiguration").Bind(options);
-        services.AddLdapAuthenticationService<CustomApplicationUser>(options);
-    }
-    
+    services.AddLdapOptions(this.Configuration, "LdapConfiguration");
+    services.AddLdapAuthenticationService<CustomApplicationUser>();
+
     // ...
 }
 ```
