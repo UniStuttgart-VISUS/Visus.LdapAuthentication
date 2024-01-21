@@ -38,14 +38,21 @@ namespace Visus.DirectoryAuthentication {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
-            //that.AddSingleton(options);
-
-            return that.AddScoped<ILdapAuthenticationService<TUser>,
-                    LdapAuthenticationService<TUser>>(s => {
-                var l = s.GetService<ILogger<
-                    LdapAuthenticationService<TUser>>>();
-                return new LdapAuthenticationService<TUser>(options, l);
+            that.AddScoped<ILdapAuthenticationService<TUser>,
+                    LdapAuthenticationService<TUser>>(
+                s => {
+                    var l = s.GetService<ILogger<LdapAuthenticationService<TUser>>>();
+                    return new LdapAuthenticationService<TUser>(options, l);
             });
+
+            that.AddScoped<ILdapAuthenticationService,
+                    LdapAuthenticationService<TUser>>(
+                s => {
+                    var l = s.GetService<ILogger<LdapAuthenticationService<TUser>>>();
+                    return new LdapAuthenticationService<TUser>(options, l);
+            });
+
+            return that;
         }
 
         /// <summary>
@@ -276,12 +283,19 @@ namespace Visus.DirectoryAuthentication {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
-            return that.AddScoped<ILdapSearchService<TUser>,
-                    LdapSearchService<TUser>>(
+            that.AddScoped<ILdapSearchService<TUser>, LdapSearchService<TUser>>(
                 s => {
                     var l = s.GetService<ILogger<LdapSearchService<TUser>>>();
                     return new LdapSearchService<TUser>(options, l);
                 });
+
+            that.AddScoped<ILdapSearchService, LdapSearchService<TUser>>(
+                s => {
+                    var l = s.GetService<ILogger<LdapSearchService<TUser>>>();
+                    return new LdapSearchService<TUser>(options, l);
+                });
+
+            return that;
         }
 
         /// <summary>
