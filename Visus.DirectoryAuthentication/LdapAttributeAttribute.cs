@@ -121,7 +121,10 @@ namespace Visus.DirectoryAuthentication {
                         let a = p.GetCustomAttributes<LdapAttributeAttribute>()
                             .Where(a => a.Schema == schema)
                             .FirstOrDefault()
-                        where (a != null) && (p.PropertyType == typeof(string))
+                        where (a != null)
+                        // TODO: Fix identity-related attribute types.
+                            && ((p.PropertyType == typeof(string))
+                            || (p.PropertyType == typeof(bool)))
                         select new {
                             Property = p,
                             Attribute = a

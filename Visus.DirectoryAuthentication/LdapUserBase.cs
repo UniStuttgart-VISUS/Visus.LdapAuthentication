@@ -335,7 +335,6 @@ namespace Visus.DirectoryAuthentication {
 
             return att.Name;
         }
-
         #endregion
     }
 }

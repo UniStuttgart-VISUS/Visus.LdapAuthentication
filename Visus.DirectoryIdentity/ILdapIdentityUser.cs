@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using Visus.DirectoryAuthentication;
 
 
@@ -13,5 +14,26 @@ namespace Visus.DirectoryIdentity {
     /// The interface for an LDAP user object to be used with the identity
     /// store.
     /// </summary>
-    public interface ILdapIdentityUser : ILdapUser { }
+    public interface ILdapIdentityUser : ILdapUser {
+
+        /// <summary>
+        /// Gets the number of failed login attempts.
+        /// </summary>
+        int AccessFailedCount { get; }
+
+        /// <summary>
+        /// Gets or sets whether the user is locked out.
+        /// </summary>
+        bool IsLockoutEnabled { get; }
+
+        /// <summary>
+        /// Gets the time until which the account is locked.
+        /// </summary>
+        DateTimeOffset? LockoutTime { get; }
+
+        /// <summary>
+        /// Gets the time of the last unsuccessful login time.
+        /// </summary>
+        DateTimeOffset? LastAccessFailed { get; }
+    }
 }

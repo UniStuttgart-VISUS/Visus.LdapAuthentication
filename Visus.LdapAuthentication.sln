@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visus.DirectoryAuthenticati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.DirectoryIdentity", "Visus.DirectoryIdentity\Visus.DirectoryIdentity.csproj", "{3BF2265B-F892-4F07-9681-81311B9E450C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.DirectoryIdentity.Tests", "Visus.DirectoryIdentity.Tests\Visus.DirectoryIdentity.Tests.csproj", "{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{3BF2265B-F892-4F07-9681-81311B9E450C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BF2265B-F892-4F07-9681-81311B9E450C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BF2265B-F892-4F07-9681-81311B9E450C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
