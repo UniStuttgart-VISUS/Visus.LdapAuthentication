@@ -52,7 +52,7 @@ public void ConfigureServices(IServiceCollection services) {
 ```
 
 ## Configure the LDAP server
-The configuration section can have any name of your choice as long as it can be bound to [`LdapOptions`](LdapOptions.cs). Alternatively, you can use your own implementation of [`ILdapOptions`](Visus.LdapAuthentication/ILdapOptions.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
+The configuration section can have any name of your choice as long as it can be bound to [`LdapOptions`](LdapOptions.cs). Alternatively, you can use your own implementation of [`ILdapOptions`](ILdapOptions.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
 
 ```JSON
 {
@@ -68,7 +68,7 @@ The configuration section can have any name of your choice as long as it can be 
 }
 ```
 
-While you can fully customise the properties and claims the library loads for a user (see below), there are certain things that must be provided. This is controlled via the `Schema` property in the JSON above. The schema selects the [`LdapMapping`](Visus.LdapAuthentication/LdapMapping.cs) the library uses the select users and determine group membership. We provide several built-in schemas for frequently used LDAP servers in  [`LdapOptions`](Visus.LdapAuthentication/LdapOptions.cs), namely "Active Directory" for Active Directory Domain Services, "IDMU" for Active Directory with Identity Management for Unix installed and "RFC 2307" for this RFC, which is the schema typically used be OpenLDAP servers.
+While you can fully customise the properties and claims the library loads for a user (see below), there are certain things that must be provided. This is controlled via the `Schema` property in the JSON above. The schema selects the [`LdapMapping`](LdapMapping.cs) the library uses the select users and determine group membership. We provide several built-in schemas for frequently used LDAP servers in  [`LdapOptions`](LdapOptions.cs), namely "Active Directory" for Active Directory Domain Services, "IDMU" for Active Directory with Identity Management for Unix installed and "RFC 2307" for this RFC, which is the schema typically used be OpenLDAP servers.
 
 The built-in schemas are hard-coded in the library like this:
 ```C#
@@ -89,7 +89,7 @@ You can, however, provide your own mapping in the JSON configuration like this:
     "Mapping": {
         "DistinguishedNameAttribute": "distinguishedName",
         "GroupIdentityAttribute": "objectSid",
-        "GroupIdentityConverter": "Visus.LdapAuthentication.SidConverter",
+        "GroupIdentityConverter": "Visus.DirectoryAuthentication.SidConverter",
         "GroupsAttribute": "memberOf",
         "PrimaryGroupAttribute": "primaryGroupID",
         "UserFilter": "(|(sAMAccountName={0})(userPrincipalName={0}))",
@@ -104,12 +104,12 @@ The following properties must/can be set via JSON:
 |----------|-------------|
 | DistinguishedNameAttribute | The name of the LDAP attribute holding the distinguished name. This property is required and should be "distinguishedName". |
 | GroupIdentityAttribute | The name of the LDAP attribute holding the unique identifier of a group. For Active Directory, this is typically the SID, whereas for POSIX, it is the GID number. This property is required. |
-| GroupIdentityConverter | If the group identity needs some conversion to be usable, provide the full path to your class implementing [`ILdapAttributeConverter`](Visus.LdapAuthentication/ILdapAttributeConverter.cs). |
+| GroupIdentityConverter | If the group identity needs some conversion to be usable, provide the full path to your class implementing [`ILdapAttributeConverter`](ILdapAttributeConverter.cs). |
 | GroupsAttribute | The name of the LDAP attribute holding the list of groups a user is member of. This is "memberOf" in most scenarios. This property is required to create group claims. |
 | PrimaryGroupAttribute | The name of the LDAP attribute storing the primary group of a user. Both, Active Directory and OpenLDAP, distinguish between the primary group and other groups, so both attributes must be provided for all group claims to be found. This property is required to create group claims. |
 | RequiredGroupAttributes | An array of the attributes the library must load for group objects. This should typically not be customised as the library composes it from the other attributes set in the object. |
 | UserFilter | The LDAP filter that allows the library to select the user by the user name that is input into the login field. This should cover all inputs that allow the user to bind to the LDAP server. For instance, Active Directory does not only allow for binding via the user name (`sAMAccountName`), but also via user@domain (`userPrincipalName`), so both ways need to be specified in the `UserFilter`. Technically, users could also bind via the distinguished name, but this is typcially not relevant for real-world scenarios, so our built-in mapping does not include this. If you fail to specify the correct filter here, users might be able to authenticate (bind to the LDAP server), but the authentication in the library will fail because the user object cannot be retrieved. This property is required. |
-| UsersFilter | The LDAP filter that allows for selecting all users. Please note that for both, Active Directory and OpenLDAP, users are people and machines, so you want to filter on people only here. This property is required if you want to user [`ILdapSearchService`](Visus.LdapAuthentication/ILdapSearchService.cs). |
+| UsersFilter | The LDAP filter that allows for selecting all users. Please note that for both, Active Directory and OpenLDAP, users are people and machines, so you want to filter on people only here. This property is required if you want to user [`ILdapSearchService`](ILdapSearchService.cs). |
 
 ## Authenticate a user
 Once configured, the middleware can be used in controllers to implement cookie-based or JWT-based authorisation. An example for a cookie-based login method looks like:
