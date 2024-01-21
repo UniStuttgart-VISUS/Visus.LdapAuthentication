@@ -9,7 +9,7 @@ This library implements middleware for ASP.NET Core that enables authenticating 
 
 Built-in user objects are automatically mapped to Active Directory attributes and include commonly used claims like user name, actual names, e-mail addresses and group memberships. If necessary, you can also provide your own user object that uses a completely different mapping of LDAP attributes to claims.
 
-[Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) is a drop-in replacement for [Visus.LdapAuthentication](Visus.LdapAuthentication) using [System.DirectorySerices.Protocols](https://learn.microsoft.com/en-gb/dotnet/api/system.directoryservices.protocols) which is a platform-independent implementation of LDAP services since .NET 5.
+[Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/README.md) is a drop-in replacement for [Visus.LdapAuthentication](Visus.LdapAuthentication) using [System.DirectorySerices.Protocols](https://learn.microsoft.com/en-gb/dotnet/api/system.directoryservices.protocols) which is a platform-independent implementation of LDAP services since .NET 5.
 
 
 # Usage
