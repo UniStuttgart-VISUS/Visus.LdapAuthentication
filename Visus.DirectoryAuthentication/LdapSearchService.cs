@@ -24,8 +24,7 @@ namespace Visus.DirectoryAuthentication {
     /// results, which also defines attributes like the unique identity in
     /// combination with the global options from <see cref="ILdapOptions"/>.
     /// </typeparam>
-    public sealed class LdapSearchService<TUser>
-            : ILdapSearchService<TUser>, IDisposable
+    public sealed class LdapSearchService<TUser> : ILdapSearchService<TUser>
             where TUser : class, ILdapUser, new() {
 
         #region Public constructors
@@ -167,10 +166,10 @@ namespace Visus.DirectoryAuthentication {
             => this.GetUsers(searchBases, filter);
         #endregion
 
-            #region Private Properties
-            /// <summary>
-            /// Gets the lazily established connection to the directory service.
-            /// </summary>
+        #region Private Properties
+        /// <summary>
+        /// Gets the lazily established connection to the directory service.
+        /// </summary>
         private LdapConnection Connection {
             get {
                 if (this._connection == null) {

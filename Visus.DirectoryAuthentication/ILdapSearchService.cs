@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Visus.DirectoryAuthentication {
     /// without binding as an end user. In order to perform the search, the
     /// credentials specified in <see cref="ILdapOptions"/> are used.
     /// </remarks>
-    public interface ILdapSearchService {
+    public interface ILdapSearchService : IDisposable {
 
         /// <summary>
         /// Gets the distinguished names of the entries matching the specified
