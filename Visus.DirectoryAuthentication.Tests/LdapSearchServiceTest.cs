@@ -20,6 +20,7 @@ namespace Visus.DirectoryAuthentication.Tests {
     [TestClass]
     public class LdapSearchServiceTest {
 
+        #region Public constructors
         public LdapSearchServiceTest() {
             try {
                 var configuration = new ConfigurationBuilder()
@@ -30,6 +31,37 @@ namespace Visus.DirectoryAuthentication.Tests {
 
             } catch {
                 this._testSecrets = null;
+            }
+        }
+        #endregion
+
+        [TestMethod]
+        public void TestGetDistinguishedNames() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = new LdapSearchService<LdapUser>(
+                    this._testSecrets.LdapOptions,
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
+                    nameof(LdapUser.AccountName),
+                    this._testSecrets.LdapOptions.Schema);
+                var users = service.GetDistinguishedNames($"({att.Name}={this._testSecrets.ExistingUserAccount})");
+                Assert.IsTrue(users.Any(), "Search returned at least one DN.");
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetDistinguishedNamesAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = new LdapSearchService<LdapUser>(
+                    this._testSecrets.LdapOptions,
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
+                    nameof(LdapUser.AccountName),
+                    this._testSecrets.LdapOptions.Schema);
+                var users = await service.GetDistinguishedNamesAsync($"({att.Name}={this._testSecrets.ExistingUserAccount})");
+                Assert.IsTrue(users.Any(), "Search returned at least one DN.");
             }
         }
 
@@ -64,23 +96,13 @@ namespace Visus.DirectoryAuthentication.Tests {
                     this._testSecrets.LdapOptions,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
-                {
-                    var users = service.GetUsers();
-                    Assert.IsTrue(users.Any(), "Directory search returns any user.");
-                }
-
-                {
-                    var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
-                        nameof(LdapUser.AccountName),
-                        this._testSecrets.LdapOptions.Schema);
-                    var users = service.GetUsers($"({att.Name}={this._testSecrets.ExistingUserAccount})");
-                    Assert.IsNotNull(users.Any(), "Filtered user was found.");
-                }
+                var users = service.GetUsers();
+                Assert.IsTrue(users.Any(), "Directory search returns any user.");
             }
         }
 
         [TestMethod]
-        public void TestGetDistinguishedNames() {
+        public void TestGetUsersFiltered() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
                     this._testSecrets.LdapOptions,
@@ -89,8 +111,36 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
                     nameof(LdapUser.AccountName),
                     this._testSecrets.LdapOptions.Schema);
-                var users = service.GetDistinguishedNames($"({att.Name}={this._testSecrets.ExistingUserAccount})");
-                Assert.IsTrue(users.Any(), "Search returned at least one DN.");
+                var users = service.GetUsers($"({att.Name}={this._testSecrets.ExistingUserAccount})");
+                Assert.IsNotNull(users.Any(), "Filtered user was found.");
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetUsersAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = new LdapSearchService<LdapUser>(
+                    this._testSecrets.LdapOptions,
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var users = await service.GetUsersAsync();
+                Assert.IsTrue(users.Any(), "Directory search returns any user.");
+            }
+        }
+
+
+        [TestMethod]
+        public async Task TestGetUsersAsyncFiltered() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = new LdapSearchService<LdapUser>(
+                    this._testSecrets.LdapOptions,
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
+                    nameof(LdapUser.AccountName),
+                    this._testSecrets.LdapOptions.Schema);
+                var users = await service.GetUsersAsync($"({att.Name}={this._testSecrets.ExistingUserAccount})");
+                Assert.IsNotNull(users.Any(), "Filtered user was found.");
             }
         }
 

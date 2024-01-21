@@ -11,13 +11,13 @@
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>directoryservices ldap aspnet authentication net5</PackageTags>
-    <PackageReleaseNotes>Changes the format of SearchBase in appsettings to be a dictionary from string (the DN) to the search scope.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds asynchronous variants for all search operations.</PackageReleaseNotes>
     <NeutralLanguage>en</NeutralLanguage>
     <UserSecretsId>e07a7441-ba97-46b5-9ce1-391f2c978578</UserSecretsId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.6.0</Version>
-    <AssemblyVersion>0.6.0.0</AssemblyVersion>
-    <FileVersion>0.6.0.0</FileVersion>
+    <Version>0.7.0</Version>
+    <AssemblyVersion>0.7.0.0</AssemblyVersion>
+    <FileVersion>0.7.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

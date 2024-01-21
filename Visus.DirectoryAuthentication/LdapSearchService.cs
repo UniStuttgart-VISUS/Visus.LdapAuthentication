@@ -78,6 +78,31 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
+        public async Task<IEnumerable<string>> GetDistinguishedNamesAsync(
+                string filter) {
+            _ = filter ?? throw new ArgumentNullException(nameof(filter));
+            var retval = Enumerable.Empty<string>();
+
+            foreach (var b in this._options.SearchBase) {
+                // Perform a paged search (there might be a lot of matching
+                // entries which cannot be returned at once).
+                var entries = await this.Connection.PagedSearchAsync(
+                    b.Key,
+                    b.Value,
+                    filter,
+                    Array.Empty<string>(),
+                    this._options.PageSize,
+                    "CN",
+                    this._options.Timeout);
+
+                retval = retval.Concat(
+                    entries.Select(e => e.DistinguishedName));
+            }
+
+            return retval;
+        }
+
+        /// <inheritdoc />
         public TUser GetUserByIdentity(string identity) {
             var retval = new TUser();
 
@@ -133,8 +158,18 @@ namespace Visus.DirectoryAuthentication {
                 this._options.SearchBase);
 
         /// <inheritdoc />
+        public Task<IEnumerable<TUser>> GetUsersAsync()
+            => this.GetUsersAsync0(this._options.Mapping.UsersFilter,
+                this._options.SearchBase);
+
+        /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers()
             => this.GetUsers0(this._options.Mapping.UsersFilter,
+                this._options.SearchBase);
+
+        /// <inheritdoc />
+        async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync()
+            => await this.GetUsersAsync0(this._options.Mapping.UsersFilter,
                 this._options.SearchBase);
 
         /// <inheritdoc />
@@ -142,28 +177,43 @@ namespace Visus.DirectoryAuthentication {
             => this.GetUsers(this._options.SearchBase, filter);
 
         /// <inheritdoc />
+        public Task<IEnumerable<TUser>> GetUsersAsync(string filter)
+            => this.GetUsersAsync(this._options.SearchBase, filter);
+
+        /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers(string filter)
             => this.GetUsers(this._options.SearchBase, filter);
 
         /// <inheritdoc />
+        async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
+                string filter)
+            => await this.GetUsersAsync(this._options.SearchBase, filter);
+
+        /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(
                 IDictionary<string, SearchScope> searchBases,
-                string filter) {
-            if (string.IsNullOrWhiteSpace(filter)) {
-                filter = this._options.Mapping.UsersFilter;
-            } else {
-                filter = $"(&{this._options.Mapping.UsersFilter}{filter})";
-            }
-
-            return this.GetUsers0(filter,
+                string filter)
+            => this.GetUsers0(this.MergeFilter(filter),
                 searchBases ?? this._options.SearchBase);
-        }
 
         /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers(
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
             => this.GetUsers(searchBases, filter);
+
+        /// <inheritdoc />
+        public Task<IEnumerable<TUser>> GetUsersAsync(
+                IDictionary<string, SearchScope> searchBases,
+                string filter)
+            => this.GetUsersAsync0(this.MergeFilter(filter),
+                searchBases ?? this._options.SearchBase);
+
+        /// <inheritdoc />
+        async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
+                IDictionary<string, SearchScope> searchBases,
+                string filter)
+            => await this.GetUsersAsync(searchBases, filter);
         #endregion
 
         #region Private Properties
@@ -182,6 +232,21 @@ namespace Visus.DirectoryAuthentication {
         #endregion
 
         #region Private methods
+        /// <summary>
+        /// Merges the given filter with the default filter in
+        /// <see cref="_options"/>.
+        /// </summary>
+        /// <param name="filter">The user-provided filter, which may be
+        /// <c>null</c>.</param>
+        /// <returns>The actual filter to be used in a query.</returns>
+        private string MergeFilter(string filter) {
+            if (string.IsNullOrWhiteSpace(filter)) {
+                return this._options.Mapping.UsersFilter;
+            } else {
+                return $"(&{this._options.Mapping.UsersFilter}{filter})";
+            }
+        }
+
         /// <summary>
         /// Disposes managed resources if <paramref name="isDisposing"/> is
         /// <c>true</c>.
@@ -260,6 +325,55 @@ namespace Visus.DirectoryAuthentication {
                     user = new TUser();
                 }
             }
+        }
+
+        /// <summary>
+        /// Asychronously retrieves the users matching the given filter.
+        /// </summary>
+        /// <param name="filter">A filter on the users object.</param>
+        /// <param name="searchBases">The base and scope of the LDAP search.
+        /// </param>
+        /// <returns>The users found at the specified locations in the
+        /// directory.</returns>
+        private Task<IEnumerable<TUser>> GetUsersAsync0(string filter,
+                IDictionary<string, SearchScope> searchBases) {
+            return Task.Factory.StartNew<IEnumerable<TUser>>(
+                () => this.GetUsers0(filter, searchBases));
+
+            // The following is insanely slow, but IDK why, so we just wrap
+            // GetUsers0 in a task instead.
+            //Debug.Assert(filter != null);
+            //Debug.Assert(searchBases != null);
+            //var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
+            //var retval = new List<TUser>();
+            //var user = new TUser();
+
+            //// Determine the property to sort the results, which is required
+            //// as paging LDAP results requires sorting.
+            //var sortAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
+            //    nameof(LdapUser.Identity), this._options.Schema);
+
+            //foreach (var b in searchBases) {
+            //    // Perform a paged search (there might be a lot of users, which
+            //    // cannot be retruned at once.
+            //    var entries = await this.Connection.PagedSearchAsync(
+            //        b.Key,
+            //        b.Value,
+            //        filter,
+            //        user.RequiredAttributes.Concat(groupAttribs).ToArray(),
+            //        this._options.PageSize,
+            //        sortAttribute.Name,
+            //        this._options.Timeout);
+
+            //    // Convert LDAP entries to user objects.
+            //    foreach (var e in entries) {
+            //        user.Assign(e, this.Connection, this._options);
+            //        retval.Add(user);
+            //        user = new TUser();
+            //    }
+            //}
+
+            //return retval;
         }
 
         /// <summary>
