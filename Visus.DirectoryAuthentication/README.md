@@ -28,6 +28,20 @@ public void ConfigureServices(IServiceCollection services) {
 }
 ```
 
+Or using the new "minimal hosting model": 
+```C#
+using Visus.DirectoryServices;
+// ...
+
+var builder = WebApplication.CreateBuilder(args);
+// ...
+
+// Add LDAP authentication with default LdapUser object.
+builder.Services.AddLdapOptions(builder.Configuration, "LdapConfiguration");
+builder.Services.AddLdapAuthenticationService();
+// ...
+```
+
 The above code uses the default `LdapUser` object from the library, which provides the most commonly used user claims. If you need additional claims or differently mapped claims, you can create your own user class either by inheriting from `LdapUserBase` and [customising its behaviour](#customising-the-user-object) or by implementing `ILdapUser` from scratch. The configuration would look like the following in this case:
 
 ```C#
