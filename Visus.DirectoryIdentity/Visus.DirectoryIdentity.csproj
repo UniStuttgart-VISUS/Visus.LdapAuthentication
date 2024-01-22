@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
+    <Version>0.1.0-alpha</Version>
     <Authors>Christoph Müller</Authors>
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
     <Product>ASP.NET Core Identity from LDAP</Product>
@@ -19,10 +19,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="5.0.17" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.17" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Visus.DirectoryAuthentication\Visus.DirectoryAuthentication.csproj" />
+    <PackageReference Include="Visus.DirectoryAuthentication" Version="0.8.0" />
   </ItemGroup>
 
   <ItemGroup>
