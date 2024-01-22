@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0-alpha</Version>
+    <Version>0.1.1-alpha</Version>
     <Authors>Christoph Müller</Authors>
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
     <Product>ASP.NET Core Identity from LDAP</Product>
@@ -14,6 +14,7 @@
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <PackageTags>directoryservices ldap aspnet identity net5</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
+    <AssemblyVersion>0.1.1.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
