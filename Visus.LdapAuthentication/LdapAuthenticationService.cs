@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 
@@ -20,7 +21,8 @@ namespace Visus.LdapAuthentication {
     /// <see cref="LdapUserBase"/> rather than a custom implementation of
     /// <see cref="ILdapUser"/>.</typeparam>
     public sealed class LdapAuthenticationService<TUser>
-            : ILdapAuthenticationService where TUser : ILdapUser, new() {
+            : ILdapAuthenticationService<TUser>
+            where TUser : class, ILdapUser, new() {
 
         #region Public constructors
         /// <summary>
@@ -42,9 +44,20 @@ namespace Visus.LdapAuthentication {
                 ?? throw new ArgumentNullException(nameof(options));
         }
 
-        //public object GetUserByIdentity(string existingUserIdentity) {
-        //    throw new NotImplementedException();
-        //}
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="options">The LDAP options that specify how to connect
+        /// to the directory server.</param>
+        /// <param name="logger">A logger for writing important messages.
+        /// </param>
+        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public LdapAuthenticationService(IOptions<LdapOptions> options,
+                ILogger<LdapAuthenticationService<TUser>> logger)
+            : this(options?.Value, logger) { }
         #endregion
 
         /// <summary>
@@ -55,7 +68,7 @@ namespace Visus.LdapAuthentication {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
-        public ILdapUser Login(string username, string password) {
+        public TUser Login(string username, string password) {
             using var connection = this._options.Connect(username, password,
                 this._logger);
 
@@ -84,6 +97,11 @@ namespace Visus.LdapAuthentication {
                 username);
             return null;
         }
+
+        /// <inheritdoc />
+        ILdapUser ILdapAuthenticationService.Login(string username,
+                string password)
+            => this.Login(username, password);
 
         #region Private fields
         private readonly ILogger _logger;

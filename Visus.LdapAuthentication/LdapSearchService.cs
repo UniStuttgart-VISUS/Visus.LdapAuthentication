@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
@@ -23,8 +24,8 @@ namespace Visus.LdapAuthentication {
     /// results, which also defines attributes like the unique identity in
     /// combination with the global options from <see cref="ILdapOptions"/>.
     /// </typeparam>
-    public sealed class LdapSearchService<TUser>
-            : ILdapSearchService, IDisposable where TUser : ILdapUser, new() {
+    public sealed class LdapSearchService<TUser> : ILdapSearchService<TUser>
+            where TUser : class, ILdapUser, new() {
 
         #region Public constructors
         /// <summary>
@@ -45,6 +46,21 @@ namespace Visus.LdapAuthentication {
             this._options = options
                 ?? throw new ArgumentNullException(nameof(options));
         }
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="options">The LDAP options that specify how to connect
+        /// to the directory server.</param>
+        /// <param name="logger">A logger for writing important messages.
+        /// </param>
+        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public LdapSearchService(IOptions<LdapOptions> options,
+                ILogger<LdapSearchService<TUser>> logger)
+            : this(options?.Value, logger) { }
         #endregion
 
         #region Public methods
@@ -77,7 +93,7 @@ namespace Visus.LdapAuthentication {
         }
 
         /// <inheritdoc />
-        public ILdapUser GetUserByIdentity(string identity) {
+        public TUser GetUserByIdentity(string identity) {
             _ = identity ?? throw new ArgumentNullException(nameof(identity));
 
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
@@ -109,18 +125,29 @@ namespace Visus.LdapAuthentication {
         }
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers() {
-            return this.GetUsers0(this._options.Mapping.UsersFilter,
+        ILdapUser ILdapSearchService.GetUserByIdentity(string identity)
+            => this.GetUserByIdentity(identity);
+
+        /// <inheritdoc />
+        public IEnumerable<TUser> GetUsers()
+            => this.GetUsers0(this._options.Mapping.UsersFilter,
                 this._options.SearchBases);
-        }
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers(string filter) {
-            return this.GetUsers(this._options.SearchBases, filter);
-        }
+        IEnumerable<ILdapUser> ILdapSearchService.GetUsers()
+            => this.GetUsers0(this._options.Mapping.UsersFilter,
+                this._options.SearchBases);
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers(
+        public IEnumerable<TUser> GetUsers(string filter)
+            => this.GetUsers(this._options.SearchBases, filter);
+
+        /// <inheritdoc />
+        IEnumerable<ILdapUser> ILdapSearchService.GetUsers(string filter)
+            => this.GetUsers(this._options.SearchBases, filter);
+
+        /// <inheritdoc />
+        public IEnumerable<TUser> GetUsers(
                 IDictionary<string, SearchScope> searchBases,
                 string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
@@ -134,7 +161,13 @@ namespace Visus.LdapAuthentication {
         }
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers(string searchBase,
+        IEnumerable<ILdapUser> ILdapSearchService.GetUsers(
+                IDictionary<string, SearchScope> searchBases,
+                string filter)
+            => this.GetUsers(searchBases, filter);
+
+        /// <inheritdoc />
+        public IEnumerable<TUser> GetUsers(string searchBase,
                 SearchScope searchScope, string filter) {
             var scopes = new Dictionary<string, SearchScope>() {
                 {searchBase, searchScope }
@@ -143,10 +176,18 @@ namespace Visus.LdapAuthentication {
         }
 
         /// <inheritdoc />
-        public IEnumerable<ILdapUser> GetUsers(string searchBase,
-                 int searchScope, string filter) {
-            return this.GetUsers(searchBase, (SearchScope) searchScope, filter);
-        }
+        IEnumerable<ILdapUser> ILdapSearchService.GetUsers(
+                string searchBase,
+                SearchScope searchScope,
+                string filter)
+            => this.GetUsers(searchBase, searchScope, filter);
+
+        /// <inheritdoc />
+        public IEnumerable<ILdapUser> GetUsers(
+                string searchBase,
+                int searchScope,
+                string filter)
+            => this.GetUsers(searchBase, (SearchScope) searchScope, filter);
         #endregion
 
         #region Private Properties
@@ -188,7 +229,7 @@ namespace Visus.LdapAuthentication {
         /// </param>
         /// <returns>The users found at the specified locations in the
         /// directory.</returns>
-        private IEnumerable<ILdapUser> GetUsers0(string filter,
+        private IEnumerable<TUser> GetUsers0(string filter,
                 IDictionary<string, SearchScope> searchBases) {
             Debug.Assert(filter != null);
             Debug.Assert(searchBases != null);

@@ -126,6 +126,9 @@
   <data name="ErrorInvalidSid" xml:space="preserve">
     <value>The given byte sequence "{0}" does not represent a valid security identifier.</value>
   </data>
+  <data name="ErrorLdapOptionsRegistration" xml:space="preserve">
+    <value>The default LdapOptions cannot be registered as interface, because this would result in an ambiguous constructor call. Use the non-generic variant of AddLdapOptions to register the default options type.</value>
+  </data>
   <data name="ErrorLdapPage" xml:space="preserve">
     <value>Paging of LDAP search results must start at 0.</value>
   </data>

@@ -88,6 +88,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The default LdapOptions cannot be registered as interface, because this would result in an ambiguous constructor call. Use the non-generic variant of AddLdapOptions to register the default options type..
+        /// </summary>
+        public static string ErrorLdapOptionsRegistration {
+            get {
+                return ResourceManager.GetString("ErrorLdapOptionsRegistration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Paging of LDAP search results must start at 0..
         /// </summary>
         public static string ErrorLdapPage {
