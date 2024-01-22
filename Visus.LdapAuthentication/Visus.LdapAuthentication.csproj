@@ -7,7 +7,7 @@
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
     <Product>ASP.NET Core LDAP Authentication Middleware</Product>
     <Description>This library implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind. The library is using Novell's C#-only LDAP library rather than the Windows-only DirectoryServices and is therefore running on Windows and Linux.</Description>
-    <Copyright>Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart</Copyright>
+    <Copyright>Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
