@@ -13,10 +13,10 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>ldap aspnet authentication net5</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.10.0.0</AssemblyVersion>
-    <FileVersion>1.10.0.0</FileVersion>
-    <Version>1.11.0</Version>
-    <PackageReleaseNotes>Added the ability to search DNs.</PackageReleaseNotes>
+    <AssemblyVersion>1.12.0.0</AssemblyVersion>
+    <FileVersion>1.12.0.0</FileVersion>
+    <Version>1.12.0</Version>
+    <PackageReleaseNotes>Added the ability to specify multiple search bases. Added extension methods for registering the LDAP options and to inject ILdapAuthenticationService and ILdapSearchservice without specifying the options specifically. Added stronly typed variants of ILdapAuthenticationService and ILdapSearchservice.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
