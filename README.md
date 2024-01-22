@@ -10,8 +10,8 @@ Built-in user objects are automatically mapped to Active Directory attributes an
 
 
 # Usage
-1. Using Visus.LdapAuthentication(#using-visus.ldapauthentication)
-1. Using Visus.DirectoryAuthentication(#using-visus.directoryauthentication)
+1. [Using Visus.LdapAuthentication](#using-visus.ldapauthentication)
+1. [Using Visus.DirectoryAuthentication](#using-visus-directoryauthentication)
 1. [Differences between LdapAuthentication and DirectoryAuthentication](#differences-between-ldapauthentication-and-directoryauthentication)
 
 ## Using Visus.LdapAuthentication
