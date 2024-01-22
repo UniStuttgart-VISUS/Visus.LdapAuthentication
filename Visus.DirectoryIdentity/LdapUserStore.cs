@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,8 +36,10 @@ namespace Visus.DirectoryIdentity {
         /// </summary>
         /// <param name="authService"></param>
         /// <param name="searchService"></param>
+        /// <param name="options"></param>
         public LdapUserStore(ILdapAuthenticationService<TUser> authService,
-                ILdapSearchService<TUser> searchService) {
+                ILdapSearchService<TUser> searchService,
+                ILdapOptions options) {
             this._authService = authService
                 ?? throw new ArgumentNullException(nameof(authService));
             this._searchService = searchService
@@ -47,23 +50,48 @@ namespace Visus.DirectoryIdentity {
             {
                 var prop = typeof(TUser).GetProperty(
                     nameof(ILdapIdentityUser.AccountName));
-                //prop.Get
-                //TODO: need to know schema here
-                this._accountAttribute = "sAMAccountName";
+                var att = LdapAttributeAttribute.GetLdapAttribute(prop,
+                    options.Schema);
+
+                if (att == null) {
+                    var msg = Properties.Resources.ErrorNoLdapAttribute;
+                    msg = string.Format(msg, prop.Name, options.Schema);
+                    throw new ArgumentException(msg, nameof(options));
+                }
+
+                this._accountAttribute = att.Name;
             }
 
             {
                 var prop = typeof(TUser).GetProperty(
-                    nameof(ILdapIdentityUser.AccountName));
-                //prop.Get
-                //TODO: need to know schema here
-                this._emailAttribute = "mail";
+                    nameof(ILdapIdentityUser.EmailAddress));
+                var att = LdapAttributeAttribute.GetLdapAttribute(prop,
+                    options.Schema);
+
+                if (att == null) {
+                    var msg = Properties.Resources.ErrorNoLdapAttribute;
+                    msg = string.Format(msg, prop.Name, options.Schema);
+                    throw new ArgumentException(msg, nameof(options));
+                }
+
+                this._emailAttribute = att.Name;
             }
         }
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="authService"></param>
+        /// <param name="searchService"></param>
+        /// <param name="options"></param>
+        public LdapUserStore(ILdapAuthenticationService<TUser> authService,
+                ILdapSearchService<TUser> searchService,
+                IOptions<LdapOptions> options)
+            : this(authService, searchService, options?.Value) { }
         #endregion
 
-        #region Public properties
-        /// <inheritdoc />
+            #region Public properties
+            /// <inheritdoc />
         public IQueryable<TUser> Users
             => this._searchService.GetUsers().AsQueryable();
         #endregion

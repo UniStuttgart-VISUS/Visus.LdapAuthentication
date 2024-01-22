@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <PackageTags>directoryservices ldap aspnet identity net5</PackageTags>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +23,21 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Visus.DirectoryAuthentication\Visus.DirectoryAuthentication.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

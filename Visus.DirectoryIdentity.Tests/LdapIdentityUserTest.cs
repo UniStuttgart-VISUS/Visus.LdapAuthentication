@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Visus.DirectoryAuthentication;
 
+
 namespace Visus.DirectoryIdentity.Tests {
 
     /// <summary>

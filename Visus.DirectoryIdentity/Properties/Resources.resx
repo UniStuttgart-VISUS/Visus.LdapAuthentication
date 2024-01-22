@@ -117,40 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ErrorEntryNotFound" xml:space="preserve">
-    <value>An entry with a value of "{1}" for "{0}" does not exist in the directory.</value>
-  </data>
-  <data name="ErrorInvalidSid" xml:space="preserve">
-    <value>The given byte sequence "{0}" does not represent a valid security identifier.</value>
-  </data>
-  <data name="ErrorLdapOptionsRegistration" xml:space="preserve">
-    <value>The default LdapOptions cannot be registered as interface, because this would result in an ambiguous constructor call. Use the non-generic variant of AddLdapOptions to register the default options type.</value>
-  </data>
-  <data name="ErrorLdapPage" xml:space="preserve">
-    <value>Paging of LDAP search results must start at 0.</value>
-  </data>
-  <data name="ErrorLdapPageSize" xml:space="preserve">
-    <value>The size of a page of LDAP search results must be at least 1.</value>
-  </data>
-  <data name="ErrorPropertyNotFound" xml:space="preserve">
-    <value>The given property "{0}" was not found.</value>
-  </data>
-  <data name="ErrorPropertyNotMapped" xml:space="preserve">
-    <value>The given property "{0}" has no LDAP attribute mapped for the current schema "{1}".</value>
-  </data>
-  <data name="ErrorUserNotFound" xml:space="preserve">
-    <value>Login succeeded, but user information for "{0}" could not be found.</value>
-  </data>
-  <data name="InfoBindCurrent" xml:space="preserve">
-    <value>Bind using the current credentials.</value>
-  </data>
-  <data name="InfoBindingAsUser" xml:space="preserve">
-    <value>Performing LDAP bind as user "{0}".</value>
-  </data>
-  <data name="InfoBoundAsUser" xml:space="preserve">
-    <value>Authenticated successfully as user "{0}".</value>
-  </data>
-  <data name="InfoConnectingLdap" xml:space="preserve">
-    <value>Connecting to LDAP server {0}:{1}.</value>
+  <data name="ErrorNoLdapAttribute" xml:space="preserve">
+    <value>The LDAP attribute for the property "{0}" using the schema "{1}" could not be found.</value>
   </data>
 </root>
