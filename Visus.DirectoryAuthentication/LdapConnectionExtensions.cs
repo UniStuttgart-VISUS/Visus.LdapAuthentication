@@ -108,9 +108,10 @@ namespace Visus.DirectoryAuthentication {
             var retval = Enumerable.Empty<SearchResultEntry>();
 
             do {
-                var results = await ((timeLimit > TimeSpan.Zero)
+                var task = (timeLimit > TimeSpan.Zero)
                     ? that.SendRequestAsync(request, timeLimit)
-                    : that.SendRequestAsync(request));
+                    : that.SendRequestAsync(request);
+                var results = await task.ConfigureAwait(false);
 
                 if (results is SearchResponse s) {
                     retval = retval.Concat(s.Entries.Cast<SearchResultEntry>());

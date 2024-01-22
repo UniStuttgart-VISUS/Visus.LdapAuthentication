@@ -110,7 +110,8 @@ namespace Visus.DirectoryAuthentication {
 
             foreach (var b in this._options.SearchBase) {
                 var req = this.GetRequest(retval, username, b);
-                var res = await connection.SendRequestAsync(req, this._options);
+                var res = await connection.SendRequestAsync(req, this._options)
+                    .ConfigureAwait(false);
 
                 if ((res is SearchResponse s) && s.Any()) {
                     retval.Assign(s.Entries[0], connection, this._options);
@@ -127,7 +128,7 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         async Task<ILdapUser> ILdapAuthenticationService.LoginAsync(
                 string username, string password)
-            => await this.LoginAsync(username, password);
+            => await this.LoginAsync(username, password).ConfigureAwait(false);
         #endregion
 
         #region Private methods

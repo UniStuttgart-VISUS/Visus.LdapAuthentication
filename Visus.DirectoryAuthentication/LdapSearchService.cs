@@ -113,7 +113,7 @@ namespace Visus.DirectoryAuthentication {
                     Array.Empty<string>(),
                     this._options.PageSize,
                     "CN",
-                    this._options.Timeout);
+                    this._options.Timeout).ConfigureAwait(false);
 
                 retval = retval.Concat(
                     entries.Select(e => e.DistinguishedName));
@@ -154,7 +154,7 @@ namespace Visus.DirectoryAuthentication {
                 var req = this.GetUserByIdentitySearchRequest(retval, identity,
                     b);
                 var res = await this.Connection.SendRequestAsync(req,
-                    this._options);
+                    this._options).ConfigureAwait(false);
 
                 if ((res is SearchResponse s) && s.Any()) {
                     retval.Assign(s.Entries[0], this.Connection, this._options);
@@ -170,7 +170,8 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         async Task<ILdapUser> ILdapSearchService.GetUserByIdentityAsync(
                 string identity)
-            => await this.GetUserByIdentityAsync(identity);
+            => await this.GetUserByIdentityAsync(identity)
+                .ConfigureAwait(false);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers()
@@ -190,7 +191,7 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync()
             => await this.GetUsersAsync0(this._options.Mapping.UsersFilter,
-                this._options.SearchBase);
+                this._options.SearchBase).ConfigureAwait(false);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string filter)
@@ -207,7 +208,8 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
                 string filter)
-            => await this.GetUsersAsync(this._options.SearchBase, filter);
+            => await this.GetUsersAsync(this._options.SearchBase, filter)
+                .ConfigureAwait(false);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(
@@ -233,7 +235,8 @@ namespace Visus.DirectoryAuthentication {
         async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
-            => await this.GetUsersAsync(searchBases, filter);
+            => await this.GetUsersAsync(searchBases, filter)
+                .ConfigureAwait(false);
         #endregion
 
         #region Private Properties
