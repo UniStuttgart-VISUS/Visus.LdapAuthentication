@@ -39,5 +39,10 @@ namespace Visus.DirectoryIdentity {
         [LdapAttribute("IDMU", "badPasswordTime",
             Converter = typeof(DateConverter))]
         public virtual DateTimeOffset? LastAccessFailed { get; internal set; }
+
+        /// <inheritdoc />
+        [LdapAttribute("Active Directory", "telephoneNumber")]
+        [LdapAttribute("IDMU", "telephoneNumber")]
+        public virtual string PhoneNumber { get; internal set; }
     }
 }

@@ -223,7 +223,7 @@ namespace Visus.DirectoryIdentity {
         /// <param name="user">The user to retrieve the value for.</param>
         /// <param name="cancellationToken">A cancellation token for aborting
         /// the operation.</param>
-        /// <returns>The number of failed access attempts.</returns>
+        /// <returns>The e-mail address of the user.</returns>
         public async Task<string> GetEmailAsync(TUser user,
                 CancellationToken cancellationToken) {
             _ = user ?? throw new ArgumentNullException(nameof(user));
@@ -312,16 +312,39 @@ namespace Visus.DirectoryIdentity {
             return Task.FromResult(this._hasher.HashUser(user));
         }
 
-        public Task<string> GetPhoneNumberAsync(TUser user,
+        /// <summary>
+        /// Gets the phone number of the specified user.
+        /// </summary>
+        /// <remarks>
+        /// The method will only make a call to the directory if the property
+        /// of <paramref name="user"/> is not set. Otherwise, it will return
+        /// <see cref="ILdapIdentityUser.PhoneNumber"/> without querying the
+        /// directory.
+        /// </remarks>
+        /// <param name="user">The user to retrieve the value for.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting
+        /// the operation.</param>
+        /// <returns>The phone number of the user.</returns>
+        public async Task<string> GetPhoneNumberAsync(TUser user,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
-            throw new NotImplementedException();
+            _ = user ?? throw new ArgumentNullException(nameof(user));
+            this.CheckNotDisposed();
+
+            if (!string.IsNullOrWhiteSpace(user.PhoneNumber)) {
+                return user.PhoneNumber;
+
+            } else {
+                cancellationToken.ThrowIfCancellationRequested();
+                var u = await this._searchService.GetUserByIdentityAsync(
+                    user.Identity).ConfigureAwait(false);
+                return u.PhoneNumber;
+            }
         }
 
+        /// <inheritdoc />
         public Task<bool> GetPhoneNumberConfirmedAsync(TUser user,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
 
         /// <inheritdoc />
@@ -390,7 +413,6 @@ namespace Visus.DirectoryIdentity {
         /// </exception>
         public Task<int> IncrementAccessFailedCountAsync(TUser user,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -407,7 +429,6 @@ namespace Visus.DirectoryIdentity {
         public Task RemoveClaimsAsync(TUser user,
                 IEnumerable<Claim> claims,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -426,7 +447,6 @@ namespace Visus.DirectoryIdentity {
                 Claim claim,
                 Claim newClaim,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -441,7 +461,6 @@ namespace Visus.DirectoryIdentity {
         /// </exception>
         public Task ResetAccessFailedCountAsync(TUser user,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -458,7 +477,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetEmailAsync(TUser user,
                 string email,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -475,7 +493,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetEmailConfirmedAsync(TUser user,
                 bool confirmed,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -492,7 +509,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetLockoutEnabledAsync(TUser user,
                 bool enabled,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -509,7 +525,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetLockoutEndDateAsync(TUser user,
                 DateTimeOffset? lockoutEnd,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -526,7 +541,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetNormalizedEmailAsync(TUser user,
                 string normalizedEmail,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -543,7 +557,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetNormalizedUserNameAsync(TUser user,
                 string normalizedName,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -560,7 +573,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetPasswordHashAsync(TUser user,
                 string passwordHash,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -577,7 +589,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetPhoneNumberAsync(TUser user,
                 string phoneNumber,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -594,7 +605,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetPhoneNumberConfirmedAsync(TUser user,
                 bool confirmed,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -611,7 +621,6 @@ namespace Visus.DirectoryIdentity {
         public Task SetUserNameAsync(TUser user,
                 string userName,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 
@@ -626,7 +635,6 @@ namespace Visus.DirectoryIdentity {
         /// </exception>
         public Task<IdentityResult> UpdateAsync(TUser user,
                 CancellationToken cancellationToken) {
-            cancellationToken.ThrowIfCancellationRequested();
             throw new NotImplementedException();
         }
 

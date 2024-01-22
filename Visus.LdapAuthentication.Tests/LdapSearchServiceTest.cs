@@ -26,7 +26,6 @@ namespace Visus.LdapAuthentication.Tests {
                     .Build();
                 this._testSecrets = new TestSecrets();
                 configuration.Bind(this._testSecrets);
-
             } catch {
                 this._testSecrets = null;
             }

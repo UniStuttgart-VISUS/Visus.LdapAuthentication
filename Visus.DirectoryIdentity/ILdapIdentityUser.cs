@@ -35,5 +35,10 @@ namespace Visus.DirectoryIdentity {
         /// Gets the time of the last unsuccessful login time.
         /// </summary>
         DateTimeOffset? LastAccessFailed { get; }
+
+        /// <summary>
+        /// Gets the phone number of the user.
+        /// </summary>
+        string PhoneNumber { get; }
     }
 }

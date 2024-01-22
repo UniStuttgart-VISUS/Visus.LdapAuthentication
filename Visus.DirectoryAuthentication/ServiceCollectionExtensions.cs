@@ -7,6 +7,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 
 
@@ -179,8 +180,14 @@ namespace Visus.DirectoryAuthentication {
                 this IServiceCollection that, IConfigurationSection section) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = section ?? throw new ArgumentNullException(nameof(section));
-            return that.Configure<ILdapOptions>(section)
-                .Configure<LdapOptions>(section);
+            return that.Configure<LdapOptions>(section)
+                .AddScoped<ILdapOptions>(s => {
+                    // Note: we cannot use Configure on an interface, so we add
+                    // a factory that retrieves the previously added instance
+                    // and returns this instead.
+                    var options = s.GetService<IOptions<LdapOptions>>();
+                    return options?.Value;
+                });
         }
 
         /// <summary>
