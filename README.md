@@ -22,7 +22,7 @@ Built-in user objects are automatically mapped to Active Directory attributes ba
 See [README for Visus.LdapAuthentication](Visus.LdapAuthentication/README.md).
 
 ## Using Visus.DirectoryAuthentication
-Using [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/README.md)
+See [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/README.md)
 
 ## Differences between LdapAuthentication and DirectoryAuthentication
 > **Warning**
