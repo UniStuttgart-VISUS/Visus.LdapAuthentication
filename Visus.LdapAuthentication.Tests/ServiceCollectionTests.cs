@@ -6,8 +6,11 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using System;
 using System.Collections.Generic;
 
 
@@ -143,6 +146,31 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.IsNotNull(actual, "ILdapOptions injected");
                 Assert.AreEqual(expected.Server, actual.Server, "Server matches");
                 Assert.AreEqual(expected.User, actual.User, "User matches");
+            }
+        }
+
+        [TestMethod]
+        public void TestAuthServiceResolution() {
+            var configuration = new ConfigurationBuilder()
+                .AddUserSecrets<TestSecrets>()
+                .Build();
+
+            var collection = new ServiceCollection();
+            collection.AddLdapAuthenticationService();
+            collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+
+            {
+                var provider = collection.BuildServiceProvider();
+                Assert.ThrowsException<InvalidOperationException>(() => provider.GetService<ILdapAuthenticationService>());
+            }
+
+            var section = configuration.GetSection("LdapOptions");
+            collection.AddLdapOptions(section);
+
+            {
+                var provider = collection.BuildServiceProvider();
+                var service = provider.GetService<ILdapAuthenticationService>();
+                Assert.IsNotNull(service, "Service resolved");
             }
         }
     }

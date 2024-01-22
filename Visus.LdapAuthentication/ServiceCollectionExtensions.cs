@@ -60,6 +60,32 @@ namespace Visus.LdapAuthentication {
         /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
         /// injection container.
         /// </summary>
+        /// <remarks>
+        /// This variant only works if the <see cref="ILdapOptions"/> have been
+        /// registered in the container as well, for instance using
+        /// <see cref="AddLdapOptions"/>.
+        /// </remarks>
+        /// <typeparam name="TUser">The type of the user that is being
+        /// authenticated.</typeparam>
+        /// <param name="that">The service collection to add the service to.
+        /// </param>
+        /// <returns><paramref name="that"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static IServiceCollection AddLdapAuthenticationService<TUser>(
+                this IServiceCollection that)
+                where TUser : class, ILdapUser, new() {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            return that.AddScoped<ILdapAuthenticationService,
+                    LdapAuthenticationService<TUser>>()
+                .AddScoped<ILdapAuthenticationService<TUser>,
+                    LdapAuthenticationService<TUser>>();
+        }
+
+        /// <summary>
+        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
+        /// injection container.
+        /// </summary>
         /// <param name="that">The service collection to add the service to.
         /// </param>
         /// <param name="options">The LDAP options to be used for the connection
@@ -72,6 +98,25 @@ namespace Visus.LdapAuthentication {
         public static IServiceCollection AddLdapAuthenticationService(
                 this IServiceCollection that, ILdapOptions options) {
             return that.AddLdapAuthenticationService<LdapUser>(options);
+        }
+
+        /// <summary>
+        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
+        /// injection container.
+        /// </summary>
+        /// <remarks>
+        /// This variant only works if the <see cref="ILdapOptions"/> have been
+        /// registered in the container as well, for instance using
+        /// <see cref="AddLdapOptions"/>.
+        /// </remarks>
+        /// <param name="that">The service collection to add the service to.
+        /// </param>
+        /// <returns><paramref name="that"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static IServiceCollection AddLdapAuthenticationService(
+                this IServiceCollection that) {
+            return that.AddLdapAuthenticationService<LdapUser>();
         }
 
         /// <summary>

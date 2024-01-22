@@ -86,6 +86,24 @@ namespace Visus.DirectoryAuthentication {
         /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
         /// injection container.
         /// </summary>
+        /// <param name="that">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">The LDAP options to be used for the connection
+        /// to the directory server.</param>
+        /// <returns><paramref name="that"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddLdapAuthenticationService(
+                this IServiceCollection that, ILdapOptions options) {
+            return that.AddLdapAuthenticationService<LdapUser>(options);
+        }
+
+        /// <summary>
+        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
+        /// injection container.
+        /// </summary>
         /// <remarks>
         /// This variant only works if the <see cref="ILdapOptions"/> have been
         /// registered in the container as well, for instance using
@@ -99,24 +117,6 @@ namespace Visus.DirectoryAuthentication {
         public static IServiceCollection AddLdapAuthenticationService(
                 this IServiceCollection that) {
             return that.AddLdapAuthenticationService<LdapUser>();
-        }
-
-        /// <summary>
-        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
-        /// injection container.
-        /// </summary>
-        /// <param name="that">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">The LDAP options to be used for the connection
-        /// to the directory server.</param>
-        /// <returns><paramref name="that"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapAuthenticationService(
-                this IServiceCollection that, ILdapOptions options) {
-            return that.AddLdapAuthenticationService<LdapUser>(options);
         }
 
         /// <summary>
