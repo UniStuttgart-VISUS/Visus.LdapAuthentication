@@ -25,17 +25,17 @@ namespace Visus.DirectoryAuthentication {
         /// </param>
         /// <param name="target">The target object to assign the attributes to.
         /// </param>
-        /// <param name="options">The LDAP options determining the schema that
-        /// is used while searching for the LDAP attributes.</param>
+        /// <param name="schema">The LDAP schema determining the names of the
+        /// attributes we search..</param>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
         /// </exception>
         public static void AssignTo(this SearchResultEntry that, object target,
-                ILdapOptions options) {
+                string schema) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = target ?? throw new ArgumentNullException(nameof(target));
             var props = LdapAttributeAttribute.GetLdapProperties(
-                target.GetType(), options?.Schema);
+                target.GetType(), schema);
 
             foreach (var p in props.Keys) {
                 try {
@@ -49,6 +49,22 @@ namespace Visus.DirectoryAuthentication {
                 }
             }
         }
+
+        /// <summary>
+        /// Assigns LDAP attributes to the given target object.
+        /// </summary>
+        /// <param name="that">The entry holding the properties to assign.
+        /// </param>
+        /// <param name="target">The target object to assign the attributes to.
+        /// </param>
+        /// <param name="options">The LDAP options determining the schema that
+        /// is used while searching for the LDAP attributes.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
+        /// </exception>
+        public static void AssignTo(this SearchResultEntry that, object target,
+                ILdapOptions options)
+            => that.AssignTo(target, options?.Schema);
 
         /// <summary>
         /// Gets the attribute with the specified name from
