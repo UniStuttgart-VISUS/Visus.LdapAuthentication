@@ -72,7 +72,8 @@ namespace Visus.DirectoryAuthentication {
                               let a = p.GetCustomAttributes<LdapAttributeAttribute>()
                               where (a != null) && a.Any()
                               select a.Select(aa => aa.Name))
-                              .SelectMany(a => a);
+                              .SelectMany(a => a)
+                              .Distinct();
                 return retval;
             }
         }
