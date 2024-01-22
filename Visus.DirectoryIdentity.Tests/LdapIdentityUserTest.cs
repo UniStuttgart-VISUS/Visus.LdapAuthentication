@@ -42,6 +42,7 @@ namespace Visus.DirectoryIdentity.Tests {
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
                 Assert.IsNotNull(user, "Existing user was found");
                 Assert.IsFalse(user.IsLockoutEnabled, "User is not locked");
+                Assert.IsNotNull(user.LastAccessFailed, "Password failed some time");
             }
         }
 

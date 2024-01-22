@@ -16,7 +16,7 @@ namespace Visus.DirectoryAuthentication {
     public static class LdapAttributeExtensions {
 
         /// <summary>
-        /// Gets the string value of an attribute.
+        /// Gets the value of an attribute.
         /// </summary>
         /// <param name="that">An LDAP attribute.</param>
         /// <param name="attribute">An annotation that specifies the
@@ -24,16 +24,16 @@ namespace Visus.DirectoryAuthentication {
         /// in which case the string value will be returned directly.</param>
         /// <param name="parameter">An optional parameter that will be passed
         /// to the converter from <paramref name="attribute"/>.</param>
-        /// <returns>The string version of the attribute.</returns>
+        /// <returns>The value of the attribute.</returns>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="that"/> is <c>null</c>.</exception>
-        public static string ToString(this DirectoryAttribute that,
+        public static object GetValue(this DirectoryAttribute that,
                 LdapAttributeAttribute attribute, object parameter = null) {
-            return that.ToString(attribute?.GetConverter(), parameter);
+            return that.GetValue(attribute?.GetConverter(), parameter);
         }
 
         /// <summary>
-        /// Gets the string value of an attribute.
+        /// Gets the value of an attribute.
         /// </summary>
         /// <remarks>
         /// <para>If a non-<c>null</c> converter is specified, this converter
@@ -53,17 +53,17 @@ namespace Visus.DirectoryAuthentication {
         /// in which case the string value will be returned directly.</param>
         /// <param name="parameter">An optional parameter that is passed to
         /// <paramref name="converter"/> as necessary.</param>
-        /// <returns>The string version of the attribute.</returns>
+        /// <returns>The value of the attribute.</returns>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="that"/> is <c>null</c>.</exception>
-        public static string ToString(this DirectoryAttribute that,
+        public static object GetValue(this DirectoryAttribute that,
                 ILdapAttributeConverter converter,
                 object parameter = null) {
             if (that == null) {
                 return null;
 
             } else if (converter != null) {
-                return converter.Convert(that, parameter) as string;
+                return converter.Convert(that, parameter);
 
             } else if (that[0] is string s) {
                 return s;

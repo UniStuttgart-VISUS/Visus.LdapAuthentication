@@ -122,9 +122,8 @@ namespace Visus.DirectoryAuthentication {
                             .Where(a => a.Schema == schema)
                             .FirstOrDefault()
                         where (a != null)
-                        // TODO: Fix identity-related attribute types.
-                            && ((p.PropertyType == typeof(string))
-                            || (p.PropertyType == typeof(bool)))
+                            //&& ((p.PropertyType == typeof(string))
+                            //|| (p.PropertyType == typeof(bool)))
                         select new {
                             Property = p,
                             Attribute = a
@@ -214,19 +213,20 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="entry">The entry to get the attribute from.</param>
         /// <param name="parameter">An optional converter parameter.</param>
-        /// <returns>The value of the attribute as <see cref="string"/>.
+        /// <returns>The value of the attribute, normally as
+        /// <see cref="string"/>.
         /// </returns>
         /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
         /// is <c>null</c>.</exception>
         /// <exception cref="System.Collections.Generic.KeyNotFoundException">
         /// If the designated attribute does not exist for the entry or if it
         /// has not been loaded.</exception>
-        public string GetValue(SearchResultEntry entry,
+        public object GetValue(SearchResultEntry entry,
                 object parameter = null) {
             _ = entry ?? throw new ArgumentNullException(nameof(entry));
 
             var attribute = entry.Attributes[this.Name];
-            var retval = attribute.ToString(this);
+            var retval = attribute.GetValue(this, parameter);
 
             return retval;
         }

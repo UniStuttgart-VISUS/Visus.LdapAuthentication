@@ -17,23 +17,29 @@ namespace Visus.DirectoryIdentity {
             ILdapIdentityUser {
 
         /// <inheritdoc />
-        [LdapAttribute("Active Directory", "BadPwdCount")]
-        [LdapAttribute("IDMU", "BadPwdCount")]
+        [LdapAttribute("Active Directory", "badPwdCount",
+            Converter = typeof(IntConverter))]
+        [LdapAttribute("IDMU", "badPwdCount",
+            Converter = typeof(IntConverter))]
         public virtual int AccessFailedCount { get; internal set; } = 0;
 
         /// <inheritdoc />
-        [LdapAttribute("Active Directory", "LockedOut")]
-        [LdapAttribute("IDMU", "LockedOut")]
+        [LdapAttribute("Active Directory", "lockedOut")]
+        [LdapAttribute("IDMU", "lockedOut")]
         public bool IsLockoutEnabled { get; internal set; } = false;
 
         /// <inheritdoc />
-        [LdapAttribute("Active Directory", "AccountLockoutTime")]
-        [LdapAttribute("IDMU", "AccountLockoutTime")]
+        [LdapAttribute("Active Directory", "accountLockoutTime",
+            Converter = typeof(DateConverter))]
+        [LdapAttribute("IDMU", "accountLockoutTime",
+            Converter = typeof(DateConverter))]
         public virtual DateTimeOffset? LockoutTime { get; internal set; }
 
         /// <inheritdoc />
-        [LdapAttribute("Active Directory", "LastBadPasswordAttempt")]
-        [LdapAttribute("IDMU", "LastBadPasswordAttempt")]
+        [LdapAttribute("Active Directory", "badPasswordTime",
+            Converter = typeof(DateConverter))]
+        [LdapAttribute("IDMU", "badPasswordTime",
+            Converter = typeof(DateConverter))]
         public virtual DateTimeOffset? LastAccessFailed { get; internal set; }
     }
 }

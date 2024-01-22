@@ -236,7 +236,7 @@ namespace Visus.DirectoryAuthentication {
 
             try {
                 var a = entry.GetAttribute(mapping.PrimaryGroupAttribute);
-                var gid = a.ToString((ILdapAttributeConverter) null);
+                var gid = a.GetValue((ILdapAttributeConverter) null) as string;
 
                 var endOfDomain = this.Identity.LastIndexOf('-');
                 if (endOfDomain > 0) {
@@ -263,7 +263,7 @@ namespace Visus.DirectoryAuthentication {
                 foreach (var g in groups) {
                     try {
                         var a = g.GetAttribute(mapping.GroupIdentityAttribute);
-                        var gid = a.ToString(conv);
+                        var gid = a.GetValue(conv) as string;
                         claims.Add(new Claim(ClaimTypes.GroupSid, gid));
                     } catch {
                         // Ignore issue, just set no claim.
