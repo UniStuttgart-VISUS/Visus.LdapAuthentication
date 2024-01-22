@@ -48,7 +48,7 @@ namespace Visus.DirectoryIdentity.Tests {
         #endregion
 
         [TestMethod]
-        public async Task TestDependencyInjection() {
+        public void TestDependencyInjection() {
             var configuration = new ConfigurationBuilder()
                 .AddUserSecrets<TestSecrets>()
                 .Build();
