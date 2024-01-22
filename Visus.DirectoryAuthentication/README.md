@@ -3,12 +3,16 @@ Visus.DirectoryAuthentication implements LDAP authentication using [System.Direc
 
 
 # Usage
+1. [Make sure the prerequisites are installed](#make-sure-the-prerequisites-are-installed)
 1. [Add the authentication service](#add-the-authentication-service)
 1. [Configure the LDAP server](#configure-the-ldap-server)
 1. [Authenticate a user](#authenticate-a-user)
 1. [Customising the user object](#customising-the-user-object)
 1. [Searching users](#searching-users)
 1. [Differences between LdapAuthentication and DirectoryAuthentication](#differences-between-ldapauthentication-and-directoryauthentication)
+
+## Make sure the prerequisites are installed
+`[System.DirectorySerices.Protocols](https://learn.microsoft.com/en-gb/dotnet/api/system.directoryservices.protocols)` requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must have been installed. Please note that P/Invoke requires the [name of the library being hard-coded](https://github.com/dotnet/runtime/issues/69456), which might be a problem. There are basically [two ways for you to resolve this](https://decovar.dev/blog/2022/06/16/dotnet-ldap-authentication/#platform-specific-dependencies), which is installing the expected version or by creating a symlink that pretends the current version is the expected one.
 
 ## Add the authentication service
 The authentication functionality is added in `ConfigureServices` in your `Startup` class via the following statements:
