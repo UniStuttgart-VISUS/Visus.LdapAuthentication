@@ -23,18 +23,21 @@ namespace Visus.DirectoryIdentity {
         /// </summary>
         /// <remarks>
         /// <see cref="ILdapOptions"/> must have been registered in the services
-        /// collection such that the user store can resolve these. Likewise, the
-        /// caller is responsible for registering both, the
-        /// <see cref="ILdapAuthenticationService"/> and the
-        /// <see cref="ILdapSearchService"/>.
+        /// collection such that the user store can resolve these. The method
+        /// will register <see cref="ILdapAuthenticationService"/> and
+        /// <see cref="ILdapSearchService"/> for <typeparamref name="TUser"/>.
         /// </remarks>
         /// <typeparam name="TUser">The type of the user object to be used to
         /// represent an identity user.</typeparam>
         /// <param name="that">The builder used to add the store to.</param>
         /// <returns><paramref name="that"/>.</returns>
         public static IdentityBuilder AddLdapStore<TUser>(this IdentityBuilder that)
-                where TUser : class, ILdapIdentityUser {
+                where TUser : class, ILdapIdentityUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
+            that.Services.AddLdapAuthenticationService<TUser>();
+            that.Services.AddLdapSearchService<TUser>();
+            that.Services.AddScoped<IPasswordHasher<TUser>,
+                PasswordHasher<TUser>>();
             that.Services.AddScoped<IUserStore<TUser>, LdapUserStore<TUser>>();
             return that;
         }

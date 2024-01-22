@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -47,7 +48,35 @@ namespace Visus.DirectoryIdentity.Tests {
         #endregion
 
         [TestMethod]
-        public async Task QueryUser() {
+        public async Task TestDependencyInjection() {
+            var configuration = new ConfigurationBuilder()
+                .AddUserSecrets<TestSecrets>()
+                .Build();
+
+            var services = new ServiceCollection();
+            services.AddLdapOptions(configuration);
+            services.AddLdapAuthenticationService<LdapIdentityUser>();
+            services.AddLdapSearchService<LdapIdentityUser>();
+            services.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapIdentityUser>>>());
+            services.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapIdentityUser>>>());
+            services.AddIdentityCore<LdapIdentityUser>(o => o.SignIn.RequireConfirmedAccount = false).AddLdapStore();
+
+            var provider = services.BuildServiceProvider();
+            Assert.IsNotNull(provider, "Service provider valid");
+
+            var options = provider.GetService<IOptions<LdapOptions>>();
+            Assert.IsNotNull(options, "Can retrieve LDAP options");
+
+            var hasher = provider.GetService<IPasswordHasher<LdapIdentityUser>>();
+            Assert.IsNotNull(hasher, "Have password hasher.");
+            Assert.AreEqual(typeof(PasswordHasher<LdapIdentityUser>), hasher.GetType(), "Our password hasher");
+
+            var store = provider.GetRequiredService<IUserStore<LdapIdentityUser>>();
+            Assert.IsNotNull(store, "Resolve user store");
+        }
+
+        [TestMethod]
+        public async Task TestQueryUser() {
             var authService = this._services.GetService<ILdapAuthenticationService<LdapIdentityUser>>();
             Assert.IsNotNull(authService, "Authentication service created");
 
