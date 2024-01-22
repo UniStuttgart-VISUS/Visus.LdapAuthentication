@@ -18,7 +18,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="5.0.17" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.17" />
-    <PackageReference Include="Visus.DirectoryAuthentication" Version="0.7.0" />
   </ItemGroup>
 
   <ItemGroup>

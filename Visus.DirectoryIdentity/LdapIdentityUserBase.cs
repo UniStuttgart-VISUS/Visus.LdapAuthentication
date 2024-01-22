@@ -24,14 +24,12 @@ namespace Visus.DirectoryIdentity {
         public virtual int AccessFailedCount { get; internal set; } = 0;
 
         /// <inheritdoc />
-        [LdapAttribute("Active Directory", "lockedOut")]
-        [LdapAttribute("IDMU", "lockedOut")]
-        public bool IsLockoutEnabled { get; internal set; } = false;
+        public bool IsLockoutEnabled => (this.LockoutTime != null);
 
         /// <inheritdoc />
-        [LdapAttribute("Active Directory", "accountLockoutTime",
+        [LdapAttribute("Active Directory", "lockoutTime",
             Converter = typeof(DateConverter))]
-        [LdapAttribute("IDMU", "accountLockoutTime",
+        [LdapAttribute("IDMU", "lockoutTime",
             Converter = typeof(DateConverter))]
         public virtual DateTimeOffset? LockoutTime { get; internal set; }
 
