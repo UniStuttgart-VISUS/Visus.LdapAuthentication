@@ -1,22 +1,20 @@
-﻿// <copyright file="SearchResultEntryExtensions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2022 -2024 Visualisierungsinstitut der Universität Stuttgart.
+﻿// <copyright file="LdapEntryExtensions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+// Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.DirectoryServices.Protocols;
-using System.Runtime.CompilerServices;
 
-
-namespace Visus.DirectoryAuthentication {
+namespace Visus.LdapAuthentication {
 
     /// <summary>
-    /// Extension methods for <see cref="SearchResultEntry"/>.
+    /// Extension methods for <see cref="LdapEntry"/>.
     /// </summary>
-    public static class SearchResultEntryExtensions {
+    public static class LdapEntryExtensions {
 
         /// <summary>
         /// Assigns LDAP attributes to the given target object.
@@ -30,7 +28,7 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
         /// </exception>
-        public static void AssignTo(this SearchResultEntry that, object target,
+        public static void AssignTo(this LdapEntry that, object target,
                 string schema) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = target ?? throw new ArgumentNullException(nameof(target));
@@ -62,28 +60,8 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
         /// </exception>
-        public static void AssignTo(this SearchResultEntry that, object target,
+        public static void AssignTo(this LdapEntry that, object target,
                 ILdapOptions options)
             => that.AssignTo(target, options?.Schema);
-
-        /// <summary>
-        /// Gets the attribute with the specified name from
-        /// <paramref name="that"/>.
-        /// </summary>
-        /// <remarks>
-        /// This is a convenience accessor for the
-        /// <see cref="SearchResultEntry.Attributes"/> property, which reduces
-        /// the changes required to port from Novell LDAP.
-        /// </remarks>
-        /// <param name="that">The entry to retrieve the attribute for.</param>
-        /// <param name="attribute">The name of the attribute to be retrived.
-        /// </param>
-        /// <returns>The <see cref="DirectoryAttribute"/> with the specified
-        /// name.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static DirectoryAttribute GetAttribute(
-                this SearchResultEntry that, string attribute) {
-            return that?.Attributes[attribute];
-        }
     }
 }

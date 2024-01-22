@@ -89,20 +89,7 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         public void Assign(LdapEntry entry, LdapConnection connection,
                 ILdapOptions options) {
-            var props = LdapAttributeAttribute.GetLdapProperties(this.GetType(),
-                options?.Schema);
-
-            foreach (var p in props.Keys) {
-                try {
-                    var a = props[p];
-                    var v = a.GetValue(entry);
-                    p.SetValue(this, v);
-                } catch (KeyNotFoundException) {
-                    Debug.WriteLine("LDAP Attribute not found.");
-                    continue;
-                }
-            }
-
+            entry.AssignTo(this, options);
             this.AddGroupClaims(entry, connection, options);
             this.AddPropertyClaims(entry, connection, options);
 
