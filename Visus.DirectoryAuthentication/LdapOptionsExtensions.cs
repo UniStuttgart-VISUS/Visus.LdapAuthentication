@@ -61,8 +61,16 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="that">The LDAP configuration determining the properties
         /// of the connection and the server end point.</param>
-        /// <param name="username">The user name to logon with.</param>
-        /// <param name="password">The password of the user.</param>
+        /// <param name="username">The user name to logon with. Note that is
+        /// both, <paramref name="username"/> and <paramref name="password"/>
+        /// are <c>null</c>, the method tries to bind as the current user, which
+        /// on Windows typically is the service or machine account the code is
+        /// running as.</param>
+        /// <param name="password">The password of the user. Note that is
+        /// both, <paramref name="username"/> and <paramref name="password"/>
+        /// are <c>null</c>, the method tries to bind as the current user, which
+        /// on Windows typically is the service or machine account the code is
+        /// running as.</param>
         /// <param name="logger">A logger to write messages to.</param>
         /// <returns>An LDAP connection to the configured server.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
@@ -91,14 +99,15 @@ namespace Visus.DirectoryAuthentication {
             if ((that.User == null) && (that.Password == null)) {
                 logger.LogInformation(Properties.Resources.InfoBindCurrent);
                 retval.Bind();
+                logger.LogInformation(Properties.Resources.InfoBoundCurrent);
+
             } else {
                 logger.LogInformation(Properties.Resources.InfoBindingAsUser,
                     username);
-                retval.Bind(new NetworkCredential(that.User, that.Password));
+                retval.Bind(new NetworkCredential(username, password));
+                logger.LogInformation(Properties.Resources.InfoBoundAsUser,
+                    username);
             }
-
-            logger.LogInformation(Properties.Resources.InfoBoundAsUser,
-                username);
 
             return retval;
         }

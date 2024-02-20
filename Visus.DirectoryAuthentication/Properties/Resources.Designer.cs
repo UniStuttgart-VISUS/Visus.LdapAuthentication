@@ -160,6 +160,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bound using the current credentials..
+        /// </summary>
+        internal static string InfoBoundCurrent {
+            get {
+                return ResourceManager.GetString("InfoBoundCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connecting to LDAP server {0}:{1}..
         /// </summary>
         internal static string InfoConnectingLdap {

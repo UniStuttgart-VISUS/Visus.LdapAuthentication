@@ -150,6 +150,9 @@
   <data name="InfoBoundAsUser" xml:space="preserve">
     <value>Authenticated successfully as user "{0}".</value>
   </data>
+  <data name="InfoBoundCurrent" xml:space="preserve">
+    <value>Bound using the current credentials.</value>
+  </data>
   <data name="InfoConnectingLdap" xml:space="preserve">
     <value>Connecting to LDAP server {0}:{1}.</value>
   </data>
