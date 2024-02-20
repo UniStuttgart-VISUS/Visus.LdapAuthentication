@@ -103,7 +103,7 @@ namespace Visus.LdapAuthentication {
                         GroupIdentityAttribute = "gidNumber",
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "gidNumber",
-                        UserFilter = "(&(objectClass=posixAccount)(uid={0}))",
+                        UserFilter = "(&(objectClass=posixAccount)(entryDN={0}))",
                         UsersFilter = "(&(objectClass=posixAccount)(objectClass=person))"
                     }
                 }

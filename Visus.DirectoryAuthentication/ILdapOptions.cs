@@ -8,12 +8,18 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 
+
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// The configuration options for the directory server.
     /// </summary>
     public interface ILdapOptions {
+
+        /// <summary>
+        /// The authentication type used to bind to the LDAP server.
+        /// </summary>
+        public AuthType AuthenticationType { get; set; }
 
         /// <summary>
         /// Gets the default domain appended to a user name.

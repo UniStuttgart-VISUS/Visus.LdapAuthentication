@@ -44,6 +44,7 @@ namespace Visus.DirectoryAuthentication {
 
             var id = new LdapDirectoryIdentifier(that.Server, that.Port);
             var retval = new LdapConnection(id);
+            retval.AuthType = that.AuthenticationType;
             retval.SessionOptions.SecureSocketLayer = that.IsSsl;
             retval.SessionOptions.ProtocolVersion = that.ProtocolVersion;
             retval.SessionOptions.VerifyServerCertificate
@@ -71,6 +72,7 @@ namespace Visus.DirectoryAuthentication {
         /// are <c>null</c>, the method tries to bind as the current user, which
         /// on Windows typically is the service or machine account the code is
         /// running as.</param>
+        /// <param name="authType">The supported authentication </param>
         /// <param name="logger">A logger to write messages to.</param>
         /// <returns>An LDAP connection to the configured server.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
@@ -90,13 +92,7 @@ namespace Visus.DirectoryAuthentication {
                 username = $"{username}@{that.DefaultDomain}";
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                retval.AuthType = AuthType.Negotiate;
-            } else {
-                retval.AuthType = AuthType.Basic;
-            }
-
-            if ((that.User == null) && (that.Password == null)) {
+            if ((username == null) && (password == null)) {
                 logger.LogInformation(Properties.Resources.InfoBindCurrent);
                 retval.Bind();
                 logger.LogInformation(Properties.Resources.InfoBoundCurrent);

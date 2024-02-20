@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
+using System.Runtime.InteropServices;
 
 namespace Visus.DirectoryAuthentication {
 
@@ -20,11 +21,18 @@ namespace Visus.DirectoryAuthentication {
         /// Initialises a new instance.
         /// </summary>
         public LdapOptions() {
+            this.AuthenticationType = 
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? AuthType.Negotiate
+                : AuthType.Basic;
             this.PageSize = 1000;   // Reasonable default for AD.
         }
         #endregion
 
         #region Public properties
+        /// <inheritdoc />
+        public AuthType AuthenticationType { get; set; }
+
         /// <inheritdoc />
         public string DefaultDomain { get; set; }
 
@@ -84,7 +92,7 @@ namespace Visus.DirectoryAuthentication {
                         GroupIdentityAttribute = "gidNumber",
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "gidNumber",
-                        UserFilter = "(&(objectClass=posixAccount)(uid={0}))",
+                        UserFilter = "(&(objectClass=posixAccount)(entryDN={0}))",
                         UsersFilter = "(&(objectClass=posixAccount)(objectClass=person))"
                     }
                 }

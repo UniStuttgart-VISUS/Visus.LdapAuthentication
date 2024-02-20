@@ -24,6 +24,7 @@ namespace Visus.DirectoryAuthentication.Tests {
     public sealed class ServiceCollectionTests {
 
         class CustomOptions : ILdapOptions {
+            public AuthType AuthenticationType { get; set; }
             public string DefaultDomain { get; set; }
             public bool IsNoCertificateCheck { get; set; }
             public bool IsRecursiveGroupMembership { get; set; }

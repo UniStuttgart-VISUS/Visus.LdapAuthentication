@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 
 
@@ -19,6 +20,7 @@ namespace Visus.DirectoryAuthentication.Tests {
     [TestClass]
     public sealed class IssuesTest {
 
+        #region Public constructors
         public IssuesTest() {
             try {
                 var configuration = new ConfigurationBuilder()
@@ -31,9 +33,37 @@ namespace Visus.DirectoryAuthentication.Tests {
                 this._testSecrets = null;
             }
         }
+        #endregion
 
+        #region Issue #9
+        #if false
         [TestMethod]
-        public void TestIssue10() {
+        public void Test9() {
+            var options = new LdapOptions() {
+                AuthenticationType = AuthType.Basic,
+                Server = "ldap.forumsys.com",
+                SearchBase = new Dictionary<string, SearchScope>() {
+                    { "dc=example,dc=com", SearchScope.Subtree }
+                },
+                Schema = Schema.Rfc2307,
+                IsRecursiveGroupMembership = true,
+                Port = 389,
+                IsSsl = false,
+                IsNoCertificateCheck = true
+            };
+
+            var service = new LdapAuthenticationService<LdapUser>(options,
+                Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+
+            var user = service.Login("uid=tesla,dc=example,dc=com", "");
+            Assert.IsNotNull(user);
+        }
+        #endif
+        #endregion
+
+        #region Issue #10
+        [TestMethod]
+        public void Test10() {
             if (this._testSecrets != null) {
                 var service = new LdapAuthenticationService<LdapUser>(
                     this._testSecrets.LdapOptions,
@@ -45,7 +75,10 @@ namespace Visus.DirectoryAuthentication.Tests {
                 });
             }
         }
+        #endregion
 
+        #region Private fields
         private readonly TestSecrets _testSecrets;
+        #endregion
     }
 }

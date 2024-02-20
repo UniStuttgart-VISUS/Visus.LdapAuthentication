@@ -36,7 +36,6 @@ namespace Visus.LdapAuthentication.Tests {
         }
         #endregion
 
-
         #region Issue #1
         public sealed class CustomLdapUser : LdapUserBase {
 
@@ -99,6 +98,31 @@ namespace Visus.LdapAuthentication.Tests {
             }
 
         }
+        #endregion
+
+        #region Issue #9
+        #if false
+        [TestMethod]
+        public void Test9() {
+            var options = new LdapOptions() {
+                Server = "ldap.forumsys.com",
+                SearchBases = new Dictionary<string, SearchScope>() {
+                    { "dc=example,dc=com", SearchScope.Subtree }
+                },
+                Schema = Schema.Rfc2307,
+                IsRecursiveGroupMembership = true,
+                Port = 389,
+                IsSsl =false,
+                IsNoCertificateCheck = true
+            };
+
+            var service = new LdapAuthenticationService<LdapUser>(options,
+                Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+
+            var user = service.Login("uid=tesla,dc=example,dc=com", "");
+            Assert.IsNotNull(user);
+        }
+        #endif
         #endregion
 
         #region Private fields
