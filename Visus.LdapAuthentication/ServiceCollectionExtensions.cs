@@ -84,6 +84,28 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
+        /// injection container and registers and configures the
+        /// <see cref="LdapOptions"/>.
+        /// </summary>
+        /// <param name="that">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">A callback configuring the options.</param>
+        /// <returns><paramref name="that"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
+        /// </exception>
+        public static IServiceCollection AddLdapAuthenticationService<TUser>(
+                this IServiceCollection that,
+                Action<LdapOptions> options)
+                where TUser : class, ILdapUser, new() {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+            that.Configure(options);
+            return that.AddLdapAuthenticationService<TUser>();
+        }
+
+        /// <summary>
+        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
         /// injection container.
         /// </summary>
         /// <param name="that">The service collection to add the service to.
@@ -116,6 +138,27 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c>.</exception>
         public static IServiceCollection AddLdapAuthenticationService(
                 this IServiceCollection that) {
+            return that.AddLdapAuthenticationService<LdapUser>();
+        }
+
+        /// <summary>
+        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
+        /// injection container and registers and configures the
+        /// <see cref="LdapOptions"/>.
+        /// </summary>
+        /// <param name="that">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">A callback configuring the options.</param>
+        /// <returns><paramref name="that"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
+        /// </exception>
+        public static IServiceCollection AddLdapAuthenticationService(
+                this IServiceCollection that,
+                Action<LdapOptions> options) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+            that.Configure(options);
             return that.AddLdapAuthenticationService<LdapUser>();
         }
 

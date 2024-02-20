@@ -173,5 +173,85 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.IsNotNull(service, "Service resolved");
             }
         }
+
+        [TestMethod]
+        public void TestAuthServiceResolutionWithAction() {
+            var configuration = new ConfigurationBuilder()
+                .AddUserSecrets<TestSecrets>()
+                .Build();
+
+            var collection = new ServiceCollection();
+            collection.AddLdapAuthenticationService(o => {
+                var options = new LdapOptions();
+                var section = configuration.GetSection("LdapOptions");
+                section.Bind(options);
+
+                o.DefaultDomain = options.DefaultDomain;
+                o.IsNoCertificateCheck = options.IsNoCertificateCheck;
+                o.IsRecursiveGroupMembership = options.IsRecursiveGroupMembership;
+                o.IsSsl = options.IsSsl;
+                o.Mapping = options.Mapping;
+                o.Mappings = options.Mappings;
+                o.PageSize = options.PageSize;
+                o.Password = options.Password;
+                o.Port = options.Port;
+                o.RootCaThumbprint = options.RootCaThumbprint;
+                o.Schema = options.Schema;
+                o.SearchBases = options.SearchBases;
+                o.Server = options.Server;
+                o.ServerThumbprint = options.ServerThumbprint;
+                o.Timeout = options.Timeout;
+                o.User = options.User;
+            });
+            collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+
+            var provider = collection.BuildServiceProvider();
+
+            var service = provider.GetService<ILdapAuthenticationService>();
+            Assert.IsNotNull(service, "Service resolved");
+
+            var options = provider.GetService<IOptions<LdapOptions>>();
+            Assert.IsNotNull(options?.Value, "Options also available");
+        }
+
+        [TestMethod]
+        public void TestTypedAuthServiceResolutionWithAction() {
+            var configuration = new ConfigurationBuilder()
+                .AddUserSecrets<TestSecrets>()
+                .Build();
+
+            var collection = new ServiceCollection();
+            collection.AddLdapAuthenticationService<LdapUser>(o => {
+                var options = new LdapOptions();
+                var section = configuration.GetSection("LdapOptions");
+                section.Bind(options);
+
+                o.DefaultDomain = options.DefaultDomain;
+                o.IsNoCertificateCheck = options.IsNoCertificateCheck;
+                o.IsRecursiveGroupMembership = options.IsRecursiveGroupMembership;
+                o.IsSsl = options.IsSsl;
+                o.Mapping = options.Mapping;
+                o.Mappings = options.Mappings;
+                o.PageSize = options.PageSize;
+                o.Password = options.Password;
+                o.Port = options.Port;
+                o.RootCaThumbprint = options.RootCaThumbprint;
+                o.Schema = options.Schema;
+                o.SearchBases = options.SearchBases;
+                o.Server = options.Server;
+                o.ServerThumbprint = options.ServerThumbprint;
+                o.Timeout = options.Timeout;
+                o.User = options.User;
+            });
+            collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+
+            var provider = collection.BuildServiceProvider();
+
+            var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
+            Assert.IsNotNull(service, "Service resolved");
+
+            var options = provider.GetService<IOptions<LdapOptions>>();
+            Assert.IsNotNull(options?.Value, "Options also available");
+        }
     }
 }
