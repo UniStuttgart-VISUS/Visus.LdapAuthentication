@@ -30,7 +30,8 @@ See [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/REA
 
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
 1. `System.DirectorySerices.Protocols` requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must be installed.
-1. The `ILdapOptions.Timeout` property is a `System.TimeSpan` rather than a number representing milliseconds. When configuring from JSON, use a string in the format "hh:mm:ss".
-1. `ILdapOptions.RootCaThumbprint` is not supported. You can, however, check the immediate issuer of the server's certificate using `ILdapOptions.ServerCertificateIssuer`.
-1. `ILdapOptions` does not provide the legacy string-based `SearchBase` option, but must be configured with the `IDictionary<string, System.DirectoryServices.Protocols.SearchScope>` variant. **This is a breaking change compared to version 0.4.0!**.
+1. `ILdapOptions` is not available. Services are configured using the `Add...(... Action<LdapOptions> options ...)` method. See  [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/README.md).
+1. The `LdapOptions.Timeout` property is a `System.TimeSpan` rather than a number representing milliseconds. When configuring from JSON, use a string in the format "hh:mm:ss".
+1. `LdapOptions.RootCaThumbprint` is not supported. You can, however, check the immediate issuer of the server's certificate using `ILdapOptions.ServerCertificateIssuer`.
+1. `LdapOptions` does not provide the legacy string-based `SearchBase` option, but must be configured with the `IDictionary<string, System.DirectoryServices.Protocols.SearchScope>` variant. **This is a breaking change compared to version 0.4.0!**.
 1. TODO: Bind using Windows credentials.
