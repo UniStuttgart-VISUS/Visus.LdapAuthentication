@@ -23,7 +23,7 @@ namespace Visus.DirectoryAuthentication {
     /// </summary>
     /// <typeparam name="TUser">The type of user to be created for the search
     /// results, which also defines attributes like the unique identity in
-    /// combination with the global options from <see cref="ILdapOptions"/>.
+    /// combination with the global options from <see cref="LdapOptions"/>.
     /// </typeparam>
     public sealed class LdapSearchService<TUser> : ILdapSearchService<TUser>
             where TUser : class, ILdapUser, new() {
@@ -40,28 +40,13 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(ILdapOptions options,
+        public LdapSearchService(IOptions<LdapOptions> options,
                 ILogger<LdapSearchService<TUser>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._options = options
+            this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
-
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        /// <param name="options">The LDAP options that specify how to connect
-        /// to the directory server.</param>
-        /// <param name="logger">A logger for writing important messages.
-        /// </param>
-        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(IOptions<LdapOptions> options,
-                ILogger<LdapSearchService<TUser>> logger)
-            : this(options?.Value, logger) { }
         #endregion
 
         #region Public methods
@@ -410,7 +395,7 @@ namespace Visus.DirectoryAuthentication {
         #region Private fields
         private LdapConnection _connection;
         private readonly ILogger _logger;
-        private readonly ILdapOptions _options;
+        private readonly LdapOptions _options;
         #endregion
     }
 }

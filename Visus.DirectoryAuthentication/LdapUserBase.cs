@@ -89,7 +89,7 @@ namespace Visus.DirectoryAuthentication {
         #region Public methods
         /// <inheritdoc />
         public void Assign(SearchResultEntry entry, LdapConnection connection,
-                ILdapOptions options) {
+                LdapOptions options) {
             entry.AssignTo(this, options);
             this.AddGroupClaims(entry, connection, options);
             this.AddPropertyClaims(entry, connection, options);
@@ -106,7 +106,7 @@ namespace Visus.DirectoryAuthentication {
         /// </param>
         /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
         /// the details about the groups.</param>
-        /// <param name="options">The <see cref="ILdapOptions"/> configuring the
+        /// <param name="options">The <see cref="LdapOptions"/> configuring the
         /// mapping of attributes.</param>
         /// <returns>The LDAP entries for the groups <paramref name="entry"/> is
         /// member of.</returns>
@@ -119,7 +119,7 @@ namespace Visus.DirectoryAuthentication {
         protected static IEnumerable<SearchResultEntry> GetGroupMemberships(
                 SearchResultEntry entry,
                 LdapConnection connection,
-                ILdapOptions options) {
+                LdapOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection
@@ -175,7 +175,7 @@ namespace Visus.DirectoryAuthentication {
         /// </param>
         /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
         /// the details about the groups.</param>
-        /// <param name="options">The <see cref="ILdapOptions"/> configuring the
+        /// <param name="options">The <see cref="LdapOptions"/> configuring the
         /// mapping of attributes.</param>
         /// <returns>The LDAP entries for the groups <paramref name="entry"/> is
         /// member of.</returns>
@@ -188,7 +188,7 @@ namespace Visus.DirectoryAuthentication {
         private IEnumerable<SearchResultEntry> GetRecursiveGroupMemberships(
                 SearchResultEntry entry,
                 LdapConnection connection,
-                ILdapOptions options) {
+                LdapOptions options) {
             var stack = new Stack<SearchResultEntry>();
             stack.Push(entry);
 
@@ -211,7 +211,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="connection"></param>
         /// <param name="schema"></param>
         protected virtual void AddGroupClaims(SearchResultEntry entry,
-                LdapConnection connection, ILdapOptions options) {
+                LdapConnection connection, LdapOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection
@@ -269,7 +269,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="connection"></param>
         /// <param name="schema"></param>
         protected virtual void AddPropertyClaims(SearchResultEntry entry,
-                LdapConnection connection, ILdapOptions options) {
+                LdapConnection connection, LdapOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection

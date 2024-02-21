@@ -15,9 +15,9 @@ namespace Visus.DirectoryAuthentication {
     public interface ILdapConnectionService {
 
         /// <summary>
-        /// Gets the <see cref="ILdapOptions"/> used by the service.
+        /// Gets the <see cref="LdapOptions"/> used by the service.
         /// </summary>
-        ILdapOptions Options { get; }
+        LdapOptions Options { get; }
 
         /// <summary>
         /// Connect to the preconfigured LDAP service with the preconfigured

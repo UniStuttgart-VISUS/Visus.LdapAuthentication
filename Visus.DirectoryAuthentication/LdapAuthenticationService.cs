@@ -40,28 +40,13 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAuthenticationService(ILdapOptions options,
+        public LdapAuthenticationService(IOptions<LdapOptions> options,
                 ILogger<LdapAuthenticationService<TUser>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._options = options
+            this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
-
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        /// <param name="options">The LDAP options that specify how to connect
-        /// to the directory server.</param>
-        /// <param name="logger">A logger for writing important messages.
-        /// </param>
-        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAuthenticationService(IOptions<LdapOptions> options,
-                ILogger<LdapAuthenticationService<TUser>> logger)
-            : this(options?.Value, logger) { }
         #endregion
 
         #region Public methods
@@ -149,7 +134,7 @@ namespace Visus.DirectoryAuthentication {
 
         #region Private fields
         private readonly ILogger _logger;
-        private readonly ILdapOptions _options;
+        private readonly LdapOptions _options;
         #endregion
     }
 }

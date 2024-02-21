@@ -18,7 +18,7 @@ namespace Visus.DirectoryAuthentication {
     /// <remarks>
     /// The search service allows an application to retrieve user information
     /// without binding as an end user. In order to perform the search, the
-    /// credentials specified in <see cref="ILdapOptions"/> are used.
+    /// credentials specified in <see cref="LdapOptions"/> are used.
     /// </remarks>
     public interface ILdapSearchService : IDisposable {
 
@@ -77,7 +77,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are in matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="LdapOptions"/> used by the
         /// application.
         /// </summary>
         /// <remarks>
@@ -96,7 +96,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Asynchronously gets all users from the directory that are in
         /// matching the search criteria configured in the
-        /// <see cref="ILdapOptions"/> used by the application.
+        /// <see cref="LdapOptions"/> used by the application.
         /// </summary>
         /// <remarks>
         /// <para>This method creates <see cref="ILdapUser"/> object for all
@@ -113,7 +113,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="LdapOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref name="filter"/>.
         /// </summary>
         /// <param name="filter">An LDAP filter expression that is combined
@@ -124,7 +124,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Asynchronously gets all users from the directory that are matching
-        /// the search criteria configured in the <see cref="ILdapOptions"/>
+        /// the search criteria configured in the <see cref="LdapOptions"/>
         /// used by the application <i>and</i> the specified LDAP
         /// <paramref name="filter"/>.</summary>
         /// <param name="filter">An LDAP filter expression that is combined
@@ -137,12 +137,12 @@ namespace Visus.DirectoryAuthentication {
         /// Gets all users from the directory that are matching the search
         /// critiera configured in the <see cref="ILdapOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
-        /// while overriding the search base from the <see cref="ILdapOptions"/>
+        /// while overriding the search base from the <see cref="LdapOptions"/>
         /// with the given one.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="LdapOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search
@@ -153,14 +153,14 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Asynchronously gets all users from the directory that are matching
-        /// the search critiera configured in the <see cref="ILdapOptions"/>
+        /// the search critiera configured in the <see cref="LdapOptions"/>
         /// used by the application <i>and</i> the specified LDAP
         /// <paramref cref="filter"/> while overriding the search base from the
-        /// <see cref="ILdapOptions"/> with the given one.
+        /// <see cref="LdapOptions"/> with the given one.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="LdapOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search
@@ -204,7 +204,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are in matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="LdapOptions"/> used by the
         /// application.
         /// </summary>
         /// <remarks>
@@ -223,7 +223,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Asynchronously gets all users from the directory that are in
         /// matching the search criteria configured in the
-        /// <see cref="ILdapOptions"/> used by the application.
+        /// <see cref="LdapOptions"/> used by the application.
         /// </summary>
         /// <remarks>
         /// <para>This method creates <see cref="ILdapUser"/> object for all
@@ -240,7 +240,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="LdapOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref name="filter"/>.
         /// </summary>
         /// <param name="filter">An LDAP filter expression that is combined
@@ -262,14 +262,14 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// critiera configured in the <see cref="ILdapOptions"/> used by the
+        /// critiera configured in the <see cref="LdapOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
-        /// while overriding the search base from the <see cref="ILdapOptions"/>
+        /// while overriding the search base from the <see cref="LdapOptions"/>
         /// with the given one.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="LdapOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search
@@ -280,14 +280,14 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Asynchronously gets all users from the directory that are matching
-        /// the search critiera configured in the <see cref="ILdapOptions"/>
+        /// the search critiera configured in the <see cref="LdapOptions"/>
         /// used by the application <i>and</i> the specified LDAP
         /// <paramref cref="filter"/> while overriding the search base from the
-        /// <see cref="ILdapOptions"/> with the given one.
+        /// <see cref="LdapOptions"/> with the given one.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="LdapOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search

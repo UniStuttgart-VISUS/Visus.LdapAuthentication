@@ -63,7 +63,7 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
         /// </exception>
         public static void AssignTo(this SearchResultEntry that, object target,
-                ILdapOptions options)
+                LdapOptions options)
             => that.AssignTo(target, options?.Schema);
 
         /// <summary>

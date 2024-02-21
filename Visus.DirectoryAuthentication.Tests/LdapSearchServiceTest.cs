@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetDistinguishedNames() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
@@ -54,7 +55,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetDistinguishedNamesAsync() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
@@ -69,7 +70,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetUserByIdentity() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
@@ -81,7 +82,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetUserByIdentityAsync() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var user = await service.GetUserByIdentityAsync(this._testSecrets.ExistingUserIdentity);
@@ -93,7 +94,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetUsers() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var users = service.GetUsers();
@@ -105,7 +106,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetUsersFiltered() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
@@ -120,7 +121,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetUsersAsync() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var users = await service.GetUsersAsync();
@@ -133,7 +134,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetUsersAsyncFiltered() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(

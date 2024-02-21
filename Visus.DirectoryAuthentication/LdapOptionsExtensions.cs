@@ -18,7 +18,7 @@ using Visus.DirectoryAuthentication.Properties;
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
-    /// Extension methods for <see cref="ILdapOptions"/>.
+    /// Extension methods for <see cref="LdapOptions"/>.
     /// </summary>
     public static class LdapOptionsExtensions {
 
@@ -37,7 +37,7 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c></exception>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        public static LdapConnection Connect(this ILdapOptions that,
+        public static LdapConnection Connect(this LdapOptions that,
                 ILogger logger) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -79,7 +79,7 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c></exception>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        public static LdapConnection Connect(this ILdapOptions that,
+        public static LdapConnection Connect(this LdapOptions that,
                 string username, string password, ILogger logger) {
             var retval = that.Connect(logger);
             Debug.Assert(that != null);
@@ -122,7 +122,7 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c></exception>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        public static bool VerifyServerCertificate(this ILdapOptions that,
+        public static bool VerifyServerCertificate(this LdapOptions that,
                 X509Certificate certificate,
                 ILogger logger) {
             _ = that ?? throw new ArgumentNullException(nameof(that));

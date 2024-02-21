@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
@@ -52,7 +53,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 IsNoCertificateCheck = true
             };
 
-            var service = new LdapAuthenticationService<LdapUser>(options,
+            var service = new LdapAuthenticationService<LdapUser>(
+                Options.Create(this._testSecrets.LdapOptions),
                 Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
             var user = service.Login("uid=tesla,dc=example,dc=com", "");
@@ -66,7 +68,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void Test10() {
             if (this._testSecrets != null) {
                 var service = new LdapAuthenticationService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
                 Assert.ThrowsException<LdapException>(() => {

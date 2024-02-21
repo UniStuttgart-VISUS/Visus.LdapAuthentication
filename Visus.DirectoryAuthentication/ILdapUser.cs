@@ -60,6 +60,6 @@ namespace Visus.DirectoryAuthentication {
         /// to obtain additional information about the user-defined mapping of
         /// LDAP attributes.</param>
         void Assign(SearchResultEntry entry, LdapConnection connection,
-            ILdapOptions options);
+            LdapOptions options);
     }
 }

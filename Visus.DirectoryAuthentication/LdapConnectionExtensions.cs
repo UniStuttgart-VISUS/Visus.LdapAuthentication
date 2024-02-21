@@ -129,7 +129,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Sends a request with a timeout, provided the given
-        /// <see cref="ILdapOptions.Timeout"/> is greater than zero. Otherwise,
+        /// <see cref="LdapOptions.Timeout"/> is greater than zero. Otherwise,
         /// send the request without a timeout.
         /// </summary>
         /// <param name="that">The connection to send the request to.</param>
@@ -142,7 +142,7 @@ namespace Visus.DirectoryAuthentication {
         public static DirectoryResponse SendRequest(
                 this LdapConnection that,
                 DirectoryRequest request,
-                ILdapOptions options) {
+                LdapOptions options) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             return (options?.Timeout > TimeSpan.Zero)
                 ? that.SendRequest(request, options.Timeout)
@@ -180,7 +180,7 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Sends an asynchronous request, possibly with a timeout
-        /// provided via <see cref="ILdapOptions.Timeout"/>.
+        /// provided via <see cref="LdapOptions.Timeout"/>.
         /// </summary>
         /// <param name="that">The connection to send the request to.</param>
         /// <param name="request">The request to send.</param>
@@ -191,7 +191,7 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c>.</exception>
         public static Task<DirectoryResponse> SendRequestAsync(
                 this LdapConnection that, DirectoryRequest request,
-                ILdapOptions options) {
+                LdapOptions options) {
             return that.SendRequestAsync(request,
                 options?.Timeout ?? TimeSpan.Zero);
         }

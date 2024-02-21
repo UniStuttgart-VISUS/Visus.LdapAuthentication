@@ -14,7 +14,7 @@ namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// Generic LDAP connection service using the server and credentials
-    /// specified in <see cref="ILdapOptions"/>.
+    /// specified in <see cref="LdapOptions"/>.
     /// </summary>
     /// <remarks>
     /// Use this service if you need access to the LDAP directory to compute any
@@ -29,27 +29,18 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="options"></param>
         /// <param name="logger"></param>
-        public LdapConnectionService(ILdapOptions options,
+        public LdapConnectionService(IOptions<LdapOptions> options,
                 ILogger<LdapConnectionService> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this.Options = options
+            this.Options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
-
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="logger"></param>
-        public LdapConnectionService(IOptions<LdapOptions> options,
-                ILogger<LdapConnectionService> logger)
-            : this(options?.Value, logger) { }
         #endregion
 
         #region Public properties
         /// <inheritdoc />
-        public ILdapOptions Options { get; }
+        public LdapOptions Options { get; }
         #endregion
 
         #region Public methods
