@@ -36,27 +36,28 @@ namespace Visus.DirectoryIdentity {
         /// </summary>
         /// <param name="authService"></param>
         /// <param name="searchService"></param>
-        /// <param name="options"></param>
+        /// <param name="ldapOptions"></param>
         public LdapUserStore(ILdapAuthenticationService<TUser> authService,
                 ILdapSearchService<TUser> searchService,
-                ILdapOptions options) {
+                IOptions<LdapOptions> ldapOptions) {
             this._authService = authService
                 ?? throw new ArgumentNullException(nameof(authService));
             this._searchService = searchService
                 ?? throw new ArgumentNullException(nameof(searchService));
+            var schema = ldapOptions?.Value?.Schema
+                ?? throw new ArgumentNullException(nameof(ldapOptions));
 
             this._hasher = new LdapPasswordHasher<TUser>(this._authService);
 
             {
                 var prop = typeof(TUser).GetProperty(
                     nameof(ILdapIdentityUser.AccountName));
-                var att = LdapAttributeAttribute.GetLdapAttribute(prop,
-                    options.Schema);
+                var att = LdapAttributeAttribute.GetLdapAttribute(prop, schema);
 
                 if (att == null) {
                     var msg = Properties.Resources.ErrorNoLdapAttribute;
-                    msg = string.Format(msg, prop.Name, options.Schema);
-                    throw new ArgumentException(msg, nameof(options));
+                    msg = string.Format(msg, prop.Name, schema);
+                    throw new ArgumentException(msg, nameof(ldapOptions));
                 }
 
                 this._accountAttribute = att.Name;
@@ -65,29 +66,17 @@ namespace Visus.DirectoryIdentity {
             {
                 var prop = typeof(TUser).GetProperty(
                     nameof(ILdapIdentityUser.EmailAddress));
-                var att = LdapAttributeAttribute.GetLdapAttribute(prop,
-                    options.Schema);
+                var att = LdapAttributeAttribute.GetLdapAttribute(prop, schema);
 
                 if (att == null) {
                     var msg = Properties.Resources.ErrorNoLdapAttribute;
-                    msg = string.Format(msg, prop.Name, options.Schema);
-                    throw new ArgumentException(msg, nameof(options));
+                    msg = string.Format(msg, prop.Name, schema);
+                    throw new ArgumentException(msg, nameof(ldapOptions));
                 }
 
                 this._emailAttribute = att.Name;
             }
         }
-
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        /// <param name="authService"></param>
-        /// <param name="searchService"></param>
-        /// <param name="options"></param>
-        public LdapUserStore(ILdapAuthenticationService<TUser> authService,
-                ILdapSearchService<TUser> searchService,
-                IOptions<LdapOptions> options)
-            : this(authService, searchService, options?.Value) { }
         #endregion
 
             #region Public properties

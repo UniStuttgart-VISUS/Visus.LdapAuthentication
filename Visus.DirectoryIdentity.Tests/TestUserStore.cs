@@ -28,19 +28,11 @@ namespace Visus.DirectoryIdentity.Tests {
         #region Public constructors
         public TestUserStore() {
             try {
-                var configuration = new ConfigurationBuilder()
+                this._configuration = new ConfigurationBuilder()
                     .AddUserSecrets<TestSecrets>()
                     .Build();
                 this._testSecrets = new TestSecrets();
-                configuration.Bind(this._testSecrets);
-
-                var services = new ServiceCollection();
-                services.AddLdapOptions(configuration);
-                services.AddLdapAuthenticationService<LdapIdentityUser>();
-                services.AddLdapSearchService<LdapIdentityUser>();
-                services.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapIdentityUser>>>());
-                services.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapIdentityUser>>>());
-                this._services = services.BuildServiceProvider();
+                this._configuration.Bind(this._testSecrets);
             } catch {
                 this._testSecrets = null;
             }
@@ -49,17 +41,12 @@ namespace Visus.DirectoryIdentity.Tests {
 
         [TestMethod]
         public void TestDependencyInjection() {
-            var configuration = new ConfigurationBuilder()
-                .AddUserSecrets<TestSecrets>()
-                .Build();
-
             var services = new ServiceCollection();
-            services.AddLdapOptions(configuration);
-            services.AddLdapAuthenticationService<LdapIdentityUser>();
-            services.AddLdapSearchService<LdapIdentityUser>();
             services.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapIdentityUser>>>());
             services.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapIdentityUser>>>());
-            services.AddIdentityCore<LdapIdentityUser>(o => o.SignIn.RequireConfirmedAccount = false).AddLdapStore();
+            services.AddIdentityCore<LdapIdentityUser>(o => o.SignIn.RequireConfirmedAccount = false).AddLdapStore(o => {
+                this._configuration.GetSection("LdapOptions").Bind(o);
+            });
 
             var provider = services.BuildServiceProvider();
             Assert.IsNotNull(provider, "Service provider valid");
@@ -77,17 +64,18 @@ namespace Visus.DirectoryIdentity.Tests {
 
         [TestMethod]
         public async Task TestQueryUser() {
-            var authService = this._services.GetService<ILdapAuthenticationService<LdapIdentityUser>>();
-            Assert.IsNotNull(authService, "Authentication service created");
+            var services = new ServiceCollection();
+            services.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapIdentityUser>>>());
+            services.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapIdentityUser>>>());
+            services.AddIdentityCore<LdapIdentityUser>(o => o.SignIn.RequireConfirmedAccount = false).AddLdapStore(o => {
+                this._configuration.GetSection("LdapOptions").Bind(o);
+            });
 
-            var searchService = this._services.GetService<ILdapSearchService<LdapIdentityUser>>();
-            Assert.IsNotNull(searchService, "Search service created");
+            var provider = services.BuildServiceProvider();
+            Assert.IsNotNull(provider, "Service provider valid");
 
-            var options = this._services.GetService<IOptions<LdapOptions>>();
-            Assert.IsNotNull(options, "Options created");
-
-            var store = new LdapUserStore<LdapIdentityUser>(authService, searchService, options);
-            Assert.IsNotNull(store, "Store created");
+            var store = provider.GetRequiredService<IUserStore<LdapIdentityUser>>();
+            Assert.IsNotNull(store, "Resolve user store");
 
             {
                 var user = await store.FindByIdAsync(this._testSecrets.ExistingUserIdentity,
@@ -100,7 +88,7 @@ namespace Visus.DirectoryIdentity.Tests {
         }
 
         #region Private fields
-        private readonly IServiceProvider _services;
+        private readonly IConfigurationRoot _configuration;
         private readonly TestSecrets _testSecrets;
         #endregion
     }

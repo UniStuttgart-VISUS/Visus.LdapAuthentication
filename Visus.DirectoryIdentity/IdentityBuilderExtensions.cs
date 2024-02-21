@@ -30,12 +30,19 @@ namespace Visus.DirectoryIdentity {
         /// <typeparam name="TUser">The type of the user object to be used to
         /// represent an identity user.</typeparam>
         /// <param name="that">The builder used to add the store to.</param>
+        /// <param name="ldapOptions">A callback to configure the
+        /// <see cref="LdapOptions"/> used to connect to the directory server.
+        /// </param>
         /// <returns><paramref name="that"/>.</returns>
-        public static IdentityBuilder AddLdapStore<TUser>(this IdentityBuilder that)
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="ldapOptions"/> is <c>null</c>.
+        /// </exception>
+        public static IdentityBuilder AddLdapStore<TUser>(this IdentityBuilder that,
+                Action<LdapOptions> ldapOptions)
                 where TUser : class, ILdapIdentityUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
-            that.Services.AddLdapAuthenticationService<TUser>();
-            that.Services.AddLdapSearchService<TUser>();
+            that.Services.AddLdapAuthenticationService<TUser>(ldapOptions);
+            that.Services.AddLdapSearchService<TUser>(ldapOptions);
             that.Services.AddScoped<IPasswordHasher<TUser>,
                 PasswordHasher<TUser>>();
             that.Services.AddScoped<IUserStore<TUser>, LdapUserStore<TUser>>();
@@ -54,9 +61,16 @@ namespace Visus.DirectoryIdentity {
         /// <see cref="ILdapSearchService"/>.
         /// </remarks>
         /// <param name="that">The builder used to add the store to.</param>
+        /// <param name="ldapOptions">A callback to configure the
+        /// <see cref="LdapOptions"/> used to connect to the directory server.
+        /// </param>
         /// <returns><paramref name="that"/>.</returns>
-        public static IdentityBuilder AddLdapStore(this IdentityBuilder that) {
-            return that.AddLdapStore<LdapIdentityUser>();
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="ldapOptions"/> is <c>null</c>.
+        /// </exception>
+        public static IdentityBuilder AddLdapStore(this IdentityBuilder that,
+                Action<LdapOptions> ldapOptions) {
+            return that.AddLdapStore<LdapIdentityUser>(ldapOptions);
         }
     }
 }

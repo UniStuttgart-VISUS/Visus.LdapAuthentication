@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Visus.DirectoryAuthentication;
@@ -37,7 +38,7 @@ namespace Visus.DirectoryIdentity.Tests {
         public void TestRetrievalOfExtendedAttributes() {
             if (this._testSecrets != null) {
                 var service = new LdapSearchService<LdapIdentityUser>(
-                    this._testSecrets.LdapOptions,
+                    Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapIdentityUser>>>());
 
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
