@@ -61,6 +61,42 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The LDAP SSL certificate is not valid after {0}..
+        /// </summary>
+        internal static string ErrorCertificateExpired {
+            get {
+                return ResourceManager.GetString("ErrorCertificateExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The LDAP SSL certificate is not valid before {0}..
+        /// </summary>
+        internal static string ErrorCertificateNotYetValid {
+            get {
+                return ResourceManager.GetString("ErrorCertificateNotYetValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The LDAP SSL certificate has not been issued by &quot;{0}&quot;, but by &quot;{1}&quot;..
+        /// </summary>
+        internal static string ErrorCertIssuerMismatch {
+            get {
+                return ResourceManager.GetString("ErrorCertIssuerMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The LDAP SSL certificate has the thumbprint &quot;{0}&quot;, which is not one of the expected ones..
+        /// </summary>
+        internal static string ErrorCertThumbprintMismatch {
+            get {
+                return ResourceManager.GetString("ErrorCertThumbprintMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An entry with a value of &quot;{1}&quot; for &quot;{0}&quot; does not exist in the directory..
         /// </summary>
         internal static string ErrorEntryNotFound {
@@ -165,6 +201,24 @@ namespace Visus.DirectoryAuthentication.Properties {
         internal static string InfoBoundCurrent {
             get {
                 return ResourceManager.GetString("InfoBoundCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checking for LDAP server certificate &quot;{0}&quot; being issued by &quot;{1}&quot;..
+        /// </summary>
+        internal static string InfoCheckCertIssuer {
+            get {
+                return ResourceManager.GetString("InfoCheckCertIssuer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checking that LDAP server &quot;certificate {0} has one of the following thumbprints: {1}.
+        /// </summary>
+        internal static string InfoCheckCertThumbprint {
+            get {
+                return ResourceManager.GetString("InfoCheckCertThumbprint", resourceCulture);
             }
         }
         

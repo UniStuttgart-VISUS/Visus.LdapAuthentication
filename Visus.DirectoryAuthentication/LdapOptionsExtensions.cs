@@ -10,9 +10,9 @@ using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Visus.DirectoryAuthentication.Properties;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -93,16 +93,15 @@ namespace Visus.DirectoryAuthentication {
             }
 
             if ((username == null) && (password == null)) {
-                logger.LogInformation(Properties.Resources.InfoBindCurrent);
+                logger.LogInformation(Resources.InfoBindCurrent);
                 retval.Bind();
-                logger.LogInformation(Properties.Resources.InfoBoundCurrent);
+                logger.LogInformation(Resources.InfoBoundCurrent);
 
             } else {
-                logger.LogInformation(Properties.Resources.InfoBindingAsUser,
+                logger.LogInformation(Resources.InfoBindingAsUser,
                     username);
                 retval.Bind(new NetworkCredential(username, password));
-                logger.LogInformation(Properties.Resources.InfoBoundAsUser,
-                    username);
+                logger.LogInformation(Resources.InfoBoundAsUser, username);
             }
 
             return retval;
@@ -140,35 +139,34 @@ namespace Visus.DirectoryAuthentication {
             var cert = new X509Certificate2(certificate);
 
             if (DateTime.Now < cert.NotBefore) {
-                logger.LogError("The LDAP SSL certificate is not valid before "
-                    + cert.NotBefore);
+                logger.LogError(Resources.ErrorCertificateNotYetValid,
+                    cert.NotBefore);
                 return false;
             }
 
             if (DateTime.Now > cert.NotAfter) {
-                logger.LogError("The LDAP SSL certificate is not valid after "
-                    + cert.NotBefore);
+                logger.LogError(Resources.ErrorCertificateExpired,
+                    cert.NotBefore);
                 return false;
             }
 
             if (that.ServerCertificateIssuer != null) {
                 var issuer = that.ServerCertificateIssuer;
-                logger.LogInformation("Checking for LDAP server "
-                    + "certificate \"{0}\" being issued by \"{1}\".",
-                    certificate.Subject, issuer);
+                logger.LogInformation(Resources.InfoCheckCertIssuer,
+                    certificate.Subject,
+                    issuer);
                 if (!string.Equals(certificate.Issuer, issuer,
                         StringComparison.InvariantCultureIgnoreCase)) {
-                    logger.LogError("The LDAP SSL certificate has not been "
-                        + "issued by {0}, but by {1}.", issuer,
+                    logger.LogError(Resources.ErrorCertIssuerMismatch,
+                        issuer,
                         certificate.Issuer);
                     return false;
                 }
             }
 
             if (that.ServerThumbprint?.Any() == true) {
-                logger.LogInformation("Checking that LDAP server "
-                    + "certificate \"{0}\" has one of the following "
-                    + "thumbprints: {1}", certificate.Subject,
+                logger.LogInformation(Resources.InfoCheckCertThumbprint,
+                    certificate.Subject,
                     string.Join(", ", that.ServerThumbprint));
 
                 var match = from t in that.ServerThumbprint
@@ -177,9 +175,8 @@ namespace Visus.DirectoryAuthentication {
                             select t;
 
                 if (!match.Any()) {
-                    logger.LogError("The LDAP SSL certificate has the "
-                        + "thumbprint {0}, which is not one of the expected "
-                        + "ones.", certificate.GetHashCode());
+                    logger.LogError(Resources.ErrorCertThumbprintMismatch,
+                        certificate.GetHashCode());
                     return false;
                 }
             }

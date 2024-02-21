@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ErrorCertificateExpired" xml:space="preserve">
+    <value>The LDAP SSL certificate is not valid after {0}.</value>
+  </data>
+  <data name="ErrorCertificateNotYetValid" xml:space="preserve">
+    <value>The LDAP SSL certificate is not valid before {0}.</value>
+  </data>
+  <data name="ErrorCertIssuerMismatch" xml:space="preserve">
+    <value>The LDAP SSL certificate has not been issued by "{0}", but by "{1}".</value>
+  </data>
+  <data name="ErrorCertThumbprintMismatch" xml:space="preserve">
+    <value>The LDAP SSL certificate has the thumbprint "{0}", which is not one of the expected ones.</value>
+  </data>
   <data name="ErrorEntryNotFound" xml:space="preserve">
     <value>An entry with a value of "{1}" for "{0}" does not exist in the directory.</value>
   </data>
@@ -152,6 +164,12 @@
   </data>
   <data name="InfoBoundCurrent" xml:space="preserve">
     <value>Bound using the current credentials.</value>
+  </data>
+  <data name="InfoCheckCertIssuer" xml:space="preserve">
+    <value>Checking for LDAP server certificate "{0}" being issued by "{1}".</value>
+  </data>
+  <data name="InfoCheckCertThumbprint" xml:space="preserve">
+    <value>Checking that LDAP server "certificate {0} has one of the following thumbprints: {1}</value>
   </data>
   <data name="InfoConnectingLdap" xml:space="preserve">
     <value>Connecting to LDAP server {0}:{1}.</value>
