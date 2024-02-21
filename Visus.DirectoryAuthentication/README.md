@@ -25,8 +25,9 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP authentication with default LdapUser object.
-    services.AddLdapOptions(this.Configuration, "LdapConfiguration");
-    services.AddLdapAuthenticationService();
+    services.AddLdapAuthenticationService(o => {
+        this.Configuration.GetSection("LdapConfiguration").Bind(o);
+    });
 
     // ...
 }
@@ -41,8 +42,9 @@ var builder = WebApplication.CreateBuilder(args);
 // ...
 
 // Add LDAP authentication with default LdapUser object.
-builder.Services.AddLdapOptions(builder.Configuration, "LdapConfiguration");
-builder.Services.AddLdapAuthenticationService();
+builder.Services.AddLdapAuthenticationService(o => {
+    builder.Configuration.GetSection("LdapConfiguration").Bind(o);
+});
 // ...
 ```
 
@@ -64,7 +66,7 @@ public void ConfigureServices(IServiceCollection services) {
 ```
 
 ## Configure the LDAP server
-The configuration section can have any name of your choice as long as it can be bound to [`LdapOptions`](LdapOptions.cs). Alternatively, you can use your own implementation of [`ILdapOptions`](ILdapOptions.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
+The configuration section can have any name of your choice as long as it can be bound to [`LdapOptions`](LdapOptions.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
 
 ```JSON
 {
@@ -173,7 +175,7 @@ public sealed class CustomApplicationUser : LdapUserBase {
 If you need an even higher level of customisation, you can provide a completely new implementation of `ILdapUser` and fully control the whole mapping of LDAP attributes to properties and claims. Before doing so, you should also consider whether you can achieve your goals by overriding one or more of `LdapUserBase.AddGroupClaims` and `LdapUserBase.AddPropertyClaims`.
 
 ## Searching users
-In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `ILdapOptions.User` with a password stored in `ILdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](ILdapSearchService.cs) to implement such a behaviour. First, configure the service:
+In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `LdapOptions.User` with a password stored in `LdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](ILdapSearchService.cs) to implement such a behaviour. First, configure the service:
 
 ```C#
 using Visus.DirectoryAuthentication;
