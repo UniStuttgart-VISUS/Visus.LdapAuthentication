@@ -84,7 +84,8 @@ namespace Visus.LdapAuthentication {
                     Array.Empty<string>(),
                     this._options.PageSize,
                     "CN",
-                    this._options.Timeout);
+                    this._options.Timeout,
+                    this._logger);
 
                 foreach (var e in entries) {
                     yield return e.Dn;
@@ -251,7 +252,8 @@ namespace Visus.LdapAuthentication {
                     user.RequiredAttributes.Concat(groupAttribs).ToArray(),
                     this._options.PageSize,
                     sortAttribute.Name,
-                    this._options.Timeout);
+                    this._options.Timeout,
+                    this._logger);
 
                 // Convert LDAP entries to user objects.
                 foreach (var e in entries) {

@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Logging;
 using Novell.Directory.Ldap;
 using Novell.Directory.Ldap.Controls;
 using System;
@@ -135,6 +136,11 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Performs a paged LDAP search using <paramref name="that"/>.
         /// </summary>
+        /// <remarks>
+        /// This method performs a &quot;normal&quot;, non-paged search if
+        /// <paramref name="pageSize"/> is zero or less. This allows users to
+        /// disable paging on servers that do not support this control.
+        /// </remarks>
         /// <param name="that">The <see cref="LdapConnection"/> to be used
         /// for the search.</param>
         /// <param name="base">The base DN to start the search at.</param>
@@ -151,6 +157,9 @@ namespace Visus.LdapAuthentication {
         /// <param name="timeLimit">A time limit for the search. This parameter
         /// defaults to zero, which indicates an unlimited amount of search
         /// time.</param>
+        /// <param name="logger">An optional logger for recording exception that
+        /// are encountered during the paged search. It is safe to pass
+        /// <c>null</c>, in which case errors will be silently ignored.</param>
         /// <returns>The entries matching the specified search parameters.
         /// </returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
@@ -160,7 +169,8 @@ namespace Visus.LdapAuthentication {
         public static IEnumerable<LdapEntry> PagedSearch(
                 this LdapConnection that, string @base, SearchScope scope,
                 string filter, string[] attrs, int pageSize,
-                string sortingAttribute, int timeLimit = 0) {
+                string sortingAttribute, int timeLimit = 0,
+                ILogger logger = null) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             var cntRead = 0;        // Number of entries already read.
@@ -172,7 +182,10 @@ namespace Visus.LdapAuthentication {
                 var constraints = new LdapSearchConstraints() {
                     TimeLimit = timeLimit
                 };
-                constraints.AddPaging(curPage, pageSize, sortingAttribute);
+
+                if (pageSize > 0) {
+                    constraints.AddPaging(curPage, pageSize, sortingAttribute);
+                }
 
                 var results = that.Search(@base, scope, filter, attrs, false,
                     constraints);
@@ -185,8 +198,8 @@ namespace Visus.LdapAuthentication {
                         entry = results.Next();
                     } catch (LdapReferralException) {
                         continue;
-                    } catch (LdapException) {
-                        // Empty search result.
+                    } catch (LdapException ex) {
+                        logger.LogWarning(ex.Message, ex);
                         continue;
                     }
 
@@ -194,6 +207,9 @@ namespace Visus.LdapAuthentication {
                 }
 
                 ++curPage;
+                // 'cntTotal' should remain null if the response does not
+                // contain a paging control, in which case we will leave the
+                // loop immediately.
                 cntTotal = results.GetTotalCount();
             } while ((cntTotal != null) && (cntRead < cntTotal));
         }

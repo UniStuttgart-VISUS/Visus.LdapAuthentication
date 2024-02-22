@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
@@ -101,7 +102,7 @@ namespace Visus.LdapAuthentication.Tests {
         #endregion
 
         #region Issue #9
-        #if false
+#if false
         [TestMethod]
         public void Test9() {
             var options = new LdapOptions() {
@@ -122,7 +123,28 @@ namespace Visus.LdapAuthentication.Tests {
             var user = service.Login("uid=tesla,dc=example,dc=com", "");
             Assert.IsNotNull(user);
         }
-        #endif
+#endif
+        #endregion
+
+        #region Issue #12
+        [TestMethod]
+        public void Test12() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var configuration = new ConfigurationBuilder()
+                    .AddUserSecrets<TestSecrets>()
+                    .Build();
+                var secrets = new TestSecrets();
+                configuration.Bind(secrets);
+                secrets.LdapOptions.PageSize = 0;
+
+                var service = new LdapSearchService<LdapUser>(
+                    Options.Create(secrets.LdapOptions),
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var users = service.GetUsers();
+                Assert.IsTrue(users.Any(), "Directory search returns any user.");
+            }
+        }
         #endregion
 
         #region Private fields

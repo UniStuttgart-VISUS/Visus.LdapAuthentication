@@ -150,11 +150,15 @@ namespace Visus.DirectoryAuthentication {
         /// Gets the maximum number of results the LDAP client should request.
         /// </summary>
         /// <remarks>
-        /// <para>This is currently not used.</para>
+        /// <para>This property is initialised to 1000, which is a reasonable
+        /// default for Active Directory servers.</para>
+        /// <para>If this property is zero (or negative), the implementation
+        /// will not perform any paging. Results might be truncated in this
+        /// case.</para>
         /// </remarks>
         public int PageSize {
             get => this._pageSize;
-            set => this._pageSize = Math.Max(1, value);
+            set => this._pageSize = Math.Max(0, value);
         }
 
         /// <summary>

@@ -112,7 +112,7 @@ namespace Visus.LdapAuthentication {
         /// <inheritdoc />
         public int PageSize {
             get => this._pageSize;
-            set => this._pageSize = Math.Max(1, value);
+            set => this._pageSize = Math.Max(0, value);
         }
 
         /// <inheritdoc />

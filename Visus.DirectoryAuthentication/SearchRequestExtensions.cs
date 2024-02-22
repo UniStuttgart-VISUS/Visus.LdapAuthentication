@@ -20,22 +20,29 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="that">The request to add the paging controls to.
         /// </param>
-        /// <param name="currentPage"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="sortKey"></param>
-        /// <returns></returns>
+        /// <param name="pageSize">The size of the page. If this is zero or
+        /// less, no paging will be added and the returned control is
+        /// <c>null</c>.</param>
+        /// <param name="sortKey">The key for sorting the results, which is
+        /// required to yield consistent paging results.</param>
+        /// <returns>The request control for doing the paging. This can be
+        /// <c>null</c> in case <paramref name="pageSize"/> is zero or
+        /// negative.</returns>
         public static PageResultRequestControl AddPaging(
                 this SearchRequest that,
                 int pageSize,
                 string sortKey = "distinguishedName") {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
-            that.Controls.Add(new SortRequestControl(sortKey, false));
-            var retval = new PageResultRequestControl(pageSize);
-            retval.IsCritical = false;
-            that.Controls.Add(retval);
-
-            return retval;
+            if (pageSize > 0) {
+                that.Controls.Add(new SortRequestControl(sortKey, false));
+                var retval = new PageResultRequestControl(pageSize);
+                retval.IsCritical = false;
+                that.Controls.Add(retval);
+                return retval;
+            } else {
+                return null;
+            }
         }
 
         /// <summary>
