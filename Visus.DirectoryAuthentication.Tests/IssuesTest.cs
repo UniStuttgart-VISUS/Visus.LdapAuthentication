@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
-
+using System.Linq;
 
 namespace Visus.DirectoryAuthentication.Tests {
 
@@ -75,6 +75,27 @@ namespace Visus.DirectoryAuthentication.Tests {
                     var user = service.Login(this._testSecrets.LdapOptions.User,
                         this._testSecrets.LdapOptions.Password + " is wrong");
                 });
+            }
+        }
+        #endregion
+
+        #region Issue #12
+        [TestMethod]
+        public void Test12() {
+            if (this._testSecrets != null) {
+                var configuration = new ConfigurationBuilder()
+                    .AddUserSecrets<TestSecrets>()
+                    .Build();
+                var secrets = new TestSecrets();
+                configuration.Bind(secrets);
+                secrets.LdapOptions.PageSize = 0;
+
+                var service = new LdapSearchService<LdapUser>(
+                    Options.Create(secrets.LdapOptions),
+                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+                var users = service.GetUsers($"(sAMAccountName={this._testSecrets.ExistingUserAccount})");
+                Assert.IsTrue(users.Any(), "At least something returned");
             }
         }
         #endregion

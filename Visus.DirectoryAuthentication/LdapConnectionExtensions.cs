@@ -63,11 +63,11 @@ namespace Visus.DirectoryAuthentication {
                     }
                 }
 
-                var control = (from c in results.Controls
-                               let p = c as PageResultResponseControl
-                               where (p != null)
-                               select p).Single();
                 if (reqControl != null) {
+                    var control = (from c in results.Controls
+                                   let p = c as PageResultResponseControl
+                                   where (p != null)
+                                   select p).Single();
                     reqControl.Cookie = control.Cookie;
                 }
             } while (reqControl?.Cookie?.Length > 0);
