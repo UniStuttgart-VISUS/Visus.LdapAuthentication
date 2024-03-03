@@ -61,6 +61,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The LDAP attribute &quot;{0}&quot; was not found while assigning properties..
+        /// </summary>
+        internal static string ErrorAttributeNotFound {
+            get {
+                return ResourceManager.GetString("ErrorAttributeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The LDAP SSL certificate is not valid after {0}..
         /// </summary>
         internal static string ErrorCertificateExpired {
@@ -106,6 +115,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not set group claims for &quot;{0}&quot;..
+        /// </summary>
+        internal static string ErrorGroupClaim {
+            get {
+                return ResourceManager.GetString("ErrorGroupClaim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given byte sequence &quot;{0}&quot; does not represent a valid security identifier..
         /// </summary>
         internal static string ErrorInvalidSid {
@@ -138,6 +156,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         internal static string ErrorLdapPageSize {
             get {
                 return ResourceManager.GetString("ErrorLdapPageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve the primary group claim for &quot;{0}&quot;..
+        /// </summary>
+        internal static string ErrorPrimaryGroupClaim {
+            get {
+                return ResourceManager.GetString("ErrorPrimaryGroupClaim", resourceCulture);
             }
         }
         

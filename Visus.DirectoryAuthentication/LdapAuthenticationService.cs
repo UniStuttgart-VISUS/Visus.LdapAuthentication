@@ -32,6 +32,9 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
+        /// <param name="mapper">The <see cref="ILdapUserMapper{TUser}"/> to
+        /// provide mapping between LDAP attributes and properties of
+        /// <typeparamref name="TUser"/>.</param>
         /// <param name="options">The LDAP options that specify how to connect
         /// to the directory server.</param>
         /// <param name="logger">A logger for writing important messages.
@@ -40,10 +43,13 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAuthenticationService(IOptions<LdapOptions> options,
+        public LdapAuthenticationService(ILdapUserMapper<TUser> mapper,
+                IOptions<LdapOptions> options,
                 ILogger<LdapAuthenticationService<TUser>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
+            this._mapper = mapper
+                ?? throw new ArgumentNullException(nameof(mapper));
             this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
@@ -60,10 +66,11 @@ namespace Visus.DirectoryAuthentication {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBase) {
-                var req = this.GetRequest(retval, username, b);
+                var req = this.GetRequest(this._mapper, username, b);
                 var res = connection.SendRequest(req, this._options);
                 if ((res is SearchResponse s) && s.Any()) {
-                    retval.Assign(s.Entries[0], connection, this._options);
+                    this._mapper.Assign(retval, s.Entries[0], connection,
+                        this._logger);
                     return retval;
                 }
             }
@@ -90,12 +97,13 @@ namespace Visus.DirectoryAuthentication {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBase) {
-                var req = this.GetRequest(retval, username, b);
+                var req = this.GetRequest(this._mapper, username, b);
                 var res = await connection.SendRequestAsync(req, this._options)
                     .ConfigureAwait(false);
 
                 if ((res is SearchResponse s) && s.Any()) {
-                    retval.Assign(s.Entries[0], connection, this._options);
+                    this._mapper.Assign(retval, s.Entries[0], connection,
+                        this._logger);
                     return retval;
                 }
             }
@@ -113,8 +121,10 @@ namespace Visus.DirectoryAuthentication {
         #endregion
 
         #region Private methods
-        private SearchRequest GetRequest(TUser user, string username,
-                string searchBase, SearchScope scope) {
+        private SearchRequest GetRequest(ILdapUserMapper<TUser> mapper,
+                string username,
+                string searchBase,
+                SearchScope scope) {
             Debug.Assert(searchBase != null);
             var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
             var filter = string.Format(this._options.Mapping.UserFilter,
@@ -122,18 +132,20 @@ namespace Visus.DirectoryAuthentication {
             var retval = new SearchRequest(searchBase,
                 filter,
                 scope,
-                user.RequiredAttributes.Concat(groupAttribs).ToArray());
+                mapper.RequiredAttributes.Concat(groupAttribs).ToArray());
             return retval;
         }
 
-        private SearchRequest GetRequest(TUser user, string username,
+        private SearchRequest GetRequest(ILdapUserMapper<TUser> mapper,
+                string username,
                 KeyValuePair<string, SearchScope> searchBase)
-            => this.GetRequest(user, username, searchBase.Key,
+            => this.GetRequest(mapper, username, searchBase.Key,
                 searchBase.Value);
         #endregion
 
         #region Private fields
         private readonly ILogger _logger;
+        private readonly ILdapUserMapper<TUser> _mapper;
         private readonly LdapOptions _options;
         #endregion
     }

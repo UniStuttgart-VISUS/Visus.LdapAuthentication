@@ -65,20 +65,6 @@ namespace Visus.DirectoryAuthentication {
         public virtual string Identity { get; internal set; }
 
         /// <inheritdoc />
-        [JsonIgnore]
-        public virtual IEnumerable<string> RequiredAttributes {
-            get {
-                var retval = (from p in this.GetType().GetProperties()
-                              let a = p.GetCustomAttributes<LdapAttributeAttribute>()
-                              where (a != null) && a.Any()
-                              select a.Select(aa => aa.Name))
-                              .SelectMany(a => a)
-                              .Distinct();
-                return retval;
-            }
-        }
-
-        /// <inheritdoc />
         [LdapAttribute(Schema.ActiveDirectory, "sn")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "sn")]
         [LdapAttribute(Schema.Rfc2307, "sn")]

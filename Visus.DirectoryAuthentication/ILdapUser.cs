@@ -41,25 +41,5 @@ namespace Visus.DirectoryAuthentication {
         /// Gets the security identifier of the user.
         /// </summary>
         string Identity { get; }
-
-        /// <summary>
-        /// Gets the attributes that must be loaded for each
-        /// <see cref="System.DirectoryServices.Protocols.SearchResultEntry"/>
-        /// in order to fill all properties and claims of the user object.
-        /// </summary>
-        [JsonIgnore]
-        IEnumerable<string> RequiredAttributes { get; }
-
-        /// <summary>
-        /// Assigns the specified LDAP entry as the user.
-        /// </summary>
-        /// <param name="entry">The entry representing the user.</param>
-        /// <param name="connection">A <see cref="LdapConnection"/> that can be
-        /// used to obtain additional information about the user.</param>
-        /// <param name="options">The <see cref="LdapOptions"/> that can be used
-        /// to obtain additional information about the user-defined mapping of
-        /// LDAP attributes.</param>
-        void Assign(SearchResultEntry entry, LdapConnection connection,
-            LdapOptions options);
     }
 }

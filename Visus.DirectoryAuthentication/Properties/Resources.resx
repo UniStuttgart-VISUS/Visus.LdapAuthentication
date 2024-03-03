@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ErrorAttributeNotFound" xml:space="preserve">
+    <value>The LDAP attribute "{0}" was not found while assigning properties.</value>
+  </data>
   <data name="ErrorCertificateExpired" xml:space="preserve">
     <value>The LDAP SSL certificate is not valid after {0}.</value>
   </data>
@@ -132,6 +135,9 @@
   <data name="ErrorEntryNotFound" xml:space="preserve">
     <value>An entry with a value of "{1}" for "{0}" does not exist in the directory.</value>
   </data>
+  <data name="ErrorGroupClaim" xml:space="preserve">
+    <value>Could not set group claims for "{0}".</value>
+  </data>
   <data name="ErrorInvalidSid" xml:space="preserve">
     <value>The given byte sequence "{0}" does not represent a valid security identifier.</value>
   </data>
@@ -143,6 +149,9 @@
   </data>
   <data name="ErrorLdapPageSize" xml:space="preserve">
     <value>The size of a page of LDAP search results must be at least 1.</value>
+  </data>
+  <data name="ErrorPrimaryGroupClaim" xml:space="preserve">
+    <value>Could not retrieve the primary group claim for "{0}".</value>
   </data>
   <data name="ErrorPropertyNotFound" xml:space="preserve">
     <value>The given property "{0}" was not found.</value>

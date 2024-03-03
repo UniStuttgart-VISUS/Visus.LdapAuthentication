@@ -32,6 +32,9 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
+        /// <param name="mapper">A <see cref="ILdapUserMapper{TUser}"/> that
+        /// provides a mapping between LDAP attributes and properties of
+        /// <typeparamref name="TUser"/>.</param>
         /// <param name="options">The LDAP options that specify how to connect
         /// to the directory server.</param>
         /// <param name="logger">A logger for writing important messages.
@@ -40,10 +43,13 @@ namespace Visus.DirectoryAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(IOptions<LdapOptions> options,
+        public LdapSearchService(ILdapUserMapper<TUser> mapper,
+                IOptions<LdapOptions> options,
                 ILogger<LdapSearchService<TUser>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
+            this._mapper = mapper
+                ?? throw new ArgumentNullException(nameof(mapper));
             this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
@@ -113,7 +119,8 @@ namespace Visus.DirectoryAuthentication {
                 var res = this.Connection.SendRequest(req, this._options);
 
                 if ((res is SearchResponse s) && s.Any()) {
-                    retval.Assign(s.Entries[0], this.Connection, this._options);
+                    this._mapper.Assign(retval, s.Entries[0], this.Connection,
+                        this._logger);
                     return retval;
                 }
             }
@@ -138,7 +145,8 @@ namespace Visus.DirectoryAuthentication {
                     this._options).ConfigureAwait(false);
 
                 if ((res is SearchResponse s) && s.Any()) {
-                    retval.Assign(s.Entries[0], this.Connection, this._options);
+                    this._mapper.Assign(retval, s.Entries[0], this.Connection,
+                        this._logger);
                     return retval;
                 }
             }
@@ -287,7 +295,7 @@ namespace Visus.DirectoryAuthentication {
             return new SearchRequest(searchBase.Key,
                 $"({idAttribute.Name}={identity})",
                 searchBase.Value,
-                user.RequiredAttributes.Concat(groupAttribs).ToArray());
+                this._mapper.RequiredAttributes.Concat(groupAttribs).ToArray());
         }
 
         /// <summary>
@@ -317,14 +325,14 @@ namespace Visus.DirectoryAuthentication {
                 b.Key,
                 b.Value,
                 filter,
-                user.RequiredAttributes.Concat(groupAttribs).ToArray(),
+                this._mapper.RequiredAttributes.Concat(groupAttribs).ToArray(),
                 this._options.PageSize,
                 sortAttribute.Name,
                 this._options.Timeout);
 
                 // Convert LDAP entries to user objects.
                 foreach (var e in entries) {
-                    user.Assign(e, this.Connection, this._options);
+                    this._mapper.Assign(user, e, this.Connection, this._logger);
                     yield return user;
                     user = new TUser();
                 }
@@ -395,6 +403,7 @@ namespace Visus.DirectoryAuthentication {
         #region Private fields
         private LdapConnection _connection;
         private readonly ILogger _logger;
+        private readonly ILdapUserMapper<TUser> _mapper;
         private readonly LdapOptions _options;
         #endregion
     }

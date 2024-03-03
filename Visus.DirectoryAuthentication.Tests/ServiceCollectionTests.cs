@@ -34,13 +34,19 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
             var provider = collection.BuildServiceProvider();
+
+            var mapper = provider.GetService<ILdapUserMapper<LdapUser>>();
+            Assert.IsNotNull(mapper, "Mapper resolved");
+
             var service = provider.GetService<ILdapAuthenticationService>();
             Assert.IsNotNull(service, "Service resolved");
+
+            var typedService = provider.GetService<ILdapAuthenticationService<LdapUser>>();
+            Assert.IsNotNull(service, "Typed service resolved");
 
             var options = provider.GetService<IOptions<LdapOptions>>();
             Assert.IsNotNull(options?.Value, "Options resolved");
         }
-
 
         [TestMethod]
         public void TestConnectionServiceResolution() {
@@ -77,8 +83,15 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
             var provider = collection.BuildServiceProvider();
+
+            var mapper = provider.GetService<ILdapUserMapper<LdapUser>>();
+            Assert.IsNotNull(mapper, "Mapper resolved");
+
             var service = provider.GetService<ILdapSearchService>();
             Assert.IsNotNull(service, "Service resolved");
+
+            var typedService = provider.GetService<ILdapSearchService<LdapUser>>();
+            Assert.IsNotNull(service, "Typed service resolved");
 
             var options = provider.GetService<IOptions<LdapOptions>>();
             Assert.IsNotNull(options?.Value, "Options resolved");

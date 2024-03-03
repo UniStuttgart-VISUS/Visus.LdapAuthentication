@@ -53,8 +53,10 @@ namespace Visus.DirectoryAuthentication.Tests {
                 IsNoCertificateCheck = true
             };
 
+            var options = Options.Create(options);
             var service = new LdapAuthenticationService<LdapUser>(
-                Options.Create(this._testSecrets.LdapOptions),
+                new LdapUserMapper<LdapUser>(options),
+                options,
                 Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
             var user = service.Login("uid=tesla,dc=example,dc=com", "");
@@ -67,8 +69,10 @@ namespace Visus.DirectoryAuthentication.Tests {
         [TestMethod]
         public void Test10() {
             if (this._testSecrets != null) {
+                var options = Options.Create(this._testSecrets.LdapOptions);
                 var service = new LdapAuthenticationService<LdapUser>(
-                    Options.Create(this._testSecrets.LdapOptions),
+                    new LdapUserMapper<LdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
                 Assert.ThrowsException<LdapException>(() => {
@@ -90,8 +94,10 @@ namespace Visus.DirectoryAuthentication.Tests {
                 configuration.Bind(secrets);
                 secrets.LdapOptions.PageSize = 0;
 
+                var options = Options.Create(secrets.LdapOptions);
                 var service = new LdapSearchService<LdapUser>(
-                    Options.Create(secrets.LdapOptions),
+                    new LdapUserMapper<LdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var users = service.GetUsers($"(sAMAccountName={this._testSecrets.ExistingUserAccount})");

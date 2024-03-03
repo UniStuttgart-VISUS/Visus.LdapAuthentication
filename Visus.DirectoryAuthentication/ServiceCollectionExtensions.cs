@@ -33,8 +33,9 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, ILdapUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = options ?? throw new ArgumentNullException(nameof(options));
-            that.Configure(options);
-            return that.AddScoped<ILdapAuthenticationService,
+            return that.Configure(options)
+                .AddSingleton<ILdapUserMapper<TUser>, LdapUserMapper<TUser>>()
+                .AddScoped<ILdapAuthenticationService,
                     LdapAuthenticationService<TUser>>()
                 .AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser>>();
@@ -98,8 +99,9 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, ILdapUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = options ?? throw new ArgumentNullException(nameof(options));
-            that.Configure(options);
-            return that.AddScoped<ILdapSearchService,
+            return that.Configure(options)
+                .AddSingleton<ILdapUserMapper<TUser>, LdapUserMapper<TUser>>()
+                .AddScoped<ILdapSearchService,
                     LdapSearchService<TUser>>()
                 .AddScoped<ILdapSearchService<TUser>,
                     LdapSearchService<TUser>>();
