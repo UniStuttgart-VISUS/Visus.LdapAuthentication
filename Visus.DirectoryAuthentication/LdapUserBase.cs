@@ -62,6 +62,7 @@ namespace Visus.DirectoryAuthentication {
         [Claim(ClaimTypes.PrimarySid)]
         [Claim(ClaimTypes.Sid)]
         [Claim(ClaimTypes.NameIdentifier)]
+        [LdapIdentity]
         public virtual string Identity { get; internal set; }
 
         /// <inheritdoc />
