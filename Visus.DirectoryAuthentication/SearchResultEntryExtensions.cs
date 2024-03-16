@@ -152,6 +152,7 @@ namespace Visus.DirectoryAuthentication {
             return retval;
         }
 
+        #region Internal methods
         /// <summary>
         /// Gets the attribute with the specified name from
         /// <paramref name="that"/>.
@@ -171,7 +172,9 @@ namespace Visus.DirectoryAuthentication {
                 this SearchResultEntry that, string attribute) {
             return that?.Attributes[attribute];
         }
+        #endregion
 
+        #region Private methods
         /// <summary>
         /// Gets the direct and transitive group memberships of the specified
         /// (user or group) LDAP entry.
@@ -274,5 +277,6 @@ namespace Visus.DirectoryAuthentication {
                 } /* foreach (var g in groups) */
             } /* if (groups != null) */
         }
+        #endregion
     }
 }

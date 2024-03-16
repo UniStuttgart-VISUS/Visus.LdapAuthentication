@@ -12,7 +12,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Text.Json.Serialization;
 
 
 namespace Visus.DirectoryAuthentication {
