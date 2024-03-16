@@ -22,7 +22,7 @@ namespace Visus.LdapAuthentication {
     /// </summary>
     /// <typeparam name="TUser">The type of user to be created for the search
     /// results, which also defines attributes like the unique identity in
-    /// combination with the global options from <see cref="ILdapOptions"/>.
+    /// combination with the global options from <see cref="IOptions"/>.
     /// </typeparam>
     public sealed class LdapSearchService<TUser> : ILdapSearchService<TUser>
             where TUser : class, ILdapUser, new() {
@@ -39,7 +39,7 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(ILdapOptions options,
+        public LdapSearchService(IOptions options,
                 ILogger<LdapSearchService<TUser>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
@@ -269,7 +269,7 @@ namespace Visus.LdapAuthentication {
         #region Private fields
         private LdapConnection _connection;
         private readonly ILogger _logger;
-        private readonly ILdapOptions _options;
+        private readonly IOptions _options;
         #endregion
     }
 }

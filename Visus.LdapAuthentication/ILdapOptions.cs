@@ -13,7 +13,7 @@ namespace Visus.LdapAuthentication {
     /// <summary>
     /// The configuration options for the LDAP server.
     /// </summary>
-    public interface ILdapOptions {
+    public interface IOptions {
 
         /// <summary>
         /// Gets the default domain appended to a user name.

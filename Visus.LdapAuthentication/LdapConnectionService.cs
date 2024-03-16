@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Novell.Directory.Ldap;
 using System;
 
@@ -13,7 +14,7 @@ namespace Visus.LdapAuthentication {
 
     /// <summary>
     /// Generic LDAP connection service using the server and credentials
-    /// specified in <see cref="ILdapOptions"/>.
+    /// specified in <see cref="IOptions"/>.
     /// </summary>
     /// <remarks>
     /// Use this service if you need access to the LDAP directory to compute any
@@ -28,18 +29,18 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         /// <param name="options"></param>
         /// <param name="logger"></param>
-        public LdapConnectionService(ILdapOptions options,
+        public LdapConnectionService(IOptions<LdapOptions> options,
                 ILogger<LdapConnectionService> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this.Options = options
+            this.Options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
         #endregion
 
         #region Public properties
         /// <inheritdoc />
-        public ILdapOptions Options { get; }
+        public IOptions Options { get; }
         #endregion
 
         #region Public methods

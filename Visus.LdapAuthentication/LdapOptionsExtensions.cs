@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 namespace Visus.LdapAuthentication {
 
     /// <summary>
-    /// Extension methods for <see cref="ILdapOptions"/>.
+    /// Extension methods for <see cref="IOptions"/>.
     /// </summary>
     public static class LdapOptionsExtensions {
 
@@ -39,7 +39,7 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c></exception>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        public static LdapConnection CreateConnection(this ILdapOptions that,
+        public static LdapConnection CreateConnection(this IOptions that,
                 ILogger logger) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             _ = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -70,7 +70,7 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c></exception>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        public static LdapConnection Connect(this ILdapOptions that,
+        public static LdapConnection Connect(this IOptions that,
                 ILogger logger) {
             var retval = that.CreateConnection(logger);
             Debug.Assert(that != null);
@@ -98,7 +98,7 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c></exception>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        public static LdapConnection Connect(this ILdapOptions that,
+        public static LdapConnection Connect(this IOptions that,
                 string username, string password, ILogger logger) {
             var retval = that.Connect(logger);
             Debug.Assert(that != null);
@@ -138,7 +138,7 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c></exception>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        public static bool VerifyServerCertificate(this ILdapOptions that,
+        public static bool VerifyServerCertificate(this IOptions that,
                 X509Certificate certificate,
                 X509Chain chain,
                 SslPolicyErrors sslPolicyErrors,

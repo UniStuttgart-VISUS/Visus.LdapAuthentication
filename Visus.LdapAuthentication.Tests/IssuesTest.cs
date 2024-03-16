@@ -76,7 +76,7 @@ namespace Visus.LdapAuthentication.Tests {
 #pragma warning disable CS0618
                 o.SearchBase = dn;
                 Assert.AreEqual(1, o.SearchBases.Count, "Single SearchBase created.");
-                Assert.AreSame(((ILdapOptions) o).SearchBase, o.SearchBases.Keys.First(), "First element set");
+                Assert.AreSame(((IOptions) o).SearchBase, o.SearchBases.Keys.First(), "First element set");
                 o.IsSubtree = false;
                 Assert.AreEqual(1, o.SearchBases.Count, "No additional SearchBase created.");
                 Assert.AreEqual(SearchScope.Base, o.SearchBases.Values.First(), "Non-recursive set");

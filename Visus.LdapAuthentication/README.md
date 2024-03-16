@@ -21,8 +21,9 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP authentication with default LdapUser object.
-    services.AddLdapOptions(this.Configuration, "LdapConfiguration");
-    services.AddLdapAuthenticationService();
+    services.AddLdapAuthenticationService(o => {
+        this.Configuration.GetSection("LdapConfiguration").Bind(o);
+    });
 
     // ...
 }
@@ -37,8 +38,9 @@ var builder = WebApplication.CreateBuilder(args);
 // ...
 
 // Add LDAP authentication with default LdapUser object.
-builder.Services.AddLdapOptions(builder.Configuration, "LdapConfiguration");
-builder.Services.AddLdapAuthenticationService();
+builder.Services.AddLdapAuthenticationService(o => {
+    this.Configuration.GetSection("LdapConfiguration").Bind(o);
+});
 // ...
 ```
 
@@ -53,8 +55,9 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP authentication with customised user object.
-    services.AddLdapOptions(this.Configuration, "LdapConfiguration");
-    services.AddLdapAuthenticationService<CustomApplicationUser>();
+    services.AddLdapAuthenticationService<CustomApplicationUser>(o => {
+        this.Configuration.GetSection("LdapConfiguration").Bind(o);
+    });
 
     // ...
 }
@@ -180,8 +183,9 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP search service using service account.
-    services.AddLdapOptions(this.Configuration, "LdapConfiguration");
-    services.AddLdapSearchService<LdapUser>();
+    services.AddLdapSearchService<LdapUser>(o => {
+        this.Configuration.GetSection("LdapConfiguration").Bind(o);
+    });
 
     // ...
 }

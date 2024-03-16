@@ -88,7 +88,7 @@ namespace Visus.LdapAuthentication {
         #region Public methods
         /// <inheritdoc />
         public void Assign(LdapEntry entry, LdapConnection connection,
-                ILdapOptions options) {
+                IOptions options) {
             entry.AssignTo(this, options);
             this.AddGroupClaims(entry, connection, options);
             this.AddPropertyClaims(entry, connection, options);
@@ -105,7 +105,7 @@ namespace Visus.LdapAuthentication {
         /// </param>
         /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
         /// the details about the groups.</param>
-        /// <param name="options">The <see cref="ILdapOptions"/> configuring the
+        /// <param name="options">The <see cref="IOptions"/> configuring the
         /// mapping of attributes.</param>
         /// <returns>The LDAP entries for the groups <paramref name="entry"/> is
         /// member of.</returns>
@@ -118,7 +118,7 @@ namespace Visus.LdapAuthentication {
         protected static IEnumerable<LdapEntry> GetGroupMemberships(
                 LdapEntry entry,
                 LdapConnection connection,
-                ILdapOptions options) {
+                IOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection
@@ -171,7 +171,7 @@ namespace Visus.LdapAuthentication {
         /// </param>
         /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
         /// the details about the groups.</param>
-        /// <param name="options">The <see cref="ILdapOptions"/> configuring the
+        /// <param name="options">The <see cref="IOptions"/> configuring the
         /// mapping of attributes.</param>
         /// <returns>The LDAP entries for the groups <paramref name="entry"/> is
         /// member of.</returns>
@@ -184,7 +184,7 @@ namespace Visus.LdapAuthentication {
         private IEnumerable<LdapEntry> GetRecursiveGroupMemberships(
                 LdapEntry entry,
                 LdapConnection connection,
-                ILdapOptions options) {
+                IOptions options) {
             var stack = new Stack<LdapEntry>();
             stack.Push(entry);
 
@@ -208,7 +208,7 @@ namespace Visus.LdapAuthentication {
         /// <param name="connection"></param>
         /// <param name="schema"></param>
         protected virtual void AddGroupClaims(LdapEntry entry,
-                LdapConnection connection, ILdapOptions options) {
+                LdapConnection connection, IOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection
@@ -266,7 +266,7 @@ namespace Visus.LdapAuthentication {
         /// <param name="connection"></param>
         /// <param name="schema"></param>
         protected virtual void AddPropertyClaims(LdapEntry entry,
-                LdapConnection connection, ILdapOptions options) {
+                LdapConnection connection, IOptions options) {
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection

@@ -61,7 +61,7 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
         /// </exception>
         public static void AssignTo(this LdapEntry that, object target,
-                ILdapOptions options)
+                IOptions options)
             => that.AssignTo(target, options?.Schema);
     }
 }

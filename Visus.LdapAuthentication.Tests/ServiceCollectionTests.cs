@@ -22,7 +22,7 @@ namespace Visus.LdapAuthentication.Tests {
     [TestClass]
     public sealed class ServiceCollectionTests {
 
-        class CustomOptions : ILdapOptions {
+        class CustomOptions : IOptions {
             public string DefaultDomain { get; set; }
             public bool IsNoCertificateCheck { get; set; }
             public bool IsRecursiveGroupMembership { get; set; }
@@ -46,6 +46,7 @@ namespace Visus.LdapAuthentication.Tests {
         }
 
         [TestMethod]
+        [Obsolete]
         public void TestAddOptionsFromDefaultName() {
             var configuration = new ConfigurationBuilder()
                 .AddUserSecrets<TestSecrets>()
@@ -68,6 +69,7 @@ namespace Visus.LdapAuthentication.Tests {
         }
 
         [TestMethod]
+        [Obsolete]
         public void TestAddOptionsFromSection() {
             var configuration = new ConfigurationBuilder()
                 .AddUserSecrets<TestSecrets>()
@@ -91,6 +93,7 @@ namespace Visus.LdapAuthentication.Tests {
         }
 
         [TestMethod]
+        [Obsolete]
         public void TestAddCustomOptionsFromDefaultName() {
             var configuration = new ConfigurationBuilder()
                 .AddUserSecrets<TestSecrets>()
@@ -112,7 +115,7 @@ namespace Visus.LdapAuthentication.Tests {
             }
 
             {
-                var actual = provider.GetService<ILdapOptions>();
+                var actual = provider.GetService<IOptions>();
                 Assert.IsNotNull(actual, "ILdapOptions injected");
                 Assert.AreEqual(expected.Server, actual.Server, "Server matches");
                 Assert.AreEqual(expected.User, actual.User, "User matches");
@@ -120,6 +123,7 @@ namespace Visus.LdapAuthentication.Tests {
         }
 
         [TestMethod]
+        [Obsolete]
         public void TestAddCustomOptionsFromSection() {
             var configuration = new ConfigurationBuilder()
                 .AddUserSecrets<TestSecrets>()
@@ -142,7 +146,7 @@ namespace Visus.LdapAuthentication.Tests {
             }
 
             {
-                var actual = provider.GetService<ILdapOptions>();
+                var actual = provider.GetService<IOptions>();
                 Assert.IsNotNull(actual, "ILdapOptions injected");
                 Assert.AreEqual(expected.Server, actual.Server, "Server matches");
                 Assert.AreEqual(expected.User, actual.User, "User matches");
@@ -150,6 +154,7 @@ namespace Visus.LdapAuthentication.Tests {
         }
 
         [TestMethod]
+        [Obsolete]
         public void TestAuthServiceResolution() {
             var configuration = new ConfigurationBuilder()
                 .AddUserSecrets<TestSecrets>()
@@ -182,26 +187,7 @@ namespace Visus.LdapAuthentication.Tests {
 
             var collection = new ServiceCollection();
             collection.AddLdapAuthenticationService(o => {
-                var options = new LdapOptions();
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(options);
-
-                o.DefaultDomain = options.DefaultDomain;
-                o.IsNoCertificateCheck = options.IsNoCertificateCheck;
-                o.IsRecursiveGroupMembership = options.IsRecursiveGroupMembership;
-                o.IsSsl = options.IsSsl;
-                o.Mapping = options.Mapping;
-                o.Mappings = options.Mappings;
-                o.PageSize = options.PageSize;
-                o.Password = options.Password;
-                o.Port = options.Port;
-                o.RootCaThumbprint = options.RootCaThumbprint;
-                o.Schema = options.Schema;
-                o.SearchBases = options.SearchBases;
-                o.Server = options.Server;
-                o.ServerThumbprint = options.ServerThumbprint;
-                o.Timeout = options.Timeout;
-                o.User = options.User;
+                configuration.GetSection("LdapOptions").Bind(o);
             });
             collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
@@ -222,26 +208,7 @@ namespace Visus.LdapAuthentication.Tests {
 
             var collection = new ServiceCollection();
             collection.AddLdapAuthenticationService<LdapUser>(o => {
-                var options = new LdapOptions();
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(options);
-
-                o.DefaultDomain = options.DefaultDomain;
-                o.IsNoCertificateCheck = options.IsNoCertificateCheck;
-                o.IsRecursiveGroupMembership = options.IsRecursiveGroupMembership;
-                o.IsSsl = options.IsSsl;
-                o.Mapping = options.Mapping;
-                o.Mappings = options.Mappings;
-                o.PageSize = options.PageSize;
-                o.Password = options.Password;
-                o.Port = options.Port;
-                o.RootCaThumbprint = options.RootCaThumbprint;
-                o.Schema = options.Schema;
-                o.SearchBases = options.SearchBases;
-                o.Server = options.Server;
-                o.ServerThumbprint = options.ServerThumbprint;
-                o.Timeout = options.Timeout;
-                o.User = options.User;
+                configuration.GetSection("LdapOptions").Bind(o);
             });
             collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
@@ -252,6 +219,68 @@ namespace Visus.LdapAuthentication.Tests {
 
             var options = provider.GetService<IOptions<LdapOptions>>();
             Assert.IsNotNull(options?.Value, "Options also available");
+        }
+
+        [TestMethod]
+        public void TestAddAllServices() {
+            var configuration = new ConfigurationBuilder()
+                .AddUserSecrets<TestSecrets>()
+                .Build();
+
+            var collection = new ServiceCollection();
+
+            collection.AddLdapAuthenticationService<LdapUser>(o => {
+                configuration.GetSection("LdapOptions").Bind(o);
+            });
+            collection.AddLdapAuthenticationService(o => {
+                configuration.GetSection("LdapOptions").Bind(o);
+            });
+            collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+
+            collection.AddLdapConnectionService(o => {
+                configuration.GetSection("LdapOptions").Bind(o);
+            });
+            collection.AddScoped(s => Mock.Of<ILogger<LdapConnectionService>>());
+
+            collection.AddLdapSearchService<LdapUser>(o => {
+                configuration.GetSection("LdapOptions").Bind(o);
+            });
+            collection.AddLdapSearchService(o => {
+                configuration.GetSection("LdapOptions").Bind(o);
+            });
+            collection.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+
+            var provider = collection.BuildServiceProvider();
+
+            {
+                var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service, "ILdapAuthenticationService<LdapUser> resolved");
+            }
+
+            {
+                var service = provider.GetService<ILdapAuthenticationService>();
+                Assert.IsNotNull(service, "ILdapAuthenticationService resolved");
+            }
+
+            {
+                var service = provider.GetService<ILdapConnectionService>();
+                Assert.IsNotNull(service, "ILdapConnectionService resolved");
+            }
+
+            {
+                var service = provider.GetService<ILdapSearchService<LdapUser>>();
+                Assert.IsNotNull(service, "ILdapSearchService<LdapUser> resolved");
+            }
+
+            {
+                var service = provider.GetService<ILdapSearchService>();
+                Assert.IsNotNull(service, "ILdapSearchService resolved");
+            }
+
+            {
+                var options = provider.GetService<IOptions<LdapOptions>>();
+                Assert.IsNotNull(options?.Value, "Options also available");
+            }
         }
     }
 }

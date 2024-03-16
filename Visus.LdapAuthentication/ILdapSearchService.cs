@@ -16,7 +16,7 @@ namespace Visus.LdapAuthentication {
     /// <remarks>
     /// The search service allows an application to retrieve user information
     /// without binding as an end user. In order to perform the search, the
-    /// credentials specified in <see cref="ILdapOptions"/> are used.
+    /// credentials specified in <see cref="IOptions"/> are used.
     /// </remarks>
     public interface ILdapSearchService : IDisposable {
 
@@ -48,7 +48,7 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are in matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="IOptions"/> used by the
         /// application.
         /// </summary>
         /// <remarks>
@@ -66,7 +66,7 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="IOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref name="filter"/>.
         /// </summary>
         /// <param name="filter">An LDAP filter expression that is combined
@@ -77,14 +77,14 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that match the search criteria
-        /// configured in <see cref="ILdapOptions"/> used by the application
+        /// configured in <see cref="IOptions"/> used by the application
         /// <i>and</i> the specified LDAP <paramref name="filter"/> while
-        /// overriding the search bases from the <see cref="ILdapOptions"/>
+        /// overriding the search bases from the <see cref="IOptions"/>
         /// with the given ones.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="IOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search
@@ -95,16 +95,16 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// critiera configured in the <see cref="ILdapOptions"/> used by the
+        /// critiera configured in the <see cref="IOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
-        /// while overriding the search base from the <see cref="ILdapOptions"/>
+        /// while overriding the search base from the <see cref="IOptions"/>
         /// with the given one.
         /// </summary>
         /// <param name="searchBase">The search base to look in. It is safe to
         /// pass <c>null</c>, in which case the search base from the configured
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="IOptions"/> will be used.</param>
         /// <param name="searchScope">Overrides the search scope from the
-        /// configured <see cref="ILdapOptions"/>.</param>
+        /// configured <see cref="IOptions"/>.</param>
         /// <param name="filter">An LDAP filter expression that is combined
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search
@@ -114,16 +114,16 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// critiera configured in the <see cref="ILdapOptions"/> used by the
+        /// critiera configured in the <see cref="IOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
-        /// while overriding the search base from the <see cref="ILdapOptions"/>
+        /// while overriding the search base from the <see cref="IOptions"/>
         /// with the given one.
         /// </summary>
         /// <param name="searchBase">The search base to look in. It is safe to
         /// pass <c>null</c>, in which case the search base from the configured
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="IOptions"/> will be used.</param>
         /// <param name="searchScope">Overrides the search scope from the
-        /// configured <see cref="ILdapOptions"/>. This can be one of
+        /// configured <see cref="IOptions"/>. This can be one of
         /// <see cref="Novell.Directory.Ldap.LdapConnection.ScopeBase"/>,
         /// <see cref="Novell.Directory.Ldap.LdapConnection.ScopeOne"/> and
         /// <see cref="Novell.Directory.Ldap.LdapConnection.ScopeSub"/>.</param>
@@ -158,7 +158,7 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are in matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="IOptions"/> used by the
         /// application.
         /// </summary>
         /// <remarks>
@@ -176,7 +176,7 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// criteria configured in the <see cref="ILdapOptions"/> used by the
+        /// criteria configured in the <see cref="IOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref name="filter"/>.
         /// </summary>
         /// <param name="filter">An LDAP filter expression that is combined
@@ -187,14 +187,14 @@ namespace Visus.LdapAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// critiera configured in the <see cref="ILdapOptions"/> used by the
+        /// critiera configured in the <see cref="IOptions"/> used by the
         /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
-        /// while overriding the search base from the <see cref="ILdapOptions"/>
+        /// while overriding the search base from the <see cref="IOptions"/>
         /// with the given one.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="ILdapOptions"/> will be used.</param>
+        /// <see cref="IOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
         /// with the global search criteria for users.</param>
         /// <returns>All users in the directory matching the given search

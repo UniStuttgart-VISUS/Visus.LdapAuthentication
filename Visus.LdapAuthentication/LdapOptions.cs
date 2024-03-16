@@ -14,7 +14,7 @@ namespace Visus.LdapAuthentication {
     /// <summary>
     /// Stores the configuration options for the LDAP server.
     /// </summary>
-    public sealed class LdapOptions : ILdapOptions {
+    public sealed class LdapOptions : IOptions {
 
         #region Public constructors
         /// <summary>
@@ -22,7 +22,9 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         public LdapOptions() {
             this.PageSize = 1000;   // Reasonable default for AD.
+#pragma warning disable CS0618
             this.IsSubtree = true;  // Backward compatibility.
+#pragma warning restore CS0618
         }
         #endregion
 
