@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Novell.Directory.Ldap;
@@ -35,8 +36,10 @@ namespace Visus.LdapAuthentication.Tests {
         [TestMethod]
         public void TestLogin() {
             if (this._testSecrets?.LdapOptions != null) {
+                var options = Options.Create(this._testSecrets.LdapOptions);
                 var service = new LdapAuthenticationService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    new LdapUserMapper<LdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 
                 {

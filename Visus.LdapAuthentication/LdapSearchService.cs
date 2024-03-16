@@ -31,6 +31,9 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
+        /// <param name="mapper">The <see cref="ILdapUserMapper{TUser}"/> to
+        /// provide mapping between LDAP attributes and properties of
+        /// <typeparamref name="TUser"/>.</param>
         /// <param name="options">The LDAP options that specify how to connect
         /// to the directory server.</param>
         /// <param name="logger">A logger for writing important messages.
@@ -39,28 +42,16 @@ namespace Visus.LdapAuthentication {
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(IOptions options,
+        public LdapSearchService(ILdapUserMapper<TUser> mapper,
+                IOptions<LdapOptions> options,
                 ILogger<LdapSearchService<TUser>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._options = options
+            this._mapper = mapper
+                ?? throw new ArgumentNullException(nameof(mapper));
+            this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
-
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        /// <param name="options">The LDAP options that specify how to connect
-        /// to the directory server.</param>
-        /// <param name="logger">A logger for writing important messages.
-        /// </param>
-        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(IOptions<LdapOptions> options,
-                ILogger<LdapSearchService<TUser>> logger)
-            : this(options?.Value, logger) { }
         #endregion
 
         #region Public methods
@@ -114,7 +105,8 @@ namespace Visus.LdapAuthentication {
                 if (entries.HasMore()) {
                     var entry = entries.NextEntry(this._logger);
                     if (entry != null) {
-                        retval.Assign(entry, this.Connection, this._options);
+                        this._mapper.Assign(retval, entry, this.Connection,
+                            this._logger);
                         return retval;
                     }
                 }
@@ -257,7 +249,7 @@ namespace Visus.LdapAuthentication {
 
                 // Convert LDAP entries to user objects.
                 foreach (var e in entries) {
-                    user.Assign(e, this.Connection, this._options);
+                    this._mapper.Assign(user, e, this.Connection, this._logger);
                     yield return user;
                     user = new TUser();
                 }
@@ -269,6 +261,7 @@ namespace Visus.LdapAuthentication {
         #region Private fields
         private LdapConnection _connection;
         private readonly ILogger _logger;
+        private readonly ILdapUserMapper<TUser> _mapper;
         private readonly IOptions _options;
         #endregion
     }

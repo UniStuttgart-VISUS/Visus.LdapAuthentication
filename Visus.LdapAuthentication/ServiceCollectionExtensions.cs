@@ -35,6 +35,7 @@ namespace Visus.LdapAuthentication {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
+                .AddSingleton<ILdapUserMapper<TUser>, LdapUserMapper<TUser>>()
                 .AddScoped<ILdapAuthenticationService,
                     LdapAuthenticationService<TUser>>()
                 .AddScoped<ILdapAuthenticationService<TUser>,
@@ -103,6 +104,7 @@ namespace Visus.LdapAuthentication {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
+                .AddSingleton<ILdapUserMapper<TUser>, LdapUserMapper<TUser>>()
                 .AddScoped<ILdapSearchService,
                     LdapSearchService<TUser>>()
                 .AddScoped<ILdapSearchService<TUser>,

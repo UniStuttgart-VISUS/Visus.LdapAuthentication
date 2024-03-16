@@ -48,8 +48,10 @@ namespace Visus.LdapAuthentication.Tests {
         [TestMethod]
         public void Test1() {
             if (this._testSecrets?.LdapOptions != null) {
+                var options = Options.Create(this._testSecrets.LdapOptions);
                 var service = new LdapSearchService<CustomLdapUser>(
-                    this._testSecrets.LdapOptions,
+                    new LdapUserMapper<CustomLdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapSearchService<CustomLdapUser>>>());
 
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
@@ -137,8 +139,11 @@ namespace Visus.LdapAuthentication.Tests {
                 configuration.Bind(secrets);
                 secrets.LdapOptions.PageSize = 0;
 
+                var options = Options.Create(secrets.LdapOptions);
+
                 var service = new LdapSearchService<LdapUser>(
-                    Options.Create(secrets.LdapOptions),
+                    new LdapUserMapper<LdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var users = service.GetUsers();

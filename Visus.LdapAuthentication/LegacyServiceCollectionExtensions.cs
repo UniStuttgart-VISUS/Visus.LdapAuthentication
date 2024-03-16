@@ -78,7 +78,8 @@ namespace Visus.LdapAuthentication {
             return that.AddScoped<ILdapAuthenticationService,
                     LdapAuthenticationService<TUser>>()
                 .AddScoped<ILdapAuthenticationService<TUser>,
-                    LdapAuthenticationService<TUser>>();
+                    LdapAuthenticationService<TUser>>()
+                .AddSingleton<ILdapUserMapper<TUser>, LdapUserMapper<TUser>>();
         }
 
         /// <summary>

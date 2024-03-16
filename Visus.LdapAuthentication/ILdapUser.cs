@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Novell.Directory.Ldap;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
@@ -59,6 +60,9 @@ namespace Visus.LdapAuthentication {
         /// <param name="options">The <see cref="LdapOptions"/> that can be used
         /// to obtain additional information about the user-defined mapping of
         /// LDAP attributes.</param>
+        [Obsolete("This method is not used anymore. If your application relies "
+            + "on custom LDAP attribute mapping, provide a custom "
+            + "ILdapUserMapper.")]
         void Assign(LdapEntry entry, LdapConnection connection,
             IOptions options);
     }

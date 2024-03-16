@@ -15,8 +15,8 @@ namespace Visus.LdapAuthentication {
     /// to user properties and claims that is defined in
     /// <see cref="LdapUserBase"/>. If you need a customised user object,
     /// inherit from <see cref="LdapUserBase"/> instead of using this user
-    /// object and customise the attribute mapping or override the whole
-    /// process by overloading <see cref="LdapUserBase.Assign"/>.
+    /// object and customise the attribute mapping or install a custom
+    /// <see cref="ILdapUserMapper{TUser}"/>.
     /// </remarks>
     public sealed class LdapUser : LdapUserBase { }
 }

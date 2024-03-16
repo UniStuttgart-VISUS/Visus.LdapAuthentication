@@ -87,12 +87,10 @@ namespace Visus.LdapAuthentication {
 
         #region Public methods
         /// <inheritdoc />
+        [Obsolete]
         public void Assign(LdapEntry entry, LdapConnection connection,
                 IOptions options) {
-            entry.AssignTo(this, options);
-            this.AddGroupClaims(entry, connection, options);
-            this.AddPropertyClaims(entry, connection, options);
-
+            throw new InvalidOperationException();
         }
         #endregion
 

@@ -21,6 +21,12 @@ namespace Visus.DirectoryAuthentication {
     /// Maps LDAP entries to user objects of type <typeparamref name="TUser"/>
     /// that inherit from <see cref="ILdapUser"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>While the user object can be basically any class, this default
+    /// implementation is for <see cref="ILdapUser"/>-derived classes where
+    /// the implementation can find out about the LDAP attributes by means
+    /// of <see cref="LdapAttributeAttribute"/>s.</para>
+    /// </remarks>
     /// <typeparam name="TUser">The user object.</typeparam>
     public sealed class LdapUserMapper<TUser> : ILdapUserMapper<TUser>
             where TUser : ILdapUser {

@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
@@ -34,8 +35,10 @@ namespace Visus.LdapAuthentication.Tests {
         [TestMethod]
         public void TestGetUserByIdentity() {
             if (this._testSecrets?.LdapOptions != null) {
+                var options = Options.Create(this._testSecrets.LdapOptions);
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    new LdapUserMapper<LdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
@@ -46,8 +49,10 @@ namespace Visus.LdapAuthentication.Tests {
         [TestMethod]
         public void TestGetUsers() {
             if (this._testSecrets?.LdapOptions != null) {
+                var options = Options.Create(this._testSecrets.LdapOptions);
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    new LdapUserMapper<LdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 {
@@ -68,8 +73,10 @@ namespace Visus.LdapAuthentication.Tests {
         [TestMethod]
         public void TestGetDistinguishedNames() {
             if (this._testSecrets?.LdapOptions != null) {
+                var options = Options.Create(this._testSecrets.LdapOptions);
                 var service = new LdapSearchService<LdapUser>(
-                    this._testSecrets.LdapOptions,
+                    new LdapUserMapper<LdapUser>(options),
+                    options,
                     Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(

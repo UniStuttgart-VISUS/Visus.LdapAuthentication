@@ -5,9 +5,7 @@
 // <author>Christoph Müller</author>
 
 using System.Collections.Generic;
-using System.DirectoryServices.Protocols;
 using System.Security.Claims;
-using System.Text.Json.Serialization;
 
 
 namespace Visus.DirectoryAuthentication {

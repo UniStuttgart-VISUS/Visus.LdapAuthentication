@@ -79,6 +79,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not set group claims for &quot;{0}&quot;..
+        /// </summary>
+        public static string ErrorGroupClaim {
+            get {
+                return ResourceManager.GetString("ErrorGroupClaim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given byte sequence &quot;{0}&quot; does not represent a valid security identifier..
         /// </summary>
         public static string ErrorInvalidSid {
@@ -111,6 +120,15 @@ namespace Visus.LdapAuthentication.Properties {
         public static string ErrorLdapPageSize {
             get {
                 return ResourceManager.GetString("ErrorLdapPageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve the primary group claim for &quot;{0}&quot;..
+        /// </summary>
+        public static string ErrorPrimaryGroupClaim {
+            get {
+                return ResourceManager.GetString("ErrorPrimaryGroupClaim", resourceCulture);
             }
         }
         

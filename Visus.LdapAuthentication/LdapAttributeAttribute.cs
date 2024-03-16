@@ -157,6 +157,39 @@ namespace Visus.LdapAuthentication {
         GetLdapProperties<TType>(string schema) {
             return GetLdapProperties(typeof(TType), schema);
         }
+
+        /// <summary>
+        /// Gets the LDAP attributes that are required to populate all
+        /// properties of <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The type of the user object.</typeparam>
+        /// <returns>A list of attribute names that must be loaded for the LDAP
+        /// entries.</returns>
+        public static IEnumerable<string> GetRequiredAttributes(Type type,
+                string schema) {
+            _ = type ?? throw new ArgumentNullException(nameof(type));
+            return (from p in type.GetProperties()
+                    let a = GetLdapAttribute(p, schema)
+                    where (a != null)
+                    select a.Name)
+                    .Distinct();
+        }
+
+        /// <summary>
+        /// Gets the LDAP attributes that are required to populate all
+        /// properties of <typeparamref name="TUser"/>.
+        /// </summary>
+        /// <typeparam name="TUser">The type of the user object.</typeparam>
+        /// <returns>A list of attribute names that must be loaded for the LDAP
+        /// entries.</returns>
+        public static IEnumerable<string> GetRequiredAttributes<TUser>(
+                string schema) {
+            return (from p in typeof(TUser).GetProperties()
+                    let a = GetLdapAttribute(p, schema)
+                    where (a != null)
+                    select a.Name)
+                    .Distinct();
+        }
         #endregion
 
         #region Public constructors
