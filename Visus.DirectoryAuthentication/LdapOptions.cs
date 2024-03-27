@@ -194,7 +194,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets the starting point(s) of any directory search.
         /// </summary>
-        public IDictionary<string, SearchScope> SearchBase {
+        public IDictionary<string, SearchScope> SearchBases {
             get;
             set;
         } = new Dictionary<string, SearchScope>();

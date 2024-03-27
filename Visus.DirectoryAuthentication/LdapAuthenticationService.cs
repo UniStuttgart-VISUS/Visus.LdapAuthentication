@@ -65,7 +65,7 @@ namespace Visus.DirectoryAuthentication {
 
             var retval = new TUser();
 
-            foreach (var b in this._options.SearchBase) {
+            foreach (var b in this._options.SearchBases) {
                 var req = this.GetRequest(this._mapper, username, b);
                 var res = connection.SendRequest(req, this._options);
                 if ((res is SearchResponse s) && s.Any()) {
@@ -96,7 +96,7 @@ namespace Visus.DirectoryAuthentication {
 
             var retval = new TUser();
 
-            foreach (var b in this._options.SearchBase) {
+            foreach (var b in this._options.SearchBases) {
                 var req = this.GetRequest(this._mapper, username, b);
                 var res = await connection.SendRequestAsync(req, this._options)
                     .ConfigureAwait(false);

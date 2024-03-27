@@ -66,7 +66,7 @@ namespace Visus.DirectoryAuthentication {
         public IEnumerable<string> GetDistinguishedNames(string filter) {
             _ = filter ?? throw new ArgumentNullException(nameof(filter));
 
-            foreach (var b in this._options.SearchBase) {
+            foreach (var b in this._options.SearchBases) {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
                 var entries = this.Connection.PagedSearch(
@@ -90,7 +90,7 @@ namespace Visus.DirectoryAuthentication {
             _ = filter ?? throw new ArgumentNullException(nameof(filter));
             var retval = Enumerable.Empty<string>();
 
-            foreach (var b in this._options.SearchBase) {
+            foreach (var b in this._options.SearchBases) {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
                 var entries = await this.Connection.PagedSearchAsync(
@@ -113,7 +113,7 @@ namespace Visus.DirectoryAuthentication {
         public TUser GetUserByIdentity(string identity) {
             var retval = new TUser();
 
-            foreach (var b in this._options.SearchBase) {
+            foreach (var b in this._options.SearchBases) {
                 var req = this.GetUserByIdentitySearchRequest(retval, identity,
                     b);
                 var res = this.Connection.SendRequest(req, this._options);
@@ -138,7 +138,7 @@ namespace Visus.DirectoryAuthentication {
         public async Task<TUser> GetUserByIdentityAsync(string identity) {
             var retval = new TUser();
 
-            foreach (var b in this._options.SearchBase) {
+            foreach (var b in this._options.SearchBases) {
                 var req = this.GetUserByIdentitySearchRequest(retval, identity,
                     b);
                 var res = await this.Connection.SendRequestAsync(req,
@@ -165,39 +165,39 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers()
             => this.GetUsers0(this._options.Mapping.UsersFilter,
-                this._options.SearchBase);
+                this._options.SearchBases);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync()
             => this.GetUsersAsync0(this._options.Mapping.UsersFilter,
-                this._options.SearchBase);
+                this._options.SearchBases);
 
         /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers()
             => this.GetUsers0(this._options.Mapping.UsersFilter,
-                this._options.SearchBase);
+                this._options.SearchBases);
 
         /// <inheritdoc />
         async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync()
             => await this.GetUsersAsync0(this._options.Mapping.UsersFilter,
-                this._options.SearchBase).ConfigureAwait(false);
+                this._options.SearchBases).ConfigureAwait(false);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string filter)
-            => this.GetUsers(this._options.SearchBase, filter);
+            => this.GetUsers(this._options.SearchBases, filter);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync(string filter)
-            => this.GetUsersAsync(this._options.SearchBase, filter);
+            => this.GetUsersAsync(this._options.SearchBases, filter);
 
         /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers(string filter)
-            => this.GetUsers(this._options.SearchBase, filter);
+            => this.GetUsers(this._options.SearchBases, filter);
 
         /// <inheritdoc />
         async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
                 string filter)
-            => await this.GetUsersAsync(this._options.SearchBase, filter)
+            => await this.GetUsersAsync(this._options.SearchBases, filter)
                 .ConfigureAwait(false);
 
         /// <inheritdoc />
@@ -205,7 +205,7 @@ namespace Visus.DirectoryAuthentication {
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
             => this.GetUsers0(this.MergeFilter(filter),
-                searchBases ?? this._options.SearchBase);
+                searchBases ?? this._options.SearchBases);
 
         /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers(
@@ -218,7 +218,7 @@ namespace Visus.DirectoryAuthentication {
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
             => this.GetUsersAsync0(this.MergeFilter(filter),
-                searchBases ?? this._options.SearchBase);
+                searchBases ?? this._options.SearchBases);
 
         /// <inheritdoc />
         async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
