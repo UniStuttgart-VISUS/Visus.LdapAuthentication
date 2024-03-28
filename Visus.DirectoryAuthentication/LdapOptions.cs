@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.DirectoryServices.Protocols;
 using System.Runtime.InteropServices;
 
@@ -86,6 +87,7 @@ namespace Visus.DirectoryAuthentication {
         /// whereas the attribute mapping of the user is specified via
         /// <see cref="ILdapUser.RequiredAttributes"/></para>.
         /// </remarks>
+        [Required]
         public LdapMapping Mapping {
             get {
                 var retval = this._mapping;
@@ -189,11 +191,13 @@ namespace Visus.DirectoryAuthentication {
         /// <see cref="LdapUserBase"/> to automatically retrieve the required
         /// properties.
         /// </summary>
+        [Required]
         public string Schema { get; set; }
 
         /// <summary>
         /// Gets the starting point(s) of any directory search.
         /// </summary>
+        [Required]
         public IDictionary<string, SearchScope> SearchBases {
             get;
             set;
@@ -202,6 +206,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets the host name or IP of the LDAP server.
         /// </summary>
+        [Required]
         public string Server { get; set; }
 
         /// <summary>
@@ -253,6 +258,7 @@ namespace Visus.DirectoryAuthentication {
         /// This is only used by <see cref="ILdapConnectionService"/>. See
         /// <see cref="Password"/> for more details.
         /// </remarks>
+        [Required]
         public string User { get; set; }
         #endregion
 
