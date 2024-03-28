@@ -29,7 +29,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             var collection = new ServiceCollection();
             collection.AddLdapAuthenticationService(o => {
                 var section = configuration.GetSection("LdapOptions");
-                section.Bind(o)
+                section.Bind(o);
             });
             collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
 

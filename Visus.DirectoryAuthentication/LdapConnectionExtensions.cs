@@ -4,10 +4,13 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Reflection.PortableExecutable;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -17,6 +20,61 @@ namespace Visus.DirectoryAuthentication {
     /// Extension methods for <see cref="LdapConnection"/>.
     /// </summary>
     public static class LdapConnectionExtensions {
+
+        /// <summary>
+        /// Gets the root DSE for the given connection.
+        /// </summary>
+        /// <param name="that">The connection from which to get the root DSE.
+        /// </param>
+        /// <param name="attributes">An optional list of attributes to load
+        /// for the root DSE.</param>
+        /// <returns>The entry of the root DSE.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static SearchResultEntry GetRootDse(this LdapConnection that,
+                params string[] attributes) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            // Cf. https://stackoverflow.com/questions/19696753/how-does-one-connect-to-the-rootdse-and-or-retrieve-highestcommittedusn-with-sys
+            var request = new SearchRequest(null,
+                "(objectClass=*)",
+                SearchScope.Base,
+                attributes);
+            var response = that.SendRequest(request);
+
+            if (response is SearchResponse r) {
+                return r.Entries.Cast<SearchResultEntry>().FirstOrDefault();
+            } else {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the root DSE for the given connection.
+        /// </summary>
+        /// <param name="that">The connection from which to get the root DSE.
+        /// </param>
+        /// <param name="attributes">An optional list of attributes to load
+        /// for the root DSE.</param>
+        /// <returns>The entry of the root DSE.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static async Task<SearchResultEntry> GetRootDseAsync(
+                this LdapConnection that,
+                params string[] attributes) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            // Cf. https://stackoverflow.com/questions/19696753/how-does-one-connect-to-the-rootdse-and-or-retrieve-highestcommittedusn-with-sys
+            var request = new SearchRequest(null,
+                "(objectClass=*)",
+                SearchScope.Base,
+                attributes);
+            var response = await that.SendRequestAsync(request);
+
+            if (response is SearchResponse r) {
+                return r.Entries.Cast<SearchResultEntry>().FirstOrDefault();
+            } else {
+                return null;
+            }
+        }
 
         /// <summary>
         /// Performs a paged LDAP search using <paramref name="that"/>.
