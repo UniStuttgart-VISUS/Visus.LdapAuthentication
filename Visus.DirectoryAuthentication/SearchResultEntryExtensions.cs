@@ -110,18 +110,7 @@ namespace Visus.DirectoryAuthentication {
             var retval = new List<Claim>();
 
             try {
-                var a = that.GetAttribute(mapping.PrimaryGroupAttribute);
-                var gid = a.GetValue((ILdapAttributeConverter) null) as string;
-
-                var endOfDomain = identity.LastIndexOf('-');
-                if (endOfDomain > 0) {
-                    // If we have an actual SID for the user, assume an AD and
-                    // convert the RID of the primary group to a SID using the
-                    // domain part extracted from the user.
-                    var domain = identity.Substring(0, endOfDomain);
-                    gid = $"{domain}-{gid}";
-                }
-
+                var gid = that.GetPrimaryGroup(mapper, mapping);
                 retval.Add(new Claim(ClaimTypes.PrimaryGroupSid, gid));
                 retval.Add(new Claim(ClaimTypes.GroupSid, gid));
             } catch (Exception ex) {
@@ -133,8 +122,8 @@ namespace Visus.DirectoryAuthentication {
             {
                 var conv = mapping.GetGroupIdentityConverter();
                 var groups = options.IsRecursiveGroupMembership
-                    ? GetAllGroupMemberships(that, connection, options)
-                    : GetGroupMemberships(that, connection, options);
+                    ? GetRecursiveGroups(that, connection, options)
+                    : GetGroups(that, connection, options);
 
                 foreach (var g in groups) {
                     try {
@@ -152,67 +141,16 @@ namespace Visus.DirectoryAuthentication {
             return retval;
         }
 
-        #region Internal methods
-        /// <summary>
-        /// Gets the attribute with the specified name from
-        /// <paramref name="that"/>.
-        /// </summary>
-        /// <remarks>
-        /// This is a convenience accessor for the
-        /// <see cref="SearchResultEntry.Attributes"/> property, which reduces
-        /// the changes required to port from Novell LDAP.
-        /// </remarks>
-        /// <param name="that">The entry to retrieve the attribute for.</param>
-        /// <param name="attribute">The name of the attribute to be retrived.
-        /// </param>
-        /// <returns>The <see cref="DirectoryAttribute"/> with the specified
-        /// name.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static DirectoryAttribute GetAttribute(
-                this SearchResultEntry that, string attribute) {
-            return that?.Attributes[attribute];
-        }
-        #endregion
-
-        #region Private methods
-        /// <summary>
-        /// Gets the direct and transitive group memberships of the specified
-        /// (user or group) LDAP entry.
-        /// </summary>
-        /// <param name="that">The entry to retrieve the group memberships of.
-        /// </param>
-        /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
-        /// the details about the groups.</param>
-        /// <param name="options">The <see cref="LdapOptions"/> configuring the
-        /// mapping of attributes.</param>
-        /// <returns>The LDAP entries for the groups <paramref name="that"/> is
-        /// member of.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="connection"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        private static IEnumerable<SearchResultEntry> GetAllGroupMemberships(
-                this SearchResultEntry that,
-                LdapConnection connection,
-                LdapOptions options) {
-            var stack = new Stack<SearchResultEntry>();
-            stack.Push(that);
-
-            while (stack.Count > 0) {
-                foreach (var g in GetGroupMemberships(stack.Pop(), connection,
-                        options)) {
-                    stack.Push(g);
-                    yield return g;
-                }
-            }
-        }
-
         /// <summary>
         /// Gets the group memberships of the specified (user or group) LDAP
         /// entry.
         /// </summary>
+        /// <remarks>
+        /// Note that this method only retrieves direct group memberships stored
+        /// in <see cref="LdapMapping.GroupsAttribute"/>, which does not include
+        /// the groups any of these groups are member of nor the primary group,
+        /// which is stored in a special attribute of the entry itself.
+        /// </remarks>
         /// <param name="that">The entry to retrieve the group memberships of.
         /// </param>
         /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
@@ -222,12 +160,9 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>The LDAP entries for the groups <paramref name="that"/> is
         /// member of.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="connection"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        private static IEnumerable<SearchResultEntry> GetGroupMemberships(
+        /// is <c>null</c>, or if <paramref name="connection"/> is <c>null</c>,
+        /// or if <paramref name="options"/> is <c>null</c>.</exception>
+        public static IEnumerable<SearchResultEntry> GetGroups(
                 this SearchResultEntry that,
                 LdapConnection connection,
                 LdapOptions options) {
@@ -276,6 +211,167 @@ namespace Visus.DirectoryAuthentication {
                     }
                 } /* foreach (var g in groups) */
             } /* if (groups != null) */
+        }
+
+        /// <summary>
+        /// Gets the identity of the primary group of <paramref name="that"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method fails if <paramref name="that"/> does not have a
+        /// <see cref="LdapMapping.PrimaryGroupAttribute"/>, which is the case
+        /// if <paramref name="that"/> is a group.
+        /// </remarks>
+        /// <param name="that">The entry to retrieve the primary group of.
+        /// </param>
+        /// <param name="mapper">A <see cref="LdapUserMapper{TUser}"/> that
+        /// provides access to the identity attribute <paramref name="that">,
+        /// which is required to obtain the domain part of the primary group SID
+        /// in an Active Directory.</param>
+        /// <param name="mapping">The LDAP mapping configuration, which allows
+        /// the method to determine where the primary group is stored.</param>
+        /// <returns>The primary group of <paramref name="that"/>.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="mapper"/> is <c>null</c>.
+        /// </exception>
+        public static string GetPrimaryGroup<TUser>(
+                this SearchResultEntry that,
+                ILdapUserMapper<TUser> mapper,
+                LdapMapping mapping) {
+            _ = that
+                ?? throw new ArgumentNullException(nameof(that));
+            _ = mapper
+                ?? throw new ArgumentNullException(nameof(mapper));
+            _ = mapping
+                ?? throw new ArgumentNullException(nameof(mapping));
+
+            var identity = mapper.GetIdentity(that);
+            var att = that.GetAttribute(mapping.PrimaryGroupAttribute);
+            var retval = att.GetValue((ILdapAttributeConverter) null) as string;
+
+            var endOfDomain = identity.LastIndexOf('-');
+            if (endOfDomain > 0) {
+                // If we have an actual SID for the user, assume an AD and
+                // convert the RID of the primary group to a SID using the
+                // domain part extracted from the user.
+                var domain = identity.Substring(0, endOfDomain);
+                retval = $"{domain}-{retval}";
+            }
+
+            return retval;
+        }
+
+        /// <summary>
+        /// Gets the primary group of <paramref name="that"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method fails if <paramref name="that"/> does not have a
+        /// <see cref="LdapMapping.PrimaryGroupAttribute"/>, which is the case
+        /// if <paramref name="that"/> is a group.
+        /// </remarks>
+        /// <param name="that">The entry to retrieve the primary group of.
+        /// </param>
+        /// <param name="mapper">A <see cref="LdapUserMapper{TUser}"/> that
+        /// provides access to the identity attribute <paramref name="that">,
+        /// which is required to obtain the domain part of the primary group SID
+        /// in an Active Directory.</param>
+        /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
+        /// the details about the primary group, which is stored as an
+        /// identifier in <paramref name="that"/>.</param>
+        /// <param name="options">The <see cref="LdapOptions"/> configuring the
+        /// mapping of attributes.</param>
+        /// <returns>The LDAP entry of the primary group.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="mapper"/> is <c>null</c>,
+        /// or if <paramref name="connection"/> is <c>null</c>, or if
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="KeyNotFoundException">If <paramref name="that"/>
+        /// has a primary group, but its LDAP entry was not found in the
+        /// configured search path.</exception>
+        public static SearchResultEntry GetPrimaryGroup<TUser>(
+                this SearchResultEntry that,
+                ILdapUserMapper<TUser> mapper,
+                LdapConnection connection,
+                LdapOptions options) {
+            _ = that
+                ?? throw new ArgumentNullException(nameof(that));
+            _ = mapper
+                ?? throw new ArgumentNullException(nameof(mapper));
+            _ = connection
+                ?? throw new ArgumentNullException(nameof(connection));
+            _ = options
+                ?? throw new ArgumentNullException(nameof(options));
+
+            var mapping = options.Mapping;
+            var gid = that.GetPrimaryGroup(mapper, mapping);
+
+            foreach (var b in options.SearchBases) {
+                var req = new SearchRequest(b.Key,
+                    $"({mapping.GroupIdentityAttribute}={gid})",
+                    SearchScope.Subtree,
+                    mapping.RequiredGroupAttributes);
+                var res = connection.SendRequest(req, options);
+
+                if (res is SearchResponse r) {
+                    var entries = r.Entries.Cast<SearchResultEntry>();
+                    if (entries.Any()) {
+                        return entries.First();
+                    }
+                }
+            }
+
+            throw new KeyNotFoundException(
+                string.Format(Resources.ErrorGroupNotFound, gid));
+        }
+
+        /// <summary>
+        /// Gets the direct and transitive group memberships of the specified
+        /// (user or group) LDAP entry.
+        /// </summary>
+        /// <param name="that">The entry to retrieve the group memberships of.
+        /// </param>
+        /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
+        /// the details about the groups.</param>
+        /// <param name="options">The <see cref="LdapOptions"/> configuring the
+        /// mapping of attributes.</param>
+        /// <returns>The LDAP entries for the groups <paramref name="that"/> is
+        /// member of.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="connection"/> is <c>null</c>,
+        /// or if <paramref name="options"/> is <c>null</c>.</exception>
+        public static IEnumerable<SearchResultEntry> GetRecursiveGroups(
+                this SearchResultEntry that,
+                LdapConnection connection,
+                LdapOptions options) {
+            var stack = new Stack<SearchResultEntry>();
+            stack.Push(that);
+
+            while (stack.Count > 0) {
+                foreach (var g in GetGroups(stack.Pop(), connection, options)) {
+                    stack.Push(g);
+                    yield return g;
+                }
+            }
+        }
+
+        #region Internal methods
+        /// <summary>
+        /// Gets the attribute with the specified name from
+        /// <paramref name="that"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is a convenience accessor for the
+        /// <see cref="SearchResultEntry.Attributes"/> property, which reduces
+        /// the changes required to port from Novell LDAP.
+        /// </remarks>
+        /// <param name="that">The entry to retrieve the attribute for.</param>
+        /// <param name="attribute">The name of the attribute to be retrived.
+        /// </param>
+        /// <returns>The <see cref="DirectoryAttribute"/> with the specified
+        /// name.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static DirectoryAttribute GetAttribute(
+                this SearchResultEntry that, string attribute) {
+            return that?.Attributes[attribute];
         }
         #endregion
     }

@@ -19,7 +19,7 @@ namespace Visus.DirectoryAuthentication.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -115,11 +115,20 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not set group claims for &quot;{0}&quot;..
+        ///   Looks up a localized string similar to Could not retrieve group claim for &quot;{0}&quot;..
         /// </summary>
         internal static string ErrorGroupClaim {
             get {
                 return ResourceManager.GetString("ErrorGroupClaim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The group with identity &quot;{group}&quot; was not found in the directory..
+        /// </summary>
+        internal static string ErrorGroupNotFound {
+            get {
+                return ResourceManager.GetString("ErrorGroupNotFound", resourceCulture);
             }
         }
         
