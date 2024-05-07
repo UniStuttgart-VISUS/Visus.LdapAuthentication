@@ -40,7 +40,7 @@ namespace Visus.DirectoryAuthentication {
         public string GroupIdentityAttribute { get; set; }
 
         /// <summary>
-        /// Getr or sets the type name of a value converter that is used to
+        /// Gets or sets the type name of a value converter that is used to
         /// convert the <see cref="GroupIdentityAttribute"/>.
         /// </summary>
         public string GroupIdentityConverter { get; set; }
