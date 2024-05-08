@@ -15,8 +15,9 @@
     <NeutralLanguage>en</NeutralLanguage>
     <AssemblyVersion>1.15.0.0</AssemblyVersion>
     <FileVersion>1.15.0.0</FileVersion>
-    <Version>1.15.0</Version>
-    <PackageReleaseNotes>Marks all but the action-based configuration methods obsolete.</PackageReleaseNotes>
+    <Version>1.16.0</Version>
+    <PackageReleaseNotes>Adds the ability to customise the mapping of user objects by means of an external mapper rather than by modifying the user.
+Adds the ability to retrieve the default naming context from an LDAP connection.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

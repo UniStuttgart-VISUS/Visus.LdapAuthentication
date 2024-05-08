@@ -11,12 +11,13 @@
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication/tree/main/Visus.DirectoryAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>directoryservices ldap aspnet authentication net5</PackageTags>
-    <PackageReleaseNotes>Fixes SearchBase to SearchBases in appsettings.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds the ability to customise the mapping of user objects by means of an external mapper rather than by modifying the user.
+Adds the ability to retrieve the default naming context from an LDAP connection.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NeutralLanguage>en</NeutralLanguage>
     <UserSecretsId>e07a7441-ba97-46b5-9ce1-391f2c978578</UserSecretsId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.13.0</Version>
+    <Version>0.14.0</Version>
     <AssemblyVersion>0.12.0.0</AssemblyVersion>
     <FileVersion>0.12.0.0</FileVersion>
   </PropertyGroup>
