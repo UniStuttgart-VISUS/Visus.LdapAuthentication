@@ -170,7 +170,59 @@ public sealed class CustomApplicationUser : LdapUserBase {
 }
 ```
 
-If you need an even higher level of customisation, you can provide a completely new implementation of `ILdapUser` and fully control the whole mapping of LDAP attributes to properties and claims. Before doing so, you should also consider whether you can achieve your goals by overriding one or more of `LdapUserBase.AddGroupClaims` and `LdapUserBase.AddPropertyClaims`.
+If you need an even higher level of customisation, you can provide a custom mapper by providing your own `ILdapUserMapper` like this:
+
+```C#
+using Visus.DirectoryAuthentication;
+// ...
+
+public void ConfigureServices(IServiceCollection services) {
+    // ...
+
+    // Add LDAP authentication with default LdapUser object.
+    services.AddLdapAuthenticationService<CustomApplicationUser, CustomUserMapper>(o => {
+        this.Configuration.GetSection("LdapConfiguration").Bind(o);
+    });
+
+    // ...
+}
+```
+
+In your custom mapper, you are free to assign properties as you want or use the default behaviour:
+
+```C#
+
+public sealed class CustomUserMapper : ILdapUserMapper<CustomApplicationUser> {
+/// ...
+
+    public void Assign(CustomApplicationUser user,
+            SearchResultEntry entry,
+            LdapConnection connection,
+            ILogger logger) {
+        // Use annotation-based assignment of user properties.
+        entry.AssignTo(user, this._options);
+
+        var claims = new List<Claim>();
+
+        // Add a claim from a property of the user object. You can use
+        // reflection here as the default LdapUserMapper does or hard code
+        // the properties you need to have as claims.
+        claims.Add(new Claim(ClaimTypes.WindowsAccountName, user.Account));
+
+        // Add group claims using the SIDs/GIDs of the groups. Instead of this,
+        // you could use the extension methods
+        // SearchResultEntryExtensions.GetPrimaryGroup,
+        // SearchResultEntryExtensions.GetGroups and
+        // SearchResultEntryExtensions.GetRecursiveGroups to retrieve the LDAP
+        // entries of the respective groups and create claims from these. Note
+        // that you can only use attributes configured in
+        // LdapMapping.RequiredGroupAttributes here.
+        claims.AddRange(entry.GetGroupClaims(this, connection, this._options));
+    }
+
+/// ...
+}
+```
 
 ## Searching users
 In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `ILdapOptions.User` with a password stored in `ILdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](Visus.LdapAuthentication/ILdapSearchService.cs) to implement such a behaviour. First, configure the service:
