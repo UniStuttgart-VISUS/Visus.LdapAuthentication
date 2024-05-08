@@ -23,6 +23,10 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Assigns LDAP attributes to the given target object.
         /// </summary>
+        /// <remarks>
+        /// This method will only assign annotated properties, but not the
+        /// claims.
+        /// </remarks>
         /// <param name="that">The entry holding the properties to assign.
         /// </param>
         /// <param name="target">The target object to assign the attributes to.
@@ -55,6 +59,30 @@ namespace Visus.LdapAuthentication {
         /// <summary>
         /// Assigns LDAP attributes to the given target object.
         /// </summary>
+        /// <remarks>
+        /// This method will only assign annotated properties, but not the
+        /// claims.
+        /// </remarks>
+        /// <param name="that">The entry holding the properties to assign.
+        /// </param>
+        /// <param name="target">The target object to assign the attributes to.
+        /// </param>
+        /// <param name="options">The LDAP options determining the schema that
+        /// is used while searching for the LDAP attributes.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
+        /// </exception>
+        public static void AssignTo(this LdapEntry that, object target,
+                LdapOptions options)
+            => that.AssignTo(target, options?.Schema);
+
+        /// <summary>
+        /// Assigns LDAP attributes to the given target object.
+        /// </summary>
+        /// <remarks>
+        /// This method will only assign annotated properties, but not the
+        /// claims.
+        /// </remarks>
         /// <param name="that">The entry holding the properties to assign.
         /// </param>
         /// <param name="target">The target object to assign the attributes to.

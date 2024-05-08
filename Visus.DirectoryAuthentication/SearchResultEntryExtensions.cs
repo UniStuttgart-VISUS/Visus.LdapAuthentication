@@ -25,6 +25,10 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Assigns LDAP attributes to the given target object.
         /// </summary>
+        /// <remarks>
+        /// This method will only assign annotated properties, but not the
+        /// claims.
+        /// </remarks>
         /// <param name="that">The entry holding the properties to assign.
         /// </param>
         /// <param name="target">The target object to assign the attributes to.
@@ -62,6 +66,10 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Assigns LDAP attributes to the given target object.
         /// </summary>
+        /// <remarks>
+        /// This method will only assign annotated properties, but not the
+        /// claims.
+        /// </remarks>
         /// <param name="that">The entry holding the properties to assign.
         /// </param>
         /// <param name="target">The target object to assign the attributes to.

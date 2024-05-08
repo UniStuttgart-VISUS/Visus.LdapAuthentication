@@ -88,10 +88,8 @@ namespace Visus.LdapAuthentication {
         #region Public methods
         /// <inheritdoc />
         [Obsolete]
-        public void Assign(LdapEntry entry,
-                LdapConnection connection,
-                IOptions options)
-            => entry.AssignTo(connection, options);
+        public void Assign(LdapEntry entry, LdapConnection connection,
+            IOptions options) => throw new NotImplementedException();
         #endregion
 
         #region Protected methods

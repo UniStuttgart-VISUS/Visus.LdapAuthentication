@@ -4,8 +4,11 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
+using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Reflection;
 
