@@ -100,6 +100,9 @@ namespace Visus.LdapAuthentication {
         /// <param name="entry"></param>
         /// <param name="connection"></param>
         /// <param name="schema"></param>
+        [Obsolete("This method will be removed in future versions of the"
+            + " library. Provide a custom user mapper for similar "
+            + "functionality.")]
         protected virtual void AddGroupClaims(LdapEntry entry,
                 LdapConnection connection, IOptions options) {
             _ = entry
@@ -158,6 +161,9 @@ namespace Visus.LdapAuthentication {
         /// <param name="entry"></param>
         /// <param name="connection"></param>
         /// <param name="schema"></param>
+        [Obsolete("This method will be removed in future versions of the"
+            + " library. Provide a custom user mapper for similar "
+            + "functionality.")]
         protected virtual void AddPropertyClaims(LdapEntry entry,
                 LdapConnection connection, IOptions options) {
             _ = entry
@@ -184,13 +190,15 @@ namespace Visus.LdapAuthentication {
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the name of the LDAP attribute where the given property is
         /// stored.
         /// </summary>
         /// <param name="propertyName"></param>
         /// <returns></returns>
+        [Obsolete("This method will be removed in future versions of the"
+            + " library.")]
         protected string GetLdapAttribute(string schema,
                 [CallerMemberName] string propertyName = null) {
             var prop = this.GetType().GetProperty(propertyName);
@@ -213,7 +221,6 @@ namespace Visus.LdapAuthentication {
 
             return att.Name;
         }
-
         #endregion
     }
 }
