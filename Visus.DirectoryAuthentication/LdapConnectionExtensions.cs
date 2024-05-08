@@ -4,13 +4,10 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -20,6 +17,41 @@ namespace Visus.DirectoryAuthentication {
     /// Extension methods for <see cref="LdapConnection"/>.
     /// </summary>
     public static class LdapConnectionExtensions {
+
+        /// <summary>
+        /// Gets the default naming context of the server which
+        /// <paramref name="that"/> is connected to.
+        /// </summary>
+        /// <remarks>
+        /// The default naming context is obtained from the root DSE of the
+        /// given connection. It can be used as the fallback for search bases
+        /// as it usually designates the root location of the directory.
+        /// </remarks>
+        /// <param name="that">The connection to get the default naming context
+        /// of.</param>
+        /// <returns>The default naming context or <c>null</c>.</returns>
+        public static string GetDefaultNamingContext(this LdapConnection that) {
+            var rootDse = that.GetRootDse("defaultNamingContext");
+            return rootDse?.GetAttribute("defaultNamingContext")?.ToString();
+        }
+
+        /// <summary>
+        /// Gets the default naming context of the server which
+        /// <paramref name="that"/> is connected to.
+        /// </summary>
+        /// <remarks>
+        /// The default naming context is obtained from the root DSE of the
+        /// given connection. It can be used as the fallback for search bases
+        /// as it usually designates the root location of the directory.
+        /// </remarks>
+        /// <param name="that">The connection to get the default naming context
+        /// of.</param>
+        /// <returns>The default naming context or <c>null</c>.</returns>
+        public static async Task<string> GetDefaultNamingContextAsync(
+                this LdapConnection that) {
+            var rootDse = await that.GetRootDseAsync("defaultNamingContext");
+            return rootDse?.GetAttribute("defaultNamingContext")?.ToString();
+        }
 
         /// <summary>
         /// Gets the root DSE for the given connection.

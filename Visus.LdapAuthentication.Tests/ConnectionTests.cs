@@ -8,10 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading.Tasks;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests {
 
     [TestClass]
     public sealed class ConnectionTests {
@@ -32,26 +31,10 @@ namespace Visus.DirectoryAuthentication.Tests {
         }
 
         [TestMethod]
-        public async Task GetDefaultNamingContextAsync() {
-            var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
-            Assert.IsNotNull(connection);
-            var defaultNamingContext = await connection.GetDefaultNamingContextAsync();
-            Assert.IsFalse(string.IsNullOrWhiteSpace(defaultNamingContext));
-        }
-
-        [TestMethod]
         public void GetRootDse() {
             var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
             Assert.IsNotNull(connection);
             var rootDse = connection.GetRootDse();
-            Assert.IsNotNull(rootDse);
-        }
-
-        [TestMethod]
-        public async Task GetRootDseAsync() {
-            var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
-            Assert.IsNotNull(connection);
-            var rootDse = await connection.GetRootDseAsync();
             Assert.IsNotNull(rootDse);
         }
 
