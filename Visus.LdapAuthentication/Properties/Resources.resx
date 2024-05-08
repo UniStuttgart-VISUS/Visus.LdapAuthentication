@@ -126,6 +126,9 @@
   <data name="ErrorGroupClaim" xml:space="preserve">
     <value>Could not set group claims for "{0}".</value>
   </data>
+  <data name="ErrorGroupNotFound" xml:space="preserve">
+    <value>The group with identity "{group}" was not found in the directory.</value>
+  </data>
   <data name="ErrorInvalidSid" xml:space="preserve">
     <value>The given byte sequence "{0}" does not represent a valid security identifier.</value>
   </data>

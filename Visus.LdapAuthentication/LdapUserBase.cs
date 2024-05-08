@@ -88,116 +88,13 @@ namespace Visus.LdapAuthentication {
         #region Public methods
         /// <inheritdoc />
         [Obsolete]
-        public void Assign(LdapEntry entry, LdapConnection connection,
-                IOptions options) {
-            throw new InvalidOperationException();
-        }
-        #endregion
-
-        #region Protected class methods
-        /// <summary>
-        /// Gets the group memberships of the specified (user or group) LDAP
-        /// entry.
-        /// </summary>
-        /// <param name="entry">The entry to retrieve the group memberships of.
-        /// </param>
-        /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
-        /// the details about the groups.</param>
-        /// <param name="options">The <see cref="IOptions"/> configuring the
-        /// mapping of attributes.</param>
-        /// <returns>The LDAP entries for the groups <paramref name="entry"/> is
-        /// member of.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="connection"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected static IEnumerable<LdapEntry> GetGroupMemberships(
-                LdapEntry entry,
+        public void Assign(LdapEntry entry,
                 LdapConnection connection,
-                IOptions options) {
-            _ = entry
-                ?? throw new ArgumentNullException(nameof(entry));
-            _ = connection
-                ?? throw new ArgumentNullException(nameof(connection));
-            _ = options
-                ?? throw new ArgumentNullException(nameof(options));
-
-            var mapping = options.Mapping;
-            var groups = (string[]) null;
-
-            try {
-                groups = entry.GetAttribute(options.Mapping.GroupsAttribute)
-                    ?.StringValueArray;
-            } catch (KeyNotFoundException) {
-                // Entry has no group memberships.
-                yield break;
-            }
-
-            if (groups != null) {
-                Debug.WriteLine($"Determining details of {groups.Length} "
-                    + $"groups that \"{entry.Dn}\" is member of.");
-
-                foreach (var g in groups) {
-                    var q = g.EscapeLdapFilterExpression();
-
-                    foreach (var b in options.SearchBases) {
-                        var result = connection.Search(
-                            b.Key,
-                            LdapConnection.ScopeSub,
-                            $"({mapping.DistinguishedNameAttribute}={q})",
-                            mapping.RequiredGroupAttributes,
-                            false);
-
-                        if (result.HasMore()) {
-                            var group = result.NextEntry();
-                            if (group != null) {
-                                yield return group;
-                            }
-                        }
-                    }
-                }
-            } /* end if (groups != null) */
-        }
-
-        /// <summary>
-        /// Gets the direct and transitive group memberships of the specified
-        /// (user or group) LDAP entry.
-        /// </summary>
-        /// <param name="entry">The entry to retrieve the group memberships of.
-        /// </param>
-        /// <param name="connection">An <see cref="LdapConnection"/> to retrieve
-        /// the details about the groups.</param>
-        /// <param name="options">The <see cref="IOptions"/> configuring the
-        /// mapping of attributes.</param>
-        /// <returns>The LDAP entries for the groups <paramref name="entry"/> is
-        /// member of.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="connection"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        private IEnumerable<LdapEntry> GetRecursiveGroupMemberships(
-                LdapEntry entry,
-                LdapConnection connection,
-                IOptions options) {
-            var stack = new Stack<LdapEntry>();
-            stack.Push(entry);
-
-            while (stack.Count > 0) {
-                foreach (var g in GetGroupMemberships(stack.Pop(), connection,
-                        options)) {
-                    stack.Push(g);
-                    yield return g;
-                }
-            }
-        }
+                IOptions options)
+            => entry.AssignTo(connection, options);
         #endregion
 
         #region Protected methods
-
         /// <summary>
         /// Adds <see cref="Claims"/> from group memberships of
         /// <paramref name="entry"/>.
@@ -240,8 +137,8 @@ namespace Visus.LdapAuthentication {
             {
                 var conv = mapping.GetGroupIdentityConverter();
                 var groups = options.IsRecursiveGroupMembership
-                    ? GetRecursiveGroupMemberships(entry, connection, options)
-                    : GetGroupMemberships(entry, connection, options);
+                    ? entry.GetRecursiveGroups(connection, options)
+                    : entry.GetGroups(connection, options);
 
                 foreach (var g in groups) {
                     try {

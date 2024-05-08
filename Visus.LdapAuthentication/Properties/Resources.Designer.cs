@@ -19,7 +19,7 @@ namespace Visus.LdapAuthentication.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -84,6 +84,15 @@ namespace Visus.LdapAuthentication.Properties {
         public static string ErrorGroupClaim {
             get {
                 return ResourceManager.GetString("ErrorGroupClaim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The group with identity &quot;{group}&quot; was not found in the directory..
+        /// </summary>
+        public static string ErrorGroupNotFound {
+            get {
+                return ResourceManager.GetString("ErrorGroupNotFound", resourceCulture);
             }
         }
         

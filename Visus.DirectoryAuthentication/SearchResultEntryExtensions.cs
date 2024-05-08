@@ -122,8 +122,8 @@ namespace Visus.DirectoryAuthentication {
             {
                 var conv = mapping.GetGroupIdentityConverter();
                 var groups = options.IsRecursiveGroupMembership
-                    ? GetRecursiveGroups(that, connection, options)
-                    : GetGroups(that, connection, options);
+                    ? that.GetRecursiveGroups(connection, options)
+                    : that.GetGroups(connection, options);
 
                 foreach (var g in groups) {
                     try {
