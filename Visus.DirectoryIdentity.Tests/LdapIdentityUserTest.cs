@@ -38,6 +38,7 @@ namespace Visus.DirectoryIdentity.Tests {
         public void TestRetrievalOfExtendedAttributes() {
             if (this._testSecrets != null) {
                 var service = new LdapSearchService<LdapIdentityUser>(
+                    new LdapUserMapper<LdapIdentityUser>(Options.Create(this._testSecrets.LdapOptions)),
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapSearchService<LdapIdentityUser>>>());
 
