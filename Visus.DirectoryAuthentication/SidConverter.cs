@@ -81,7 +81,7 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         public object Convert(DirectoryAttribute attribute, object parameter) {
             _ = attribute ?? throw new ArgumentNullException(nameof(attribute));
-            return Convert((byte[]) attribute[0]);
+            return Convert((byte[]) attribute.GetValues(typeof(byte[]))[0]);
         }
         #endregion
     }
