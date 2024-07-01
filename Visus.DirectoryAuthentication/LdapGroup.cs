@@ -13,13 +13,16 @@ namespace Visus.DirectoryAuthentication {
     /// The default class used to represent a group membership.
     /// </summary>
     /// <remarks>
-    /// This implementation uses the attribute-based mapping of LDAP attributes
-    /// to user properties and claims that is defined in
-    /// <see cref="LdapGroupBase"/>. If you need a customised user object,
-    /// inherit from <see cref="LdapGroupBase"/> instead of using this user
-    /// object whenever possible. Otherwise, you need to either apply the
-    /// correct attributes to your custom object or provide a custom
-    /// <see cref="ILdapMapper{TUser, TGroup}"/>.
+    /// <para>This implementation uses the attribute-based mapping of LDAP
+    /// attributes to user properties and claims that is defined in
+    /// <see cref="LdapGroupBase"/>. It is the group implementation used by
+    /// <see cref="LdapUser"/>.</para>
+    /// <para>If you need a customised user object, the first choice is inheriting
+    /// from <see cref="LdapGroupBase"/> and use the customised class instead of
+    /// this one. If you provide a fully custom group class, you either need to
+    /// apply the correct attributes to your custom object or provide a custom
+    /// <see cref="ILdapMapper{TUser, TGroup}"/> that is compatible with your
+    /// class.</para>
     /// </remarks>
     [DebuggerDisplay("{DistinguishedName}")]
     public sealed class LdapGroup : LdapGroupBase { }
