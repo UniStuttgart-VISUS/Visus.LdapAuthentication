@@ -20,6 +20,7 @@ namespace Visus.DirectoryAuthentication {
         [LdapAttribute(Schema.ActiveDirectory, "sAMAccountName")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "sAMAccountName")]
         [LdapAttribute(Schema.Rfc2307, "gid")]
+        [Claim(ClaimTypes.Role)]
         public virtual string AccountName { get; internal set; }
 
         /// <summary>
