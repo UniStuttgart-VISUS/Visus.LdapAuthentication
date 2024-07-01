@@ -40,8 +40,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets the security identifier of the group.
         /// </summary>
-        [LdapAttribute(Schema.ActiveDirectory, "objectSid",
-            Converter = typeof(SidConverter))]
+        [LdapAttribute(Schema.ActiveDirectory, "objectSid")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "gidNumber")]
         [LdapAttribute(Schema.Rfc2307, "gidNumber")]
         [LdapIdentity]

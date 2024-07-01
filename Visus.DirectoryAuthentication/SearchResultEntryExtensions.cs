@@ -23,69 +23,6 @@ namespace Visus.DirectoryAuthentication {
     internal static class SearchResultEntryExtensions {
 
         /// <summary>
-        /// Assigns LDAP attributes to the given target object.
-        /// </summary>
-        /// <remarks>
-        /// This method will only assign annotated properties, but not the
-        /// claims.
-        /// </remarks>
-        /// <param name="that">The entry holding the properties to assign.
-        /// </param>
-        /// <param name="target">The target object to assign the attributes to.
-        /// </param>
-        /// <param name="schema">The LDAP schema determining the names of the
-        /// attributes we search.</param>
-        /// <param name="logger">An optional logger to record error messages.
-        /// </param>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
-        /// </exception>
-        public static void AssignTo(this SearchResultEntry that,
-                object target,
-                string schema,
-                ILogger logger = null) {
-            _ = that ?? throw new ArgumentNullException(nameof(that));
-            _ = target ?? throw new ArgumentNullException(nameof(target));
-            var props = LdapAttributeAttribute.GetLdapProperties(
-                target.GetType(), schema);
-
-            foreach (var p in props.Keys) {
-                try {
-                    var a = props[p];
-                    var v = a.GetValue(that);
-                    p.SetValue(target, v);
-                } catch (KeyNotFoundException ex) {
-                    logger?.LogError(ex,
-                        Resources.ErrorAttributeNotFound,
-                        p.Name);
-                    continue;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Assigns LDAP attributes to the given target object.
-        /// </summary>
-        /// <remarks>
-        /// This method will only assign annotated properties, but not the
-        /// claims.
-        /// </remarks>
-        /// <param name="that">The entry holding the properties to assign.
-        /// </param>
-        /// <param name="target">The target object to assign the attributes to.
-        /// </param>
-        /// <param name="options">The LDAP options determining the schema that
-        /// is used while searching for the LDAP attributes.</param>
-        /// <param name="logger">An optional logger to record error messages.
-        /// </param>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>, or <paramref name="target"/> is <c>null</c>.
-        /// </exception>
-        public static void AssignTo(this SearchResultEntry that, object target,
-                LdapOptions options, ILogger logger = null)
-            => that.AssignTo(target, options?.Schema, logger);
-
-        /// <summary>
         /// Gets the <see cref="Claim"/>s that represent the group memberships
         /// of <paramref name="that"/>.
         /// </summary>
