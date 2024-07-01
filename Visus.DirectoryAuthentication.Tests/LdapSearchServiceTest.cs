@@ -36,7 +36,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             public IEnumerable<string> RequiredUserAttributes => this._base.RequiredUserAttributes;
 
             public void Assign(LdapUser user, SearchResultEntry entry, LdapConnection connection, ILogger logger)
-                => entry.AssignTo(user, this._options);
+                => this._base.Assign(user, entry, connection, logger);
 
             public string GetIdentity(LdapUser user) => this._base.GetIdentity(user);
 
@@ -212,7 +212,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var users = await service.GetUsersAsync($"({att.Name}={this._testSecrets.ExistingUserAccount})");
                 Assert.IsNotNull(users.Any(), "Filtered user was found.");
                 Assert.IsNotNull(users.First().AccountName, "Have account");
-                Assert.IsFalse(users.First().Claims.Any(), "Custom mapper does not create claims.");
+                Assert.IsFalse(users.First().Claims?.Any() == true, "Custom mapper does not create claims.");
             }
         }
 

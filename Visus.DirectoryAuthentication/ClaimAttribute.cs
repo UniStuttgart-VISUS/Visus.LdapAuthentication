@@ -12,9 +12,10 @@ using System.Reflection;
 
 namespace Visus.DirectoryAuthentication {
 
-        /// <summary>
-    /// Marks a property as a claim that is automatically added by
-    /// <see cref="LdapUserBase"/>.
+    /// <summary>
+    /// Marks a property as a claim that
+    /// <see cref="ClaimsBuilder{TUser, TGroup}"/> will convert to a
+    /// <see cref="System.Security.Claims.Claim"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = true,

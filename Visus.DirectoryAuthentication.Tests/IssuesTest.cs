@@ -9,9 +9,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Security.Claims;
+
 
 namespace Visus.DirectoryAuthentication.Tests {
 
@@ -30,8 +31,35 @@ namespace Visus.DirectoryAuthentication.Tests {
         }
         #endregion
 
+        #region Issue #1
+        public sealed class CustomLdapUser : LdapUserBase<LdapGroup> {
+
+            [LdapAttribute(Schema.ActiveDirectory, "objectCategory")]
+            [Claim(ClaimTypes.Name)]
+            public override string DisplayName => base.DisplayName;
+        }
+
+        [TestMethod]
+        public void Test1() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var options = Options.Create(this._testSecrets.LdapOptions);
+                var claims = new ClaimsBuilder<CustomLdapUser, LdapGroup>(
+                    Mock.Of<ILogger<ClaimsBuilder<CustomLdapUser, LdapGroup>>>());
+                var mapper = new LdapMapper<CustomLdapUser, LdapGroup>(options, claims);
+                var service = new LdapSearchService<CustomLdapUser, LdapGroup>(
+                    mapper,
+                    options,
+                    Mock.Of<ILogger<LdapSearchService<CustomLdapUser, LdapGroup>>>());
+
+                var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
+                Assert.IsNotNull(user, "Existing user was found.");
+                Assert.AreEqual("CN=Person,CN=Schema,CN=Configuration,DC=visus,DC=uni-stuttgart,DC=de", user.DisplayName);
+            }
+        }
+        #endregion
+
         #region Issue #9
-        #if false
+#if false
         [TestMethod]
         public void Test9() {
             var options = new LdapOptions() {
@@ -56,7 +84,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             var user = service.Login("uid=tesla,dc=example,dc=com", "");
             Assert.IsNotNull(user);
         }
-        #endif
+#endif
         #endregion
 
         #region Issue #10

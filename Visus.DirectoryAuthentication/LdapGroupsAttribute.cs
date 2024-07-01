@@ -17,7 +17,9 @@ namespace Visus.DirectoryAuthentication {
     /// <remarks>
     /// Annotating multiple properties of the same class with this attribute
     /// will cause mapping to fail when using the default
-    /// <see cref="LdapMapper{TUser}"/>.
+    /// <see cref="LdapMapper{TUser, , TGroup}"/>. Otherwise,
+    /// <see cref="LdapMapper{TUser, TGroup}"/> will assign the groups that have
+    /// been retrieved for a user to this property.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = false,

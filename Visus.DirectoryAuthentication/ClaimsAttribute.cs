@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 
+
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
@@ -19,7 +20,9 @@ namespace Visus.DirectoryAuthentication {
     /// <remarks>
     /// Annotating multiple properties of the same class with this attribute
     /// will cause mapping to fail when using the default
-    /// <see cref="LdapMapper{TUser}"/>.
+    /// <see cref="LdapMapper{TUser}"/>. If there is a unique attribute in
+    /// the user object, <see cref="LdapMapper{TUser, TGroup}"/> will assign
+    /// the claims to this attribute.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = false,

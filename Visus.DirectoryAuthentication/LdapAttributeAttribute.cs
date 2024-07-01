@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Reflection;
@@ -18,6 +19,7 @@ namespace Visus.DirectoryAuthentication {
     /// retrieving the property values automatically from a
     /// <see cref="System.DirectoryServices.Protocols.SearchResultEntry"/>.
     /// </summary>
+    [DebuggerDisplay("\\{Name = {Name}, Schema = {Schema}\\}")]
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = true,
         Inherited = false)]
@@ -129,11 +131,20 @@ namespace Visus.DirectoryAuthentication {
                             Attribute = a
                         };
 
-            var patchSetter = typeof(LdapUserBase<>).IsAssignableFrom(type);
+            Type propertyOwner = type.BaseType;
+            if (propertyOwner != null) {
+                if (!propertyOwner.IsGenericType) {
+                    propertyOwner = null;
+                } else if (type.BaseType.GetGenericTypeDefinition()
+                        != typeof(LdapUserBase<>)) {
+                    propertyOwner = null;
+                }
+            }
 
             foreach (var p in props) {
-                if (patchSetter && (p.Property?.SetMethod?.IsPublic != true)) {
-                    var pp = typeof(LdapUserBase<>).GetProperty(p.Property.Name);
+                if ((propertyOwner != null)
+                        && (p.Property?.SetMethod?.IsPublic != true)) {
+                    var pp = propertyOwner.GetProperty(p.Property.Name);
                     retval[pp ?? p.Property] = p.Attribute;
                 } else {
                     retval[p.Property] = p.Attribute;

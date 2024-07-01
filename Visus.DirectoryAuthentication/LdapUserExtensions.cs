@@ -13,7 +13,7 @@ using System.Security.Claims;
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
-    /// Extension methods for <see cref="ILdapUser"/> and derived classes.
+    /// Extension methods for LDAP user classes.
     /// </summary>
     public static class LdapUserExtensions {
 
@@ -32,7 +32,8 @@ namespace Visus.DirectoryAuthentication {
         /// <c>null</c> as well.</param>
         /// <param name="filter">A function that checks each claim before it
         /// is being added. It is safe to pass <c>null</c>, in which case
-        /// all claims from <see cref="ILdapUser.Claims"/> will be added. This
+        /// all claims from the active
+        /// <see cref="IClaimsBuilder{TUser, TGroup}"/> will be added. This
         /// parameter defaults to <c>null</c>.
         /// </param>
         /// <param name="authenticationType">The authentication type to be used
