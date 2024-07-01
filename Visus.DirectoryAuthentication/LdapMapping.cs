@@ -25,7 +25,7 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <remarks>
         /// <para>For an Active Directory, this is typically something like
-        /// &quot;GroupAttribute&quot;.</para>
+        /// &quot;memberOf&quot;.</para>
         /// </remarks>
         public string GroupsAttribute { get; set; }
 

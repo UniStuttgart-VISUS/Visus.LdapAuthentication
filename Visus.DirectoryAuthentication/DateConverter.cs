@@ -14,7 +14,8 @@ namespace Visus.DirectoryAuthentication {
     /// A converter that parses an attribute as <see cref="DateTimeOffset"/>.
     /// </summary>
     /// <remarks>
-    /// This converter is required, because ADDS stores some numbers as strings.
+    /// This converter is required, because lockout times in ADDS are stored as
+    /// <c>FILETIME</c> structures.
     /// </remarks>
     public sealed class DateConverter : ILdapAttributeConverter {
 

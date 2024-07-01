@@ -51,14 +51,18 @@ namespace Visus.DirectoryAuthentication {
             this._options = options
                 ?? throw new ArgumentNullException(nameof(options));
 
-            // Cache reflection access to properties we want to read or write.
+            // Cache the property of TUser holding the claims.
             this._claimsProperty = ClaimsAttribute.GetClaims<TUser>();
             // Note: Claims are optional, so we do not check this.
 
+            // Cache the property of TUser holding the groups.
             this._groupsProperty = LdapGroupsAttribute.GetLdapGroups<TUser>();
             // Note: Groups are optional, so we do not check this.
 
-            var groupIdentityProperty = LdapIdentityAttribute.GetLdapIdentity<
+            // Get the property where the identity of a TGroup is stored. We need
+            // this property, because the annotated attribute is required to
+            // retrieve the LDAP entry of the primrary group.
+            var groupIdentityProperty = LdapIdentityAttribute.GetProperty<
                 TGroup>();
             if (groupIdentityProperty == null) {
                 throw new ArgumentException(string.Format(
@@ -66,6 +70,7 @@ namespace Visus.DirectoryAuthentication {
                     typeof(TUser).FullName));
             }
 
+            // Get the LDAP attribute holding the identity of a group.
             this._groupIdentityAttribute = LdapAttributeAttribute.GetLdapAttribute(
                 groupIdentityProperty, this._options.Schema);
             if (this._groupIdentityAttribute == null) {
@@ -74,7 +79,9 @@ namespace Visus.DirectoryAuthentication {
                     groupIdentityProperty.Name));
             }
 
-            this._userIdentityProperty = LdapIdentityAttribute.GetLdapIdentity<
+            // Get the property where the identity of a TUser is stored. This
+            // property is required for implementing GetIdentity().
+            this._userIdentityProperty = LdapIdentityAttribute.GetProperty<
                 TUser>();
             if (this._userIdentityProperty == null) {
                 throw new ArgumentException(string.Format(
@@ -82,6 +89,7 @@ namespace Visus.DirectoryAuthentication {
                     typeof(TUser).FullName));
             }
 
+            // Get the LDAP attribute which represents the identity of a user.
             this._userIdentityAttribute = LdapAttributeAttribute.GetLdapAttribute(
                 this._userIdentityProperty, this._options.Schema);
             if (this._userIdentityAttribute == null) {
@@ -89,6 +97,11 @@ namespace Visus.DirectoryAuthentication {
                     Resources.ErrorNoLdapAttribute,
                     this._userIdentityProperty.Name));
             }
+
+            // Check whether the group wants to know whether it is the primary
+            // group of the user.
+            this._primaryGroupFlagProperty = PrimaryGroupFlagAttribute
+                .GetProperty<TGroup>();
 
             // Get property/attribute mappings for user and group objects.
             this._groupProperties = LdapAttributeAttribute.GetLdapProperties(
@@ -101,7 +114,6 @@ namespace Visus.DirectoryAuthentication {
                 .GetRequiredAttributes<TGroup>(this._options.Schema).ToArray();
             this._requiredUserAttributes = LdapAttributeAttribute
                 .GetRequiredAttributes<TUser>(this._options.Schema).ToArray();
-
         }
 
         /// <summary>
@@ -155,10 +167,18 @@ namespace Visus.DirectoryAuthentication {
 
                 var groups = new List<TGroup>();
                 groups.Capacity = entries.Count;
+                var isPrimary = true;
 
                 foreach (var e in entries) {
-                    groups.Add(Assign(new TGroup(), e,
-                        this._groupProperties, logger));
+                    var g = Assign(new TGroup(), e, this._groupProperties,
+                        logger);
+
+                    if (this._primaryGroupFlagProperty != null) {
+                        this._primaryGroupFlagProperty.SetValue(g, isPrimary);
+                        isPrimary = false;
+                    }
+
+                    groups.Add(g);
                 }
 
                 this._groupsProperty.SetValue(user, groups);
@@ -397,6 +417,7 @@ namespace Visus.DirectoryAuthentication {
         private readonly LdapAttributeAttribute _groupIdentityAttribute;
         private readonly PropertyInfo _groupsProperty;
         private readonly LdapOptions _options;
+        private readonly PropertyInfo _primaryGroupFlagProperty;
         private readonly string[] _requiredGroupAttributes;
         private readonly string[] _requiredUserAttributes;
         private readonly LdapAttributeAttribute _userIdentityAttribute;

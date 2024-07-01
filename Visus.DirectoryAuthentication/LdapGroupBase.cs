@@ -4,8 +4,8 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-
 using System.Security.Claims;
+
 
 namespace Visus.DirectoryAuthentication {
 
@@ -54,6 +54,7 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets whether the group is the primary group of the user.
         /// </summary>
+        [PrimaryGroupFlag]
         public virtual bool IsPrimary { get; internal set; }
     }
 }

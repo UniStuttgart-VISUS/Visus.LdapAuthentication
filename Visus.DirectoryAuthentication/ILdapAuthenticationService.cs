@@ -39,4 +39,5 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>The user object in case of a successful login.</returns>
         Task<TUser> LoginAsync(string username, string password);
     }
+
 }
