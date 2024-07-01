@@ -168,14 +168,19 @@ namespace Visus.DirectoryAuthentication {
             if ((this._claimsBuilder != null)
                     && (this._claimsProperty != null)) {
                 var claims = this._claimsBuilder.UseMapper(this).Build(user);
-                this._claimsProperty.SetValue(user, claims);
+                this._claimsProperty.SetValue(user, claims.ToList());
             }
         }
 
         /// <inheritdoc />
         public IEnumerable<TGroup> GetGroups(TUser user) {
             _ = user ?? throw new ArgumentNullException(nameof(user));
-            throw new NotImplementedException();
+            if (this._groupsProperty?.GetValue(user)
+                    is IEnumerable<TGroup> retval) {
+                return retval;
+            } else {
+                return Enumerable.Empty<TGroup>();
+            }
         }
 
         /// <inheritdoc />

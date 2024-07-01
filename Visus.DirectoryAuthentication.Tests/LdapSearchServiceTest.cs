@@ -104,7 +104,9 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetUserByIdentity() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var claims = new ClaimsBuilder<LdapUser, LdapGroup>(
+                    Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options, claims);
                 var service = new LdapSearchService<LdapUser, LdapGroup>(
                     mapper,
                     options,
@@ -112,6 +114,8 @@ namespace Visus.DirectoryAuthentication.Tests {
 
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
                 Assert.IsNotNull(user, "Existing user was found.");
+                Assert.IsNotNull(user.Claims, "Mapper has set claims");
+                Assert.IsTrue(user.Claims.Any(), "At least one claim");
             }
         }
 
