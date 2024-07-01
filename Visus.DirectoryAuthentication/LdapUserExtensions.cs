@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 
@@ -22,7 +23,9 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <remarks>
         /// The authentication type will be set to
-        /// <c>nameof(<see cref="ILdapAuthenticationService"/>)</c>.
+        /// <c>nameof(<see cref="ILdapAuthenticationService{TUser}"/>)</c>
+        /// unless it is explicitly specified as
+        /// <paramref name="authenticationType"/>.
         /// </remarks>
         /// <param name="that">The LDAP user to create the identity for. It is
         /// safe to pass <c>null</c>, in which case the return will be
@@ -32,26 +35,44 @@ namespace Visus.DirectoryAuthentication {
         /// all claims from <see cref="ILdapUser.Claims"/> will be added. This
         /// parameter defaults to <c>null</c>.
         /// </param>
+        /// <param name="authenticationType">The authentication type to be used
+        /// in the <see cref="ClaimsIdentity"/>.</param>
         /// <returns>The claims identity for the given user.</returns>
-        public static ClaimsIdentity ToClaimsIdentity(this ILdapUser that,
-                Func<Claim, bool> filter = null) {
+        public static ClaimsIdentity ToClaimsIdentity<TUser>(this TUser that,
+                Func<Claim, bool> filter = null,
+                string authenticationType = null)
+                where TUser : class {
             if (that == null) {
                 // There is no user, so the identity is null, too.
                 return null;
             }
 
-            var authType = nameof(ILdapAuthenticationService);
+            var property = ClaimsAttribute.GetClaims<TUser>();
+            if (property == null) {
+                // If the user has no claims, we cannot create the identity.
+                return null;
+            }
+
+            var claims = property.GetValue(that) as IEnumerable<Claim>;
+            if (claims == null) {
+                // If the claims are invalid, we cannot create the identity.
+                return null;
+            }
+
+            if (authenticationType == null) {
+                authenticationType = nameof(ILdapAuthenticationService<TUser>);
+            }
 
             if (filter == null) {
                 // There is no filter, so return all claims.
-                return new ClaimsIdentity(that.Claims, authType);
+                return new ClaimsIdentity(claims, authenticationType);
             }
 
             // Return filtered claims.
-            var claims = from c in that.Claims
-                         where filter(c)
-                         select c;
-            return new ClaimsIdentity(claims, authType);
+            claims = from c in claims
+                     where filter(c)
+                     select c;
+            return new ClaimsIdentity(claims, authenticationType);
         }
 
         /// <summary>
@@ -66,11 +87,14 @@ namespace Visus.DirectoryAuthentication {
         /// parameter defaults to <c>null</c>.
         /// </param>
         /// <returns>The principal for the given user.</returns>
-        public static ClaimsPrincipal ToClaimsPrincipal(
-                this ILdapUser that,
-                Func<Claim, bool> filter = null) {
+        public static ClaimsPrincipal ToClaimsPrincipal<TUser>(
+                this TUser that,
+                Func<Claim, bool> filter = null,
+                string authenticationType = null)
+                where TUser : class {
             return (that != null)
-                ? new ClaimsPrincipal(that.ToClaimsIdentity(filter))
+                ? new ClaimsPrincipal(that.ToClaimsIdentity(filter,
+                    authenticationType))
                 : null;
         }
     }

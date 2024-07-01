@@ -19,7 +19,8 @@ namespace Visus.DirectoryAuthentication.Tests {
     public sealed class LdapUserExtensionsTest {
 
         #region Nested class TestUser
-        private class TestUser : LdapUserBase {
+        private class TestUser : LdapUserBase<LdapGroup> {
+            [Claims]
             public override IEnumerable<Claim> Claims {
                 get {
                     yield return new Claim(ClaimTypes.Name, "Max Mustermann");
@@ -37,7 +38,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             var user = new TestUser();
 
             {
-                var identity = LdapUserExtensions.ToClaimsIdentity(null);
+                var identity = LdapUserExtensions.ToClaimsIdentity((TestUser) null);
                 Assert.IsNull(identity);
             }
 

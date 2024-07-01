@@ -1,14 +1,11 @@
-﻿// <copyright file="SidConverterTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="LdapUserTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Reflection;
 
@@ -26,6 +23,8 @@ namespace Visus.DirectoryAuthentication.Tests {
             var type = typeof(LdapUser);
             var props = from p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                         where p.CanRead && p.CanWrite
+                        where p.Name != nameof(LdapUser.Claims)
+                        where p.Name != nameof(LdapUser.Groups)
                         select p;
 
             foreach (var p in props) {
@@ -139,6 +138,24 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(prop.Value);
                 Assert.AreEqual("sn", prop.Value.Name);
             }
+        }
+
+        [TestMethod]
+        public void TestClaims() {
+            var type = typeof(LdapUser);
+            var prop = type.GetProperty(nameof(LdapUser.Claims));
+            Assert.IsNotNull(prop);
+            Assert.IsTrue(ClaimsAttribute.IsClaims(prop));
+            Assert.AreEqual(prop, ClaimsAttribute.GetClaims<LdapUser>());
+        }
+
+        [TestMethod]
+        public void TestGroups() {
+            var type = typeof(LdapUser);
+            var prop = type.GetProperty(nameof(LdapUser.Groups));
+            Assert.IsNotNull(prop);
+            Assert.IsTrue(LdapGroupsAttribute.IsLdapGroups(prop));
+            Assert.AreEqual(prop, LdapGroupsAttribute.GetLdapGroups<LdapUser>());
         }
     }
 }

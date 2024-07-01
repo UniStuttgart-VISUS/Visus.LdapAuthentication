@@ -129,11 +129,11 @@ namespace Visus.DirectoryAuthentication {
                             Attribute = a
                         };
 
-            var patchSetter = typeof(LdapUserBase).IsAssignableFrom(type);
+            var patchSetter = typeof(LdapUserBase<>).IsAssignableFrom(type);
 
             foreach (var p in props) {
                 if (patchSetter && (p.Property?.SetMethod?.IsPublic != true)) {
-                    var pp = typeof(LdapUserBase).GetProperty(p.Property.Name);
+                    var pp = typeof(LdapUserBase<>).GetProperty(p.Property.Name);
                     retval[pp ?? p.Property] = p.Attribute;
                 } else {
                     retval[p.Property] = p.Attribute;

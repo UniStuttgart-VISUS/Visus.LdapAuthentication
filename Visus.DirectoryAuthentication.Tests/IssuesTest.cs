@@ -23,16 +23,10 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         #region Public constructors
         public IssuesTest() {
-            try {
-                var configuration = new ConfigurationBuilder()
-                    .AddUserSecrets<TestSecrets>()
-                    .Build();
-                this._testSecrets = new TestSecrets();
-                configuration.Bind(this._testSecrets);
-
-            } catch {
-                this._testSecrets = null;
-            }
+            new ConfigurationBuilder()
+                .AddUserSecrets<TestSecrets>()
+                .Build()
+                .Bind(this._testSecrets = new());
         }
         #endregion
 
@@ -68,12 +62,15 @@ namespace Visus.DirectoryAuthentication.Tests {
         #region Issue #10
         [TestMethod]
         public void Test10() {
-            if (this._testSecrets != null) {
+            if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapAuthenticationService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var claims = new ClaimsBuilder<LdapUser, LdapGroup>(
+                    Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options, claims);
+                var service = new LdapAuthenticationService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
 
                 Assert.ThrowsException<LdapException>(() => {
                     var user = service.Login(this._testSecrets.LdapOptions.User,
@@ -86,7 +83,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         #region Issue #12
         [TestMethod]
         public void Test12() {
-            if (this._testSecrets != null) {
+            if (this._testSecrets?.LdapOptions != null) {
                 var configuration = new ConfigurationBuilder()
                     .AddUserSecrets<TestSecrets>()
                     .Build();
@@ -95,10 +92,13 @@ namespace Visus.DirectoryAuthentication.Tests {
                 secrets.LdapOptions.PageSize = 0;
 
                 var options = Options.Create(secrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var claims = new ClaimsBuilder<LdapUser, LdapGroup>(
+                    Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options, claims);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var users = service.GetUsers($"(sAMAccountName={this._testSecrets.ExistingUserAccount})");
                 Assert.IsTrue(users.Any(), "At least something returned");

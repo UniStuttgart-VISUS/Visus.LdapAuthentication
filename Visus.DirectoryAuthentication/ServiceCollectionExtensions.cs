@@ -24,6 +24,8 @@ namespace Visus.DirectoryAuthentication {
         /// results, which also defines attributes like the unique identity in
         /// combination with the global options from <see cref="ILdapOptions"/>.
         /// </typeparam>
+        /// <typeparam name="TGroup"></typeparam>
+        /// <typeparam name="TClaims"></typeparam>
         /// <typeparam name="TMapper">The type of the user mapper.</typeparam>
         /// <param name="services">The service collection to add the service to.
         /// </param>
@@ -32,19 +34,21 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="services"/> is <c>null</c>, or if
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapAuthenticationService<TUser, TMapper>(
+        public static IServiceCollection AddLdapAuthenticationService<
+                TUser, TGroup, TClaims, TMapper>(
                 this IServiceCollection services,
                 Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new()
-                where TMapper : class, ILdapUserMapper<TUser> {
+                where TUser : class, new()
+                where TGroup : class, new()
+                where TClaims: class, IClaimsBuilder<TUser, TGroup>
+                where TMapper : class, ILdapMapper<TUser, TGroup> {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
-                .AddSingleton<ILdapUserMapper<TUser>, TMapper>()
-                .AddScoped<ILdapAuthenticationService,
-                    LdapAuthenticationService<TUser>>()
+                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
+                .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
                 .AddScoped<ILdapAuthenticationService<TUser>,
-                    LdapAuthenticationService<TUser>>();
+                    LdapAuthenticationService<TUser, TGroup>>();
         }
 
         /// <summary>
@@ -60,11 +64,15 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="services"/> is <c>null</c>, or if
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapAuthenticationService<TUser>(
+        public static IServiceCollection AddLdapAuthenticationService<
+                TUser, TGroup>(
                 this IServiceCollection services,
                 Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new() {
-            services.AddLdapAuthenticationService<TUser, LdapUserMapper<TUser>>(
+                where TUser : class, new()
+                where TGroup : class, new() {
+            services.AddLdapAuthenticationService<TUser, TGroup,
+                ClaimsBuilder<TUser, TGroup>,
+                LdapMapper<TUser, TGroup>>(
                 options);
             return services;
         }
@@ -82,7 +90,8 @@ namespace Visus.DirectoryAuthentication {
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public static IServiceCollection AddLdapAuthenticationService(
                 this IServiceCollection services, Action<LdapOptions> options)
-            => services.AddLdapAuthenticationService<LdapUser>(options);
+            => services.AddLdapAuthenticationService<LdapUser, LdapGroup>(
+                options);
 
         /// <summary>
         /// Adds an <see cref="ILdapConnectionService"/> to the dependency
@@ -101,7 +110,7 @@ namespace Visus.DirectoryAuthentication {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
-                .AddScoped<ILdapConnectionService, LdapConnectionService>();
+                .AddSingleton<ILdapConnectionService, LdapConnectionService>();
         }
 
         /// <summary>
@@ -120,19 +129,19 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="services"/> is <c>null</c>, or if
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapSearchService<TUser, TMapper>(
+        public static IServiceCollection AddLdapSearchService<TUser, TGroup,
+                TMapper>(
                 this IServiceCollection services,
                 Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new()
-            where TMapper : class, ILdapUserMapper<TUser> {
+                where TUser : class, new()
+                where TGroup : class, new()
+                where TMapper : class, ILdapMapper<TUser, TGroup> {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
-                .AddSingleton<ILdapUserMapper<TUser>,TMapper>()
-                .AddScoped<ILdapSearchService,
-                    LdapSearchService<TUser>>()
-                .AddScoped<ILdapSearchService<TUser>,
-                    LdapSearchService<TUser>>();
+                .AddSingleton<ILdapMapper<TUser, TGroup>,TMapper>()
+                .AddScoped<ILdapSearchService<TUser, TGroup>,
+                    LdapSearchService<TUser, TGroup>>();
         }
 
         /// <summary>
@@ -150,15 +159,13 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="services"/> is <c>null</c>, or if
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapSearchService<TUser>(
+        public static IServiceCollection AddLdapSearchService<TUser, TGroup>(
                 this IServiceCollection services,
                 Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new() {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            services.AddLdapSearchService<TUser, LdapUserMapper<TUser>>(options);
-            return services;
-        }
+                where TUser : class, new()
+                where TGroup : class, new()
+            =>  services.AddLdapSearchService<TUser, TGroup,
+                LdapMapper<TUser, TGroup>>(options);
 
         /// <summary>
         /// Adds an <see cref="ILdapSearchService"/> to the dependency injection
@@ -173,8 +180,80 @@ namespace Visus.DirectoryAuthentication {
         /// </exception>
         public static IServiceCollection AddLdapSearchService(
                 this IServiceCollection that,
-                Action<LdapOptions> options) {
-            return that.AddLdapSearchService<LdapUser>(options);
+                Action<LdapOptions> options)
+            => that.AddLdapSearchService<LdapUser, LdapGroup>(options);
+
+        /// <summary>
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> to the dependency
+        /// injection container.
+        /// </summary>
+        /// <typeparam name="TUser"></typeparam>
+        /// <typeparam name="TGroup"></typeparam>
+        /// <typeparam name="TClaims"></typeparam>
+        /// <typeparam name="TMapper"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddLdapServices<
+                TUser, TGroup, TClaims, TMapper>(
+                this IServiceCollection services,
+                Action<LdapOptions> options)
+                where TUser : class, new()
+                where TGroup : class, new()
+                where TClaims : class, IClaimsBuilder<TUser, TGroup>
+                where TMapper : class, ILdapMapper<TUser, TGroup> {
+            _ = services ?? throw new ArgumentNullException(nameof(services));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+            return services.Configure(options)
+                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
+                .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
+                .AddScoped<ILdapAuthenticationService<TUser>,
+                    LdapAuthenticationService<TUser, TGroup>>()
+                .AddScoped<ILdapSearchService<TUser, TGroup>,
+                    LdapSearchService<TUser, TGroup>>()
+                .AddSingleton<ILdapConnectionService, LdapConnectionService>();
         }
+
+        /// <summary>
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> to the dependency
+        /// injection container.
+        /// </summary>
+        /// <typeparam name="TUser"></typeparam>
+        /// <typeparam name="TGroup"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddLdapServices<
+                TUser, TGroup>(
+                this IServiceCollection services,
+                Action<LdapOptions> options)
+                where TUser : class, new()
+                where TGroup : class, new()
+            =>  services.AddLdapServices<TUser, TGroup,
+                ClaimsBuilder<TUser, TGroup>,
+                LdapMapper<TUser, TGroup>>(
+                options);
+
+        /// <summary>
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> to the dependency
+        /// injection container.
+        /// </summary>
+        /// <param name="services">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">A callback configuring the options.</param>
+        /// <returns><paramref name="services"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="services"/> is <c>null</c>, or if
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddLdapServices(
+                this IServiceCollection services, Action<LdapOptions> options)
+            => services.AddLdapServices<LdapUser, LdapGroup>(options);
+
     }
 }

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 
@@ -22,30 +23,32 @@ namespace Visus.DirectoryAuthentication {
     /// </summary>
     /// <typeparam name="TUser">The type of the user object to be returned on
     /// login. This is typically something derived from
-    /// <see cref="LdapUserBase"/> rather than a custom implementation of
-    /// <see cref="ILdapUser"/>.</typeparam>
-    public sealed class LdapAuthenticationService<TUser>
+    /// <see cref="LdapUserBase"/> to avoid implementing a custom mapper.
+    /// </typeparam>
+    public sealed class LdapAuthenticationService<TUser, TGroup>
             : ILdapAuthenticationService<TUser>
-            where TUser : class, ILdapUser, new() {
+            where TUser : class, new()
+            where TGroup : class, new() {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="mapper">The <see cref="ILdapUserMapper{TUser}"/> to
+        /// <param name="mapper">The <see cref="ILdapMapper{TUser, TGroup}"/> to
         /// provide mapping between LDAP attributes and properties of
-        /// <typeparamref name="TUser"/>.</param>
+        /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>, 
+        /// respectively.</param>
         /// <param name="options">The LDAP options that specify how to connect
         /// to the directory server.</param>
-        /// <param name="logger">A logger for writing important messages.
-        /// </param>
+        /// <param name="logger">A logger for presisting important messages like
+        /// login failures.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAuthenticationService(ILdapUserMapper<TUser> mapper,
+        public LdapAuthenticationService(ILdapMapper<TUser, TGroup> mapper,
                 IOptions<LdapOptions> options,
-                ILogger<LdapAuthenticationService<TUser>> logger) {
+                ILogger<LdapAuthenticationService<TUser, TGroup>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._mapper = mapper
@@ -82,11 +85,6 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
-        ILdapUser ILdapAuthenticationService.Login(string username,
-                string password)
-            => this.Login(username, password);
-
-        /// <inheritdoc />
         public async Task<TUser> LoginAsync(string username,
                 string password) {
             // Note: It is important to pass a non-null password to make sure
@@ -113,15 +111,10 @@ namespace Visus.DirectoryAuthentication {
                 username);
             return null;
         }
-
-        /// <inheritdoc />
-        async Task<ILdapUser> ILdapAuthenticationService.LoginAsync(
-                string username, string password)
-            => await this.LoginAsync(username, password).ConfigureAwait(false);
         #endregion
 
         #region Private methods
-        private SearchRequest GetRequest(ILdapUserMapper<TUser> mapper,
+        private SearchRequest GetRequest(ILdapMapper<TUser, TGroup> mapper,
                 string username,
                 string searchBase,
                 SearchScope scope) {
@@ -132,11 +125,11 @@ namespace Visus.DirectoryAuthentication {
             var retval = new SearchRequest(searchBase,
                 filter,
                 scope,
-                mapper.RequiredAttributes.Concat(groupAttribs).ToArray());
+                mapper.RequiredUserAttributes.Concat(groupAttribs).ToArray());
             return retval;
         }
 
-        private SearchRequest GetRequest(ILdapUserMapper<TUser> mapper,
+        private SearchRequest GetRequest(ILdapMapper<TUser, TGroup> mapper,
                 string username,
                 KeyValuePair<string, SearchScope> searchBase)
             => this.GetRequest(mapper, username, searchBase.Key,
@@ -145,7 +138,7 @@ namespace Visus.DirectoryAuthentication {
 
         #region Private fields
         private readonly ILogger _logger;
-        private readonly ILdapUserMapper<TUser> _mapper;
+        private readonly ILdapMapper<TUser, TGroup> _mapper;
         private readonly LdapOptions _options;
         #endregion
     }

@@ -25,34 +25,42 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void GetDefaultNamingContext() {
-            var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
-            Assert.IsNotNull(connection);
-            var defaultNamingContext = connection.GetDefaultNamingContext();
-            Assert.IsFalse(string.IsNullOrWhiteSpace(defaultNamingContext));
+            if (this._testSecrets?.LdapOptions != null) {
+                var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
+                Assert.IsNotNull(connection);
+                var defaultNamingContext = connection.GetDefaultNamingContext();
+                Assert.IsFalse(string.IsNullOrWhiteSpace(defaultNamingContext));
+            }
         }
 
         [TestMethod]
         public async Task GetDefaultNamingContextAsync() {
-            var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
-            Assert.IsNotNull(connection);
-            var defaultNamingContext = await connection.GetDefaultNamingContextAsync();
-            Assert.IsFalse(string.IsNullOrWhiteSpace(defaultNamingContext));
+            if (this._testSecrets?.LdapOptions != null) {
+                var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
+                Assert.IsNotNull(connection);
+                var defaultNamingContext = await connection.GetDefaultNamingContextAsync();
+                Assert.IsFalse(string.IsNullOrWhiteSpace(defaultNamingContext));
+            }
         }
 
         [TestMethod]
         public void GetRootDse() {
-            var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
-            Assert.IsNotNull(connection);
-            var rootDse = connection.GetRootDse();
-            Assert.IsNotNull(rootDse);
+            if (this._testSecrets?.LdapOptions != null) {
+                var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
+                Assert.IsNotNull(connection);
+                var rootDse = connection.GetRootDse();
+                Assert.IsNotNull(rootDse);
+            }
         }
 
         [TestMethod]
         public async Task GetRootDseAsync() {
-            var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
-            Assert.IsNotNull(connection);
-            var rootDse = await connection.GetRootDseAsync();
-            Assert.IsNotNull(rootDse);
+            if (this._testSecrets?.LdapOptions != null) {
+                var connection = this._testSecrets.LdapOptions.Connect(Mock.Of<ILogger>());
+                Assert.IsNotNull(connection);
+                var rootDse = await connection.GetRootDseAsync();
+                Assert.IsNotNull(rootDse);
+            }
         }
 
         private readonly TestSecrets _testSecrets;

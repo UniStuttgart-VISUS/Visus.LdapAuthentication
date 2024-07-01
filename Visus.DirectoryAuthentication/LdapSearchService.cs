@@ -25,27 +25,31 @@ namespace Visus.DirectoryAuthentication {
     /// results, which also defines attributes like the unique identity in
     /// combination with the global options from <see cref="LdapOptions"/>.
     /// </typeparam>
-    public sealed class LdapSearchService<TUser> : ILdapSearchService<TUser>
-            where TUser : class, ILdapUser, new() {
+    /// <typeparam name="TGroup">The type used to represent an LDAP group.
+    /// </typeparam>
+    public sealed class LdapSearchService<TUser, TGroup>
+            : ILdapSearchService<TUser, TGroup>
+            where TUser : class, new()
+            where TGroup : class, new() {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="mapper">A <see cref="ILdapUserMapper{TUser}"/> that
+        /// <param name="mapper">A <see cref="ILdapMapper{TUser, TGroup}"/> that
         /// provides a mapping between LDAP attributes and properties of
         /// <typeparamref name="TUser"/>.</param>
         /// <param name="options">The LDAP options that specify how to connect
         /// to the directory server.</param>
-        /// <param name="logger">A logger for writing important messages.
-        /// </param>
+        /// <param name="logger">A logger for persisting important messages like
+        /// failed search requests.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(ILdapUserMapper<TUser> mapper,
+        public LdapSearchService(ILdapMapper<TUser, TGroup> mapper,
                 IOptions<LdapOptions> options,
-                ILogger<LdapSearchService<TUser>> logger) {
+                ILogger<LdapSearchService<TUser, TGroup>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._mapper = mapper
@@ -131,10 +135,6 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
-        ILdapUser ILdapSearchService.GetUserByIdentity(string identity)
-            => this.GetUserByIdentity(identity);
-
-        /// <inheritdoc />
         public async Task<TUser> GetUserByIdentityAsync(string identity) {
             var retval = new TUser();
 
@@ -157,12 +157,6 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
-        async Task<ILdapUser> ILdapSearchService.GetUserByIdentityAsync(
-                string identity)
-            => await this.GetUserByIdentityAsync(identity)
-                .ConfigureAwait(false);
-
-        /// <inheritdoc />
         public IEnumerable<TUser> GetUsers()
             => this.GetUsers0(this._options.Mapping.UsersFilter,
                 this._options.SearchBases);
@@ -173,32 +167,12 @@ namespace Visus.DirectoryAuthentication {
                 this._options.SearchBases);
 
         /// <inheritdoc />
-        IEnumerable<ILdapUser> ILdapSearchService.GetUsers()
-            => this.GetUsers0(this._options.Mapping.UsersFilter,
-                this._options.SearchBases);
-
-        /// <inheritdoc />
-        async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync()
-            => await this.GetUsersAsync0(this._options.Mapping.UsersFilter,
-                this._options.SearchBases).ConfigureAwait(false);
-
-        /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string filter)
             => this.GetUsers(this._options.SearchBases, filter);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync(string filter)
             => this.GetUsersAsync(this._options.SearchBases, filter);
-
-        /// <inheritdoc />
-        IEnumerable<ILdapUser> ILdapSearchService.GetUsers(string filter)
-            => this.GetUsers(this._options.SearchBases, filter);
-
-        /// <inheritdoc />
-        async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
-                string filter)
-            => await this.GetUsersAsync(this._options.SearchBases, filter)
-                .ConfigureAwait(false);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(
@@ -208,24 +182,11 @@ namespace Visus.DirectoryAuthentication {
                 searchBases ?? this._options.SearchBases);
 
         /// <inheritdoc />
-        IEnumerable<ILdapUser> ILdapSearchService.GetUsers(
-                IDictionary<string, SearchScope> searchBases,
-                string filter)
-            => this.GetUsers(searchBases, filter);
-
-        /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync(
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
             => this.GetUsersAsync0(this.MergeFilter(filter),
                 searchBases ?? this._options.SearchBases);
-
-        /// <inheritdoc />
-        async Task<IEnumerable<ILdapUser>> ILdapSearchService.GetUsersAsync(
-                IDictionary<string, SearchScope> searchBases,
-                string filter)
-            => await this.GetUsersAsync(searchBases, filter)
-                .ConfigureAwait(false);
         #endregion
 
         #region Private Properties
@@ -295,7 +256,7 @@ namespace Visus.DirectoryAuthentication {
             return new SearchRequest(searchBase.Key,
                 $"({idAttribute.Name}={identity})",
                 searchBase.Value,
-                this._mapper.RequiredAttributes.Concat(groupAttribs).ToArray());
+                this._mapper.RequiredUserAttributes.Concat(groupAttribs).ToArray());
         }
 
         /// <summary>
@@ -325,7 +286,7 @@ namespace Visus.DirectoryAuthentication {
                 b.Key,
                 b.Value,
                 filter,
-                this._mapper.RequiredAttributes.Concat(groupAttribs).ToArray(),
+                this._mapper.RequiredUserAttributes.Concat(groupAttribs).ToArray(),
                 this._options.PageSize,
                 sortAttribute.Name,
                 this._options.Timeout);
@@ -403,7 +364,7 @@ namespace Visus.DirectoryAuthentication {
         #region Private fields
         private LdapConnection _connection;
         private readonly ILogger _logger;
-        private readonly ILdapUserMapper<TUser> _mapper;
+        private readonly ILdapMapper<TUser, TGroup> _mapper;
         private readonly LdapOptions _options;
         #endregion
     }

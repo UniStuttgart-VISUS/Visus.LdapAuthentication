@@ -24,23 +24,28 @@ namespace Visus.DirectoryAuthentication.Tests {
     public class LdapSearchServiceTest {
 
         #region Nested class CustomMapper1
-        private sealed class CustomMapper1 : ILdapUserMapper<LdapUser> {
+        private sealed class CustomMapper1 : ILdapMapper<LdapUser, LdapGroup> {
 
             public CustomMapper1(LdapOptions options) {
-                this._base = new(options);
+                this._base = new(options, null);
                 this._options = options;
             }
 
-            public IEnumerable<string> RequiredAttributes => this._base.RequiredAttributes;
+            public IEnumerable<string> RequiredGroupAttributes => this._base.RequiredGroupAttributes;
+
+            public IEnumerable<string> RequiredUserAttributes => this._base.RequiredUserAttributes;
 
             public void Assign(LdapUser user, SearchResultEntry entry, LdapConnection connection, ILogger logger)
                 => entry.AssignTo(user, this._options);
 
             public string GetIdentity(LdapUser user) => this._base.GetIdentity(user);
 
+            public IEnumerable<LdapGroup> GetGroups(LdapUser user) => this._base.GetGroups(user);
+
             public string GetIdentity(SearchResultEntry entry) => this._base.GetIdentity(entry);
 
-            private readonly LdapUserMapper<LdapUser> _base;
+
+            private readonly LdapMapper<LdapUser, LdapGroup> _base;
             private readonly LdapOptions _options;
         }
         #endregion
@@ -64,10 +69,10 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetDistinguishedNames() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    new LdapMapper<LdapUser, LdapGroup>(options),
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
                     nameof(LdapUser.AccountName),
@@ -81,10 +86,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetDistinguishedNamesAsync() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
                     nameof(LdapUser.AccountName),
@@ -98,10 +104,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetUserByIdentity() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
                 Assert.IsNotNull(user, "Existing user was found.");
@@ -112,10 +119,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetUserByIdentityAsync() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var user = await service.GetUserByIdentityAsync(this._testSecrets.ExistingUserIdentity);
                 Assert.IsNotNull(user, "Existing user was found.");
@@ -126,10 +134,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetUsers() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var users = service.GetUsers();
                 Assert.IsTrue(users.Any(), "Directory search returns any user.");
@@ -140,10 +149,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void TestGetUsersFiltered() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
                     nameof(LdapUser.AccountName),
@@ -157,10 +167,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetUsersAsync() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var users = await service.GetUsersAsync();
                 Assert.IsTrue(users.Any(), "Directory search returns any user.");
@@ -171,10 +182,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestGetUsersAsyncFiltered() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
+                var mapper = new LdapMapper<LdapUser, LdapGroup>(options);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
                     nameof(LdapUser.AccountName),
@@ -188,10 +200,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         public async Task TestCustomMapper1() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new CustomMapper1(options.Value),
+                var mapper = new CustomMapper1(options.Value);
+                var service = new LdapSearchService<LdapUser, LdapGroup>(
+                    mapper,
                     options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                    Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
 
                 var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
                     nameof(LdapUser.AccountName),

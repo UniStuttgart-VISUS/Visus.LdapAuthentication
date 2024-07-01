@@ -30,19 +30,18 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapAuthenticationService(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
+                o.Schema = Schema.ActiveDirectory;
             });
-            collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+            collection.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
+            collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
 
             var provider = collection.BuildServiceProvider();
 
-            var mapper = provider.GetService<ILdapUserMapper<LdapUser>>();
+            var mapper = provider.GetService<ILdapMapper<LdapUser, LdapGroup>>();
             Assert.IsNotNull(mapper, "Mapper resolved");
 
-            var service = provider.GetService<ILdapAuthenticationService>();
+            var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
             Assert.IsNotNull(service, "Service resolved");
-
-            var typedService = provider.GetService<ILdapAuthenticationService<LdapUser>>();
-            Assert.IsNotNull(service, "Typed service resolved");
 
             var options = provider.GetService<IOptions<LdapOptions>>();
             Assert.IsNotNull(options?.Value, "Options resolved");
@@ -58,6 +57,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapConnectionService(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
+                o.Schema = Schema.ActiveDirectory;
             });
             collection.AddScoped(s => Mock.Of<ILogger<LdapConnectionService>>());
 
@@ -79,19 +79,18 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapSearchService(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
+                o.Schema = Schema.ActiveDirectory;
             });
-            collection.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+            collection.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
+            collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
 
             var provider = collection.BuildServiceProvider();
 
-            var mapper = provider.GetService<ILdapUserMapper<LdapUser>>();
+            var mapper = provider.GetService<ILdapMapper<LdapUser, LdapGroup>>();
             Assert.IsNotNull(mapper, "Mapper resolved");
 
-            var service = provider.GetService<ILdapSearchService>();
+            var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
             Assert.IsNotNull(service, "Service resolved");
-
-            var typedService = provider.GetService<ILdapSearchService<LdapUser>>();
-            Assert.IsNotNull(service, "Typed service resolved");
 
             var options = provider.GetService<IOptions<LdapOptions>>();
             Assert.IsNotNull(options?.Value, "Options resolved");
@@ -105,30 +104,17 @@ namespace Visus.DirectoryAuthentication.Tests {
 
             var collection = new ServiceCollection();
 
-            collection.AddLdapAuthenticationService(o => {
+            collection.AddLdapServices(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
+                o.Schema = Schema.ActiveDirectory;
             });
-            collection.AddScoped(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
-
-            collection.AddLdapConnectionService(o => {
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(o);
-            });
-            collection.AddScoped(s => Mock.Of<ILogger<LdapConnectionService>>());
-
-            collection.AddLdapSearchService(o => {
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(o);
-            });
-            collection.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+            collection.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
+            collection.AddSingleton(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
+            collection.AddSingleton(s => Mock.Of<ILogger<LdapConnectionService>>());
+            collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
 
             var provider = collection.BuildServiceProvider();
-
-            {
-                var service = provider.GetService<ILdapAuthenticationService>();
-                Assert.IsNotNull(service, "ILdapAuthenticationService resolved");
-            }
 
             {
                 var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
@@ -141,12 +127,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             }
 
             {
-                var service = provider.GetService<ILdapSearchService>();
-                Assert.IsNotNull(service, "ILdapSearchService resolved");
-            }
-
-            {
-                var service = provider.GetService<ILdapSearchService<LdapUser>>();
+                var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service, "ILdapSearchService<LdapUser> resolved");
             }
 

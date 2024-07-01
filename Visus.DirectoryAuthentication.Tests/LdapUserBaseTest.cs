@@ -22,14 +22,14 @@ namespace Visus.DirectoryAuthentication.Tests {
         /// <summary>
         /// Custom user class overriding nothing.
         /// </summary>
-        private sealed class CustomUser1 : LdapUserBase { }
+        private sealed class CustomUser1 : LdapUserBase<LdapGroup> { }
         #endregion
 
         #region Nested class CustomUser2
         /// <summary>
         /// Custom user overriding one fo the AD attributes.
         /// </summary>
-        private sealed class CustomUser2 : LdapUserBase {
+        private sealed class CustomUser2 : LdapUserBase<LdapGroup> {
             [LdapAttribute(Schema.ActiveDirectory, "userPrincipalName")]
             public override string AccountName => base.AccountName;
         }
@@ -39,7 +39,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         /// <summary>
         /// Custom user overriding adding an attribute
         /// </summary>
-        private sealed class CustomUser3 : LdapUserBase {
+        private sealed class CustomUser3 : LdapUserBase<LdapGroup> {
             [LdapAttribute(Schema.ActiveDirectory, "userPrincipalName")]
             public string UserPrincipalName { get; set; }
         }
@@ -53,6 +53,8 @@ namespace Visus.DirectoryAuthentication.Tests {
             var type = typeof(CustomUser1);
             var props = from p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                         where p.CanRead && p.CanWrite
+                        where p.Name != nameof(CustomUser1.Claims)
+                        where p.Name != nameof(CustomUser1.Groups)
                         select p;
 
             foreach (var p in props) {
@@ -109,6 +111,9 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(prop.Value);
                 Assert.AreEqual("sn", prop.Value.Name);
             }
+
+            Assert.IsNotNull(ClaimsAttribute.GetClaims<CustomUser1>());
+            Assert.IsNotNull(LdapGroupsAttribute.GetLdapGroups<CustomUser1>());
         }
 
         /// <summary>
@@ -119,6 +124,8 @@ namespace Visus.DirectoryAuthentication.Tests {
             var type = typeof(CustomUser2);
             var props = from p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                         where p.CanRead && p.CanWrite
+                        where p.Name != nameof(CustomUser2.Claims)
+                        where p.Name != nameof(CustomUser2.Groups)
                         select p;
 
             foreach (var p in props) {
@@ -180,6 +187,9 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(prop.Value);
                 Assert.AreEqual("sn", prop.Value.Name);
             }
+
+            Assert.IsNotNull(ClaimsAttribute.GetClaims<CustomUser2>());
+            Assert.IsNotNull(LdapGroupsAttribute.GetLdapGroups<CustomUser2>());
         }
 
         /// <summary>
@@ -191,6 +201,8 @@ namespace Visus.DirectoryAuthentication.Tests {
             var type = typeof(CustomUser3);
             var props = from p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                         where p.CanRead && p.CanWrite
+                        where p.Name != nameof(CustomUser3.Claims)
+                        where p.Name != nameof(CustomUser3.Groups)
                         select p;
 
             foreach (var p in props) {
@@ -255,6 +267,9 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(prop.Value);
                 Assert.AreEqual("userPrincipalName", prop.Value.Name);
             }
+
+            Assert.IsNotNull(ClaimsAttribute.GetClaims<CustomUser3>());
+            Assert.IsNotNull(LdapGroupsAttribute.GetLdapGroups<CustomUser3>());
         }
     }
 }

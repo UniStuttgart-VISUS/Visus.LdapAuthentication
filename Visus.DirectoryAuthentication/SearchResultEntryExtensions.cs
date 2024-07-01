@@ -91,7 +91,7 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="that">The user entry to get the group claims of.
         /// </param>
-        /// <param name="mapper">A <see cref="LdapUserMapper{TUser}"/> that
+        /// <param name="mapper">A <see cref="LdapMapper{TUser}"/> that
         /// provides access to the identity attribute of the user object the
         /// claims are for.</param>
         /// <param name="connection">An <see cref="LdapConnection"/> to search
@@ -100,9 +100,9 @@ namespace Visus.DirectoryAuthentication {
         /// schema and whether group memberships are added recursively.</param>
         /// <param name="logger">An optional logger to record error messages.
         /// </param>
-        public static IEnumerable<Claim> GetGroupClaims<TUser>(
+        public static IEnumerable<Claim> GetGroupClaims<TUser, TGroup>(
                 this SearchResultEntry that,
-                ILdapUserMapper<TUser> mapper,
+                ILdapMapper<TUser, TGroup> mapper,
                 LdapConnection connection,
                 LdapOptions options,
                 ILogger logger = null) {
@@ -231,7 +231,7 @@ namespace Visus.DirectoryAuthentication {
         /// </remarks>
         /// <param name="that">The entry to retrieve the primary group of.
         /// </param>
-        /// <param name="mapper">A <see cref="LdapUserMapper{TUser}"/> that
+        /// <param name="mapper">A <see cref="LdapMapper{TUser}"/> that
         /// provides access to the identity attribute <paramref name="that">,
         /// which is required to obtain the domain part of the primary group SID
         /// in an Active Directory.</param>
@@ -241,9 +241,9 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>, or if <paramref name="mapper"/> is <c>null</c>.
         /// </exception>
-        public static string GetPrimaryGroup<TUser>(
+        public static string GetPrimaryGroup<TUser, TGroup>(
                 this SearchResultEntry that,
-                ILdapUserMapper<TUser> mapper,
+                ILdapMapper<TUser, TGroup> mapper,
                 LdapMapping mapping) {
             _ = that
                 ?? throw new ArgumentNullException(nameof(that));
@@ -278,7 +278,7 @@ namespace Visus.DirectoryAuthentication {
         /// </remarks>
         /// <param name="that">The entry to retrieve the primary group of.
         /// </param>
-        /// <param name="mapper">A <see cref="LdapUserMapper{TUser}"/> that
+        /// <param name="mapper">A <see cref="LdapMapper{TUser}"/> that
         /// provides access to the identity attribute <paramref name="that">,
         /// which is required to obtain the domain part of the primary group SID
         /// in an Active Directory.</param>
@@ -295,9 +295,9 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="KeyNotFoundException">If <paramref name="that"/>
         /// has a primary group, but its LDAP entry was not found in the
         /// configured search path.</exception>
-        public static SearchResultEntry GetPrimaryGroup<TUser>(
+        public static SearchResultEntry GetPrimaryGroup<TUser, TGroup>(
                 this SearchResultEntry that,
-                ILdapUserMapper<TUser> mapper,
+                ILdapMapper<TUser, TGroup> mapper,
                 LdapConnection connection,
                 LdapOptions options) {
             _ = that

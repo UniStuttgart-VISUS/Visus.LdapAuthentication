@@ -11,7 +11,7 @@ namespace Visus.DirectoryAuthentication {
 
     /// <summary>
     /// Converts an <see cref="LdapAttribute"/> into a string representation
-    /// that can be used as property of a <see cref="ILdapUser"/> or as a
+    /// that can be used as property of an ldap user object or as a
     /// <see cref="System.Security.Claims.Claim"/>.
     /// </summary>
     public interface ILdapAttributeConverter {

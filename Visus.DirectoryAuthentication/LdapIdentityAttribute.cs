@@ -27,20 +27,17 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <remarks>
         /// The method will return nothing if multiple properties are annotated
-        /// as identity.
+        /// as identity or if the annotated property is not a
+        /// <see cref="string"/>.
         /// </remarks>
-        /// <param name="type">The type to get the identity for.</param>
+        /// <typeparam name="TType">The type to get the identity for.
+        /// </typeparam>
         /// <returns>The property annotated as identity or <c>null</c> if no
         /// unique identity was found.</returns>
-        public static PropertyInfo GetLdapIdentity(Type type) {
-            if (type == null) {
-                return null;
-            }
-
-            return (from p in type.GetProperties()
-                    where IsLdapIdentity(p)
-                    select p).SingleOrDefault();
-        }
+        public static PropertyInfo GetLdapIdentity<TType>()
+            => typeof(TType).GetProperties()
+                .Where(p => IsLdapIdentity(p))
+                .SingleOrDefault();
 
         /// <summary>
         /// Answer whether <paramref name="property"/> is annotated as LDAP
@@ -52,11 +49,8 @@ namespace Visus.DirectoryAuthentication {
         /// <returns><c>true</c> if <paramref name="property"/> is annotated as
         /// identity property.</returns>
         public static bool IsLdapIdentity(PropertyInfo property) {
-            if (property == null) {
-                return false;
-            }
-
-            return property.GetCustomAttribute<LdapIdentityAttribute>() != null;
+            var att = property?.GetCustomAttribute<LdapIdentityAttribute>();
+            return (att != null) && (property.PropertyType == typeof(string));
         }
         #endregion
     }
