@@ -116,8 +116,6 @@ namespace Visus.DirectoryAuthentication {
                     DirectoryAuthentication.Schema.ActiveDirectory,
                     new LdapMapping() {
                         DistinguishedNameAttribute = "distinguishedName",
-                        GroupIdentityAttribute = "objectSid",
-                        GroupIdentityConverter = typeof(SidConverter).FullName,
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "primaryGroupID",
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
@@ -128,7 +126,6 @@ namespace Visus.DirectoryAuthentication {
                     DirectoryAuthentication.Schema.IdentityManagementForUnix,
                     new LdapMapping() {
                         DistinguishedNameAttribute = "distinguishedName",
-                        GroupIdentityAttribute = "gidNumber",
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "gidNumber",
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
@@ -139,7 +136,6 @@ namespace Visus.DirectoryAuthentication {
                     DirectoryAuthentication.Schema.Rfc2307,
                     new LdapMapping() {
                         DistinguishedNameAttribute = "distinguishedName",
-                        GroupIdentityAttribute = "gidNumber",
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "gidNumber",
                         UserFilter = "(&(objectClass=posixAccount)(entryDN={0}))",

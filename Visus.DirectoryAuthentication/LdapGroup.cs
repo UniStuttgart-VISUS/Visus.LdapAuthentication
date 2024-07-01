@@ -5,6 +5,8 @@
 // <author>Christoph Müller</author>
 
 
+using System.Diagnostics;
+
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
@@ -19,5 +21,6 @@ namespace Visus.DirectoryAuthentication {
     /// correct attributes to your custom object or provide a custom
     /// <see cref="ILdapMapper{TUser, TGroup}"/>.
     /// </remarks>
+    [DebuggerDisplay("{DistinguishedName}")]
     public sealed class LdapGroup : LdapGroupBase { }
 }

@@ -25,8 +25,6 @@ namespace Visus.DirectoryAuthentication.Tests {
 
             Assert.IsTrue(options.Mappings.TryGetValue(Schema.ActiveDirectory, out mapping));
             Assert.AreEqual("distinguishedName", mapping.DistinguishedNameAttribute);
-            Assert.AreEqual("objectSid", mapping.GroupIdentityAttribute);
-            Assert.AreEqual(typeof(SidConverter).FullName, mapping.GroupIdentityConverter);
             Assert.AreEqual("memberOf", mapping.GroupsAttribute);
             Assert.AreEqual("primaryGroupID", mapping.PrimaryGroupAttribute);
             Assert.AreEqual("(|(sAMAccountName={0})(userPrincipalName={0}))", mapping.UserFilter);
@@ -40,8 +38,6 @@ namespace Visus.DirectoryAuthentication.Tests {
 
             Assert.IsTrue(options.Mappings.TryGetValue(Schema.IdentityManagementForUnix, out mapping));
             Assert.AreEqual("distinguishedName", mapping.DistinguishedNameAttribute);
-            Assert.AreEqual("gidNumber", mapping.GroupIdentityAttribute);
-            Assert.IsNull(mapping.GroupIdentityConverter);
             Assert.AreEqual("memberOf", mapping.GroupsAttribute);
             Assert.AreEqual("gidNumber", mapping.PrimaryGroupAttribute);
             Assert.AreEqual("(|(sAMAccountName={0})(userPrincipalName={0}))", mapping.UserFilter);

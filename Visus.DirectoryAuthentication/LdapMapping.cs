@@ -30,22 +30,6 @@ namespace Visus.DirectoryAuthentication {
         public string GroupsAttribute { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the attribute where the unique identity of
-        /// a group is stored.
-        /// </summary>
-        /// <remarks>
-        /// <para>For an Active Directory, this is typically the SID stored in
-        /// &quot;objectSid&quot;.</para>
-        /// </remarks>
-        public string GroupIdentityAttribute { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type name of a value converter that is used to
-        /// convert the <see cref="GroupIdentityAttribute"/>.
-        /// </summary>
-        public string GroupIdentityConverter { get; set; }
-
-        /// <summary>
         /// Gets or sets the attribute where the primary group identity is
         /// stored.
         /// </summary>
@@ -62,7 +46,6 @@ namespace Visus.DirectoryAuthentication {
         public string[] RequiredGroupAttributes {
             get => this._requiredGroupAttributes ?? new[] {
                 this.DistinguishedNameAttribute,
-                this.GroupIdentityAttribute,
                 this.GroupsAttribute,
                 this.PrimaryGroupAttribute
             };
@@ -88,22 +71,6 @@ namespace Visus.DirectoryAuthentication {
         /// &quot;(&amp;(objectClass=user)(objectClass=person)(!(objectClass=computer)))&quot;
         /// </remarks>
         public string UsersFilter { get; set; }
-
-        #region Public methods
-        /// <summary>
-        /// Gets an instance of <see cref="GroupIdentityConverter"/>.
-        /// </summary>
-        /// <returns>The converter if a valid one was configured, <c>null</c>
-        /// otherwise.</returns>
-        internal ILdapAttributeConverter GetGroupIdentityConverter() {
-            try {
-                var t = Type.GetType(this.GroupIdentityConverter);
-                return Activator.CreateInstance(t) as ILdapAttributeConverter;
-            } catch {
-                return null;
-            }
-        }
-        #endregion
 
         #region Private fields
         private string[] _requiredGroupAttributes;

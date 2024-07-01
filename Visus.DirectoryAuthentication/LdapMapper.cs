@@ -9,11 +9,9 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Reflection;
-using System.Security.Claims;
 using Visus.DirectoryAuthentication.Properties;
 
 
@@ -60,20 +58,36 @@ namespace Visus.DirectoryAuthentication {
             this._groupsProperty = LdapGroupsAttribute.GetLdapGroups<TUser>();
             // Note: Groups are optional, so we do not check this.
 
-            this._identityProperty = LdapIdentityAttribute.GetLdapIdentity<
-                TUser>();
-            if (this._identityProperty == null) {
+            var groupIdentityProperty = LdapIdentityAttribute.GetLdapIdentity<
+                TGroup>();
+            if (groupIdentityProperty == null) {
                 throw new ArgumentException(string.Format(
                     Resources.ErrorNoIdentity,
                     typeof(TUser).FullName));
             }
 
-            this._identityAttribute = LdapAttributeAttribute.GetLdapAttribute(
-                this._identityProperty, this._options.Schema);
-            if (this._identityAttribute == null) {
+            this._groupIdentityAttribute = LdapAttributeAttribute.GetLdapAttribute(
+                groupIdentityProperty, this._options.Schema);
+            if (this._groupIdentityAttribute == null) {
                 throw new ArgumentException(string.Format(
                     Resources.ErrorNoLdapAttribute,
-                    this._identityProperty.Name));
+                    groupIdentityProperty.Name));
+            }
+
+            this._userIdentityProperty = LdapIdentityAttribute.GetLdapIdentity<
+                TUser>();
+            if (this._userIdentityProperty == null) {
+                throw new ArgumentException(string.Format(
+                    Resources.ErrorNoIdentity,
+                    typeof(TUser).FullName));
+            }
+
+            this._userIdentityAttribute = LdapAttributeAttribute.GetLdapAttribute(
+                this._userIdentityProperty, this._options.Schema);
+            if (this._userIdentityAttribute == null) {
+                throw new ArgumentException(string.Format(
+                    Resources.ErrorNoLdapAttribute,
+                    this._userIdentityProperty.Name));
             }
 
             // Get property/attribute mappings for user and group objects.
@@ -166,11 +180,11 @@ namespace Visus.DirectoryAuthentication {
 
         /// <inheritdoc />
         public string GetIdentity(TUser user)
-            => this._identityProperty.GetValue(user) as string;
+            => this._userIdentityProperty.GetValue(user) as string;
 
         /// <inheritdoc />
         public string GetIdentity(SearchResultEntry entry)
-            => this._identityAttribute.GetValue(entry) as string;
+            => this._userIdentityAttribute.GetValue(entry) as string;
         #endregion
 
         #region Private methods
@@ -323,7 +337,7 @@ namespace Visus.DirectoryAuthentication {
 
             foreach (var b in this._options.SearchBases) {
                 var req = new SearchRequest(b.Key,
-                    $"({mapping.GroupIdentityAttribute}={gid})",
+                    $"({this._groupIdentityAttribute.Name}={gid})",
                     SearchScope.Subtree,
                     mapping.RequiredGroupAttributes);
                 var res = connection.SendRequest(req, this._options);
@@ -375,12 +389,13 @@ namespace Visus.DirectoryAuthentication {
         private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
         private readonly IDictionary<PropertyInfo, LdapAttributeAttribute>
             _groupProperties;
+        private readonly LdapAttributeAttribute _groupIdentityAttribute;
         private readonly PropertyInfo _groupsProperty;
-        private readonly LdapAttributeAttribute _identityAttribute;
-        private readonly PropertyInfo _identityProperty;
         private readonly LdapOptions _options;
         private readonly string[] _requiredGroupAttributes;
         private readonly string[] _requiredUserAttributes;
+        private readonly LdapAttributeAttribute _userIdentityAttribute;
+        private readonly PropertyInfo _userIdentityProperty;
         private readonly IDictionary<PropertyInfo, LdapAttributeAttribute>
             _userProperties;
         #endregion
