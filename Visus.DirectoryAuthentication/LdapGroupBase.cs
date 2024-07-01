@@ -5,6 +5,8 @@
 // <author>Christoph Müller</author>
 
 
+using System.Security.Claims;
+
 namespace Visus.DirectoryAuthentication {
 
     /// <summary>
@@ -45,6 +47,7 @@ namespace Visus.DirectoryAuthentication {
         [LdapAttribute(Schema.IdentityManagementForUnix, "gidNumber")]
         [LdapAttribute(Schema.Rfc2307, "gidNumber")]
         [LdapIdentity]
+        [Claim(ClaimTypes.GroupSid)]
         public virtual string Identity { get; internal set; }
 
         /// <summary>
