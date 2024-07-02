@@ -40,6 +40,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 collection.AddSingleton(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
                 collection.AddSingleton(s => Mock.Of<ILogger<LdapConnectionService>>());
                 collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
+                collection.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
 
                 var provider = collection.BuildServiceProvider();
 

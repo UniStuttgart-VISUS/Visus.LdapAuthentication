@@ -12,6 +12,8 @@ using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
+using System.Threading;
 using Visus.DirectoryAuthentication.Properties;
 
 
@@ -37,17 +39,12 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="options">The options determining where certain
         /// properties are stored on the LDAP server.</param>
-        /// <param name="claimsBuilder">A helper that can create
-        /// <see cref="System.Security.Claims.Claim"/>s from a user object. This
-        /// parameter may be <c>null</c>, in which case the mapper will not
-        /// assign any claims to the user object. If
-        /// <typeparamref name="TUser" /> is not annotated with
-        /// <see cref="ClaimsAttribute"/>, this parameter is irrelevant.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public LdapMapper(LdapOptions options,
-                IClaimsBuilder<TUser, TGroup> claimsBuilder = null) {
-            this._claimsBuilder = claimsBuilder;
+                ILogger<LdapMapper<TUser, TGroup>> logger) {
+            this._logger = logger
+                ?? throw new ArgumentNullException(nameof(logger));
             this._options = options
                 ?? throw new ArgumentNullException(nameof(options));
 
@@ -124,8 +121,8 @@ namespace Visus.DirectoryAuthentication {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public LdapMapper(IOptions<LdapOptions> options,
-                IClaimsBuilder<TUser, TGroup> claimsBuilder = null)
-            : this(options?.Value, claimsBuilder) { }
+                ILogger<LdapMapper<TUser, TGroup>> logger)
+            : this(options?.Value, logger) { }
         #endregion
 
         #region Public properties
@@ -140,17 +137,18 @@ namespace Visus.DirectoryAuthentication {
 
         #region Public methods
         /// <inheritdoc />
-        public void Assign(TUser user,
+        public TUser Assign(TUser user,
                 SearchResultEntry entry,
-                LdapConnection connection,
-                ILogger logger) {
+                LdapConnection connection) {
+            _ = user
+                ?? throw new ArgumentNullException(nameof(user));
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection
                 ?? throw new ArgumentNullException(nameof(connection));
 
             // Assign properties from cached mappings.
-            Assign(user, entry, this._userProperties, logger);
+            this.Assign(user, entry, this._userProperties);
 
             // If requested, determine group memberships.
             if (this._groupsProperty != null) {
@@ -170,8 +168,7 @@ namespace Visus.DirectoryAuthentication {
                 var isPrimary = true;
 
                 foreach (var e in entries) {
-                    var g = Assign(new TGroup(), e, this._groupProperties,
-                        logger);
+                    var g = this.Assign(new TGroup(), e, this._groupProperties);
 
                     if (this._primaryGroupFlagProperty != null) {
                         this._primaryGroupFlagProperty.SetValue(g, isPrimary);
@@ -184,12 +181,35 @@ namespace Visus.DirectoryAuthentication {
                 this._groupsProperty.SetValue(user, groups);
             }
 
-            // If the user object expects to have claims set, we do so.
-            if ((this._claimsBuilder != null)
-                    && (this._claimsProperty != null)) {
-                var claims = this._claimsBuilder.UseMapper(this).Build(user);
+            return user;
+        }
+
+        /// <inheritdoc />
+        public TGroup Assign(TGroup group,
+                SearchResultEntry entry,
+                LdapConnection connection) {
+            _ = group
+                ?? throw new ArgumentNullException(nameof(group));
+            _ = entry
+                ?? throw new ArgumentNullException(nameof(entry));
+            _ = connection
+                ?? throw new ArgumentNullException(nameof(connection));
+            return this.Assign(group, entry, this._groupProperties);
+        }
+
+        /// <inheritdoc />
+        public TUser Assign(TUser user, IEnumerable<Claim> claims) {
+            _ = user
+                ?? throw new ArgumentNullException(nameof(user));
+            if ((this._claimsProperty != null) && (claims!= null)) {
+                // Note: The claims builder may return an enumerator that
+                // creates the claims dynamically. We want to force the
+                // evaluation at this point to prevent potential access
+                // to disposed sources later on.
                 this._claimsProperty.SetValue(user, claims.ToList());
             }
+
+            return user;
         }
 
         /// <inheritdoc />
@@ -222,18 +242,17 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="to"></param>
         /// <param name="from"></param>
         /// <param name="properties"></param>
-        /// <param name="logger"></param>
-        private static TObject Assign<TObject>(TObject to,
+        /// <returns><paramref name="to"/>.</returns>
+        private TObject Assign<TObject>(TObject to,
                 SearchResultEntry from,
-                IDictionary<PropertyInfo, LdapAttributeAttribute> properties,
-                ILogger logger) {
+                IDictionary<PropertyInfo, LdapAttributeAttribute> properties) {
             foreach (var p in properties) {
                 try {
                     var a = p.Value;
                     var v = a.GetValue(from);
                     p.Key.SetValue(to, v);
                 } catch (KeyNotFoundException ex) {
-                    logger?.LogError(ex,
+                    this._logger.LogError(ex,
                         Resources.ErrorAttributeNotFound,
                         p.Value);
                     continue;
@@ -411,10 +430,10 @@ namespace Visus.DirectoryAuthentication {
 
         #region Private fields
         private readonly PropertyInfo _claimsProperty;
-        private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
         private readonly IDictionary<PropertyInfo, LdapAttributeAttribute>
             _groupProperties;
         private readonly LdapAttributeAttribute _groupIdentityAttribute;
+        private readonly ILogger _logger;
         private readonly PropertyInfo _groupsProperty;
         private readonly LdapOptions _options;
         private readonly PropertyInfo _primaryGroupFlagProperty;

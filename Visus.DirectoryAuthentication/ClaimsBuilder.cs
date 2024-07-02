@@ -28,18 +28,29 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="mapper"></param>
-        public ClaimsBuilder(ILogger<ClaimsBuilder<TUser, TGroup>> logger) {
+        /// <param name="mapper">The mapper used to access relevant
+        /// properties of the user.</param>
+        /// <param name="logger">A logger for writing debug messages.
+        /// </param>
+        public ClaimsBuilder(ILdapMapper<TUser, TGroup> mapper,
+                ILogger<ClaimsBuilder<TUser, TGroup>> logger) {
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
+            this._mapper = mapper
+                ?? throw new ArgumentNullException(nameof(mapper));
 
             this._groupClaims = GetClaims<TGroup>();
             this._userClaims = GetClaims<TUser>();
         }
         #endregion
 
+        #region Public methods
         /// <inheritdoc />
-        public IEnumerable<Claim> Build(TUser user) {
+        public TUser AddClaims(TUser user)
+            => this._mapper.Assign(user, this.GetClaims(user));
+
+        /// <inheritdoc />
+        public IEnumerable<Claim> GetClaims(TUser user) {
             _ = user ?? throw new ArgumentNullException(nameof(user));
 
             // Add claims derived from properties of the user.
@@ -71,13 +82,7 @@ namespace Visus.DirectoryAuthentication {
                 }
             }
         }
-
-        /// <inheritdoc />
-        public IClaimsBuilder<TUser, TGroup> UseMapper(
-                ILdapMapper<TUser, TGroup> mapper) {
-            this._mapper = mapper;
-            return this;
-        }
+        #endregion
 
         #region Private methods
         /// <summary>
@@ -100,10 +105,12 @@ namespace Visus.DirectoryAuthentication {
         #endregion
 
         #region Private fields
-        private readonly IDictionary<PropertyInfo, IEnumerable<string>> _groupClaims;
+        private readonly IDictionary<PropertyInfo, IEnumerable<string>>
+            _groupClaims;
         private readonly ILogger _logger;
         private ILdapMapper<TUser, TGroup> _mapper;
-        private readonly IDictionary<PropertyInfo, IEnumerable<string>> _userClaims;
+        private readonly IDictionary<PropertyInfo, IEnumerable<string>> 
+            _userClaims;
         #endregion
     }
 }

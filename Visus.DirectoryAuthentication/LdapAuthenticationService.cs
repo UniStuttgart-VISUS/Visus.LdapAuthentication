@@ -34,21 +34,26 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
+        /// <param name="options">The LDAP options that specify how to connect
+        /// to the directory server.</param>
         /// <param name="mapper">The <see cref="ILdapMapper{TUser, TGroup}"/> to
         /// provide mapping between LDAP attributes and properties of
         /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>, 
         /// respectively.</param>
-        /// <param name="options">The LDAP options that specify how to connect
-        /// to the directory server.</param>
+        /// <param name="claimsBuilder">A helper that creates
+        /// <see cref="Claim"/>s from a user object.</param>
         /// <param name="logger">A logger for presisting important messages like
         /// login failures.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAuthenticationService(ILdapMapper<TUser, TGroup> mapper,
-                IOptions<LdapOptions> options,
+        public LdapAuthenticationService(IOptions<LdapOptions> options,
+                ILdapMapper<TUser, TGroup> mapper,
+                IClaimsBuilder<TUser, TGroup> claimsBuilder,
                 ILogger<LdapAuthenticationService<TUser, TGroup>> logger) {
+            this._claimsBuilder = claimsBuilder
+                ?? throw new ArgumentNullException(nameof(claimsBuilder));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._mapper = mapper
@@ -72,8 +77,8 @@ namespace Visus.DirectoryAuthentication {
                 var req = this.GetRequest(this._mapper, username, b);
                 var res = connection.SendRequest(req, this._options);
                 if ((res is SearchResponse s) && s.Any()) {
-                    this._mapper.Assign(retval, s.Entries[0], connection,
-                        this._logger);
+                    this._mapper.Assign(retval, s.Entries[0], connection);
+                    this._claimsBuilder.AddClaims(retval);
                     return retval;
                 }
             }
@@ -100,8 +105,8 @@ namespace Visus.DirectoryAuthentication {
                     .ConfigureAwait(false);
 
                 if ((res is SearchResponse s) && s.Any()) {
-                    this._mapper.Assign(retval, s.Entries[0], connection,
-                        this._logger);
+                    this._mapper.Assign(retval, s.Entries[0], connection);
+                    this._claimsBuilder.AddClaims(retval);
                     return retval;
                 }
             }
@@ -137,6 +142,7 @@ namespace Visus.DirectoryAuthentication {
         #endregion
 
         #region Private fields
+        private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
         private readonly ILogger _logger;
         private readonly ILdapMapper<TUser, TGroup> _mapper;
         private readonly LdapOptions _options;

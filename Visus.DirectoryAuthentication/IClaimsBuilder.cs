@@ -19,16 +19,26 @@ namespace Visus.DirectoryAuthentication {
     public interface IClaimsBuilder<TUser, TGroup> {
 
         /// <summary>
-        /// Retrieves all claims for the given <paramref name="user"/>.
+        /// Retrieves all claims as in <see cref="GetClaims(TUser)"/> and, if
+        /// the <typeparamref name="TUser"/> has the ability to store claims,
+        /// assigns the claims to the user object.
+        /// </summary>
+        /// <param name="user">The user to get the claims for and to assign it
+        /// to.</param>
+        /// <returns><paramref name="user"/>.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="user"/> is <c>null</c>.</exception>
+        TUser AddClaims(TUser user);
+
+        /// <summary>
+        /// Retrieves all claims for the given <paramref name="user"/> and
+        /// possibly the groups assigned to the user.
         /// </summary>
         /// <param name="user">The user to obtain the claims for.</param>
         /// <returns>The security <see cref="Claim"/>s of the given
         /// <paramref name="user"/>.</returns>
-        IEnumerable<Claim> Build(TUser user);
-
-
-        IClaimsBuilder<TUser, TGroup> UseMapper(
-            ILdapMapper<TUser, TGroup> mapper);
-
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="user"/> is <c>null</c>.</exception>
+        IEnumerable<Claim> GetClaims(TUser user);
     }
 }

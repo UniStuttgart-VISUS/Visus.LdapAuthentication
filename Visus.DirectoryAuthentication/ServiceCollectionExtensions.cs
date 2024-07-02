@@ -130,16 +130,19 @@ namespace Visus.DirectoryAuthentication {
         /// <paramref name="services"/> is <c>null</c>, or if
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public static IServiceCollection AddLdapSearchService<TUser, TGroup,
+                TClaims,
                 TMapper>(
                 this IServiceCollection services,
                 Action<LdapOptions> options)
                 where TUser : class, new()
                 where TGroup : class, new()
+                where TClaims : class, IClaimsBuilder<TUser, TGroup>
                 where TMapper : class, ILdapMapper<TUser, TGroup> {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
                 .AddSingleton<ILdapMapper<TUser, TGroup>,TMapper>()
+                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
                 .AddScoped<ILdapSearchService<TUser, TGroup>,
                     LdapSearchService<TUser, TGroup>>();
         }
@@ -165,6 +168,7 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, new()
                 where TGroup : class, new()
             =>  services.AddLdapSearchService<TUser, TGroup,
+                ClaimsBuilder<TUser, TGroup>,
                 LdapMapper<TUser, TGroup>>(options);
 
         /// <summary>
