@@ -48,7 +48,7 @@ builder.Services.AddLdapAuthenticationService(o => {
 // ...
 ```
 
-The above code uses the default `LdapUser` and `LdapGroup` objects from the library, which provides the most commonly used user claims. If you need additional claims or differently mapped claims, you can create your own user class either by inheriting from `LdapUserBase` and [customising its behaviour](#customising-the-user-object) or by providing your own object with a matching implementation of `ILdapMapper`. The configuration would look like the following in this case:
+The above code uses the default `LdapUser` and `LdapGroup` objects from the library, which provides the most commonly used user claims. If you need additional claims or differently mapped claims, you can create your own user class either by inheriting from `LdapUserBase` and [customising its behaviour](#customising-the-user-object). The configuration would look like the following in this case:
 
 ```C#
 using Visus.DirectoryAuthentication;
@@ -58,7 +58,10 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP authentication with customised user object.
-    services.AddLdapAuthenticationService<CustomApplicationUser>(o => {
+    services.AddLdapAuthenticationService<CustomApplicationUser,
+            CustomApplicationGroup,
+            ClaimsBuilder<CustomApplicationUser, CustomApplicationGroup>,
+            CustomMapper>(o => {
         this.Configuration.GetSection("LdapConfiguration").Bind(o);
     });
 
@@ -173,7 +176,7 @@ public sealed class CustomApplicationUser : LdapUserBase {
 }
 ```
 
-If you need an even higher level of customisation, you can provide a custom mapper by providing your own `ILdapUserMapper` like this:
+If you need an even higher level of customisation, you can provide a custom mapper by providing your own `ILdapMapper` like this:
 
 ```C#
 using Visus.DirectoryAuthentication;
