@@ -8,6 +8,8 @@ Visus.DirectoryAuthentication implements LDAP authentication using [System.Direc
 1. [Configure the LDAP server](#configure-the-ldap-server)
 1. [Authenticate a user](#authenticate-a-user)
 1. [Customising the user object](#customising-the-user-object)
+1. [Customising the group object](#customising-the-group-object)
+1. [Customising claims](#customising-claims)
 1. [Searching users](#searching-users)
 1. [Differences between LdapAuthentication and DirectoryAuthentication](#differences-between-ldapauthentication-and-directoryauthentication)
 
@@ -58,10 +60,7 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP authentication with customised user object.
-    services.AddLdapAuthenticationService<CustomApplicationUser,
-            CustomApplicationGroup,
-            ClaimsBuilder<CustomApplicationUser, CustomApplicationGroup>,
-            CustomMapper>(o => {
+    services.AddLdapAuthenticationService<CustomApplicationUser, CustomApplicationGroup>(o => {
         this.Configuration.GetSection("LdapConfiguration").Bind(o);
     });
 
@@ -173,6 +172,17 @@ public sealed class CustomApplicationUser : LdapUserBase {
     [LdapAttribute(Schema.ActiveDirectory, "userPrincipalName")]
     [Claim(ClaimTypes.WindowsAccountName)]
     public override string AccountName => base.AccountName;
+
+    /// <summary>
+    /// Gets the LDAP object class.
+    /// </summary>
+    /// <remarks>
+    /// Here, an additional LDAP attribute is loaded from the directory. The
+    /// <see cref="ILdapMapper{TUser, TGRoup}" /> uses the attribute to determine
+    /// where to get the information in Active Directory from.
+    /// </remarks>
+    [LdapAttribute(Schema.ActiveDirectory, "objectClass")]
+    public string ObjectClass { get; set; }
 }
 ```
 
@@ -186,7 +196,11 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP authentication with default LdapUser object.
-    services.AddLdapAuthenticationService<CustomApplicationUser, CustomUserMapper>(o => {
+    services.AddLdapAuthenticationService<
+            CustomApplicationUser,
+            CustomApplicationGroup,
+            ClaimsBuilder<CustomApplicationUser, CustomApplicationGroup>,
+            CustomMapper>(o => {
         this.Configuration.GetSection("LdapConfiguration").Bind(o);
     });
 
@@ -196,10 +210,16 @@ public void ConfigureServices(IServiceCollection services) {
 
 In your custom mapper, you are free to assign properties as you want or use the default behaviour. Have a look at the implementation of [`LdapMapper`](LdapMapper.cs) to see how to implement such a mapper. When providing a pair of user/group objects and mapper, you are not limited to using reflecting for your implementation, but you can directly access the properties.
 
-If you provide a custom implementation and want to rely on [`LdapMapper`](LdapMapper.cs), you need to annotate the properties of your user object in a similar way. The mapper relies on `LdapAttribute` to find the LDAP attributes that should be assigned to a property of the user object. Except for special cases like the `objectSid`, the properties you map should be `string`s. You can annotate a property of type `IEnumerable<TGroup>` with the `LdapGroups` attribute, which will instruct the default mapper to store the groups in this property. Likewise, you can annotate a property of type `IEnumerable<System.Security.Claims.Claim>` with the `Claims` attribute to instruct the mapper to store the generated claims there. You should annotate the property storing the unique identity of a user with the `LdapIdentity` property.
+If you provide a custom implementation and want to rely on [`LdapMapper`](LdapMapper.cs), you need to annotate the properties of your user object in a similar way. The mapper relies on `LdapAttribute` to find the LDAP attributes that should be assigned to a property of the user object. Except for special cases like the `objectSid`, the properties you map should be `string`s.
 
-In a similar way you can provide your own replacement of `LdapUser`, you can also provide a replacement for `LdapGroup`, contains the information to create group-based claims.
+You can annotate a property of type `IEnumerable<TGroup>` with the `LdapGroups` attribute, which will instruct the default mapper to store the groups in this property. Likewise, you can annotate a property of type `IEnumerable<System.Security.Claims.Claim>` with the `Claims` attribute to instruct the mapper to store the generated claims there. You should annotate the property storing the unique identity of a user with the `LdapIdentity` property.
 
+
+## Customising the group object
+In a similar way you can provide your own replacement of `LdapUser`, you can also provide a replacement for `LdapGroup`, contains the information to create group-based claims. Like for the user, you can rely on [`LdapMapper`](LdapMapper.cs) and annotations via attributes or customise the assignment of LDAP attributes to properties in a custom mapper.
+
+
+## Customising claims
 If you do not need additional information from the directory than what is provided by `LdapUser` and `LdapGroup`, but you want to customise the `System.Security.Claims.Claim`s generated, you could consider providing a custom `IClaimsBuilder` to make these claims from the information provided by the user object. Have a look at the default [`ClaimsBuilder`](ClaimsBuilder.cs) for inspiration on how to do this. The default buider uses the `Claim` attribute to translate properties to claims.
 
 ## Searching users
