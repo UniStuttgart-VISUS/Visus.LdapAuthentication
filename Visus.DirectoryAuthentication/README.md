@@ -250,7 +250,7 @@ using Visus.DirectoryAuthentication;
 public void ConfigureServices(IServiceCollection services) {
     // ...
 
-    // Add LDAP search service using service account.
+    // Add LDAP authentication and search services.
     services.AddLdapServices(o => {
         this.Configuration.GetSection("LdapConfiguration").Bind(o);
     });
