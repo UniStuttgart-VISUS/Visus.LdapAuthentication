@@ -233,7 +233,25 @@ public void ConfigureServices(IServiceCollection services) {
     // ...
 
     // Add LDAP search service using service account.
-    services.AddLdapSearchService<LdapUser>(o => {
+    services.AddLdapSearchService(o => {
+        this.Configuration.GetSection("LdapConfiguration").Bind(o);
+    });
+
+    // ...
+}
+```
+
+Alternatively, register authentication and search at the same time:
+
+```C#
+using Visus.DirectoryAuthentication;
+// ...
+
+public void ConfigureServices(IServiceCollection services) {
+    // ...
+
+    // Add LDAP search service using service account.
+    services.AddLdapServices(o => {
         this.Configuration.GetSection("LdapConfiguration").Bind(o);
     });
 
