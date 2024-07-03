@@ -31,10 +31,45 @@ namespace Visus.DirectoryAuthentication {
         }
         #endregion
 
+        #region Public properties
+        /// <summary>
+        /// Gets the host name or IP of the LDAP server.
+        /// </summary>
+        [Required]
+        public string Address { get; set; }
+
         /// <summary>
         /// The authentication type used to bind to the LDAP server.
         /// </summary>
         public AuthType AuthenticationType { get; set; }
+
+        /// <summary>
+        /// Gets the acceptable issuer of the server certificate.
+        /// </summary>
+        /// <remarks>
+        /// <para>If this property is <c>null</c>, any issuer will be considered
+        /// acceptable.</para>
+        /// <para>This property is only relevant if <see cref="UseSsl"/> is
+        /// enabled.</para>
+        /// </remarks>
+        public string CertificateIssuer { get; set; }
+
+        /// <summary>
+        /// Gets the certificate thumbprints for the LDAP servers that are
+        /// accepted during certificate validation.
+        /// </summary>
+        /// <remarks>
+        /// <para>If this array is empty, any server certificate will be
+        /// accepted. Note that if <see cref="ServerCertificateIssuer"/> is set
+        /// as well, the server certificate must have been issued by the
+        /// specified issuer, too.</para>
+        /// <para>This property is only relevant if <see cref="UseSsl"/> is
+        /// enabled.</para>
+        /// </remarks>
+        public string[] CertificateThumbprint {
+            get;
+            set;
+        } = Array.Empty<string>();
 
         /// <summary>
         /// Gets whether the certificate check is disabled for accessing the
@@ -76,40 +111,7 @@ namespace Visus.DirectoryAuthentication {
         /// Gets the version of the LDAP protocol to request from the server.
         /// </summary>
         public int ProtocolVersion { get; set; } = 3;
-
-        /// <summary>
-        /// Gets the host name or IP of the LDAP server.
-        /// </summary>
-        [Required]
-        public string Server { get; set; }
-
-        /// <summary>
-        /// Gets the acceptable issuer of the server certificate.
-        /// </summary>
-        /// <remarks>
-        /// <para>If this property is <c>null</c>, any issuer will be considered
-        /// acceptable.</para>
-        /// <para>This property is only relevant if <see cref="UseSsl"/> is
-        /// enabled.</para>
-        /// </remarks>
-        public string ServerCertificateIssuer { get; set; }
-
-        /// <summary>
-        /// Gets the certificate thumbprints for the LDAP servers that are
-        /// accepted during certificate validation.
-        /// </summary>
-        /// <remarks>
-        /// <para>If this array is empty, any server certificate will be
-        /// accepted. Note that if <see cref="ServerCertificateIssuer"/> is set
-        /// as well, the server certificate must have been issued by the
-        /// specified issuer, too.</para>
-        /// <para>This property is only relevant if <see cref="UseSsl"/> is
-        /// enabled.</para>
-        /// </remarks>
-        public string[] ServerThumbprint {
-            get;
-            set;
-        } = Array.Empty<string>();
+        #endregion
 
         #region Private fields
         private int _pageSize;
