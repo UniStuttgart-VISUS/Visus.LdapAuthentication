@@ -48,7 +48,7 @@ builder.Services.AddLdapAuthenticationService(o => {
 // ...
 ```
 
-The above code uses the default `LdapUser` object from the library, which provides the most commonly used user claims. If you need additional claims or differently mapped claims, you can create your own user class either by inheriting from `LdapUserBase` and [customising its behaviour](#customising-the-user-object) or by implementing `ILdapUser` from scratch. The configuration would look like the following in this case:
+The above code uses the default `LdapUser` and `LdapGroup` objects from the library, which provides the most commonly used user claims. If you need additional claims or differently mapped claims, you can create your own user class either by inheriting from `LdapUserBase` and [customising its behaviour](#customising-the-user-object) or by providing your own object with a matching implementation of `ILdapMapper`. The configuration would look like the following in this case:
 
 ```C#
 using Visus.DirectoryAuthentication;
@@ -191,41 +191,13 @@ public void ConfigureServices(IServiceCollection services) {
 }
 ```
 
-In your custom mapper, you are free to assign properties as you want or use the default behaviour:
+In your custom mapper, you are free to assign properties as you want or use the default behaviour. Have a look at the implementation of [`LdapMapper`](LdapMapper.cs) to see how to implement such a mapper. When providing a pair of user/group objects and mapper, you are not limited to using reflecting for your implementation, but you can directly access the properties.
 
-```C#
+If you provide a custom implementation and want to rely on [`LdapMapper`](LdapMapper.cs), you need to annotate the properties of your user object in a similar way. The mapper relies on `LdapAttribute` to find the LDAP attributes that should be assigned to a property of the user object. Except for special cases like the `objectSid`, the properties you map should be `string`s. You can annotate a property of type `IEnumerable<TGroup>` with the `LdapGroups` attribute, which will instruct the default mapper to store the groups in this property. Likewise, you can annotate a property of type `IEnumerable<System.Security.Claims.Claim>` with the `Claims` attribute to instruct the mapper to store the generated claims there. You should annotate the property storing the unique identity of a user with the `LdapIdentity` property.
 
-public sealed class CustomUserMapper : ILdapUserMapper<CustomApplicationUser> {
-/// ...
+In a similar way you can provide your own replacement of `LdapUser`, you can also provide a replacement for `LdapGroup`, contains the information to create group-based claims.
 
-    public void Assign(CustomApplicationUser user,
-            SearchResultEntry entry,
-            LdapConnection connection,
-            ILogger logger) {
-        // Use annotation-based assignment of user properties.
-        entry.AssignTo(user, this._options);
-
-        var claims = new List<Claim>();
-
-        // Add a claim from a property of the user object. You can use
-        // reflection here as the default LdapUserMapper does or hard code
-        // the properties you need to have as claims.
-        claims.Add(new Claim(ClaimTypes.WindowsAccountName, user.Account));
-
-        // Add group claims using the SIDs/GIDs of the groups. Instead of this,
-        // you could use the extension methods
-        // SearchResultEntryExtensions.GetPrimaryGroup,
-        // SearchResultEntryExtensions.GetGroups and
-        // SearchResultEntryExtensions.GetRecursiveGroups to retrieve the LDAP
-        // entries of the respective groups and create claims from these. Note
-        // that you can only use attributes configured in
-        // LdapMapping.RequiredGroupAttributes here.
-        claims.AddRange(entry.GetGroupClaims(this, connection, this._options));
-    }
-
-/// ...
-}
-```
+If you do not need additional information from the directory than what is provided by `LdapUser` and `LdapGroup`, but you want to customise the `System.Security.Claims.Claim`s generated, you could consider providing a custom `IClaimsBuilder` to make these claims from the information provided by the user object. Have a look at the default [`ClaimsBuilder`](ClaimsBuilder.cs) for inspiration on how to do this. The default buider uses the `Claim` attribute to translate properties to claims.
 
 ## Searching users
 In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `LdapOptions.User` with a password stored in `LdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](ILdapSearchService.cs) to implement such a behaviour. First, configure the service:

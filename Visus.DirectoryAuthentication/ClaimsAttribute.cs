@@ -27,7 +27,7 @@ namespace Visus.DirectoryAuthentication {
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = false,
         Inherited = false)]
-    public sealed class ClaimsAttribute : Attribute{
+    public sealed class ClaimsAttribute : Attribute {
 
         #region Public class methods
         /// <summary>
