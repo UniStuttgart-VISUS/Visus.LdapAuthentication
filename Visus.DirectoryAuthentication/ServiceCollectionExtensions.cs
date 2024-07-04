@@ -4,12 +4,9 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
 
 
 namespace Visus.DirectoryAuthentication {
