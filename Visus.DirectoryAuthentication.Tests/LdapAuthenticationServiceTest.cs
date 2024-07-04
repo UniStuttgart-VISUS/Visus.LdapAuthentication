@@ -22,25 +22,15 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestLogin() {
-            var secrets = new TestSecrets();
-            var configuration = new ConfigurationBuilder()
-                .AddUserSecrets<TestSecrets>()
-                .Build();
-            configuration.Bind(secrets);
+            var configuration = TestExtensions.CreateConfiguration();
+            var secrets = TestExtensions.CreateSecrets();
+            var section = configuration.GetSection("LdapOptions");
 
-            if (secrets?.LdapOptions != null) {
-                var collection = new ServiceCollection();
-
+            if (section != null) {
+                var collection = new ServiceCollection().AddMockLoggers();
                 collection.AddLdapServices(o => {
-                    var section = configuration.GetSection("LdapOptions");
                     section.Bind(o);
                 });
-
-                collection.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
-                collection.AddSingleton(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
-                collection.AddSingleton(s => Mock.Of<ILogger<LdapConnectionService>>());
-                collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
-                collection.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
 
                 var provider = collection.BuildServiceProvider();
 

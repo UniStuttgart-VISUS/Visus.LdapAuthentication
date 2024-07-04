@@ -6,7 +6,10 @@
 
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -42,19 +45,10 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TClaims: class, IClaimsBuilder<TUser, TGroup>
-                where TMapper : class, ILdapMapper<TUser, TGroup> {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            return services.Configure(options)
-                .AddSingleton<IValidator<LdapMapping>, LdapMappingValidator>()
-                .AddSingleton<IValidator<LdapOptions>, LdapOptionsValidator>()
-                .AddSingleton<IValidator<LdapServer>, LdapServerValidator>()
-                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
-                .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
-                .AddSingleton<ILdapConnectionService, LdapConnectionService>()
+                where TMapper : class, ILdapMapper<TUser, TGroup>
+            =>  services.AddShared<TUser, TGroup, TClaims, TMapper>(options)
                 .AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>();
-        }
 
         /// <summary>
         /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
@@ -74,13 +68,10 @@ namespace Visus.DirectoryAuthentication {
                 this IServiceCollection services,
                 Action<LdapOptions> options)
                 where TUser : class, new()
-                where TGroup : class, new() {
-            services.AddLdapAuthenticationService<TUser, TGroup,
-                ClaimsBuilder<TUser, TGroup>,
-                LdapMapper<TUser, TGroup>>(
+                where TGroup : class, new()
+            => services.AddLdapAuthenticationService<TUser, TGroup,
+                ClaimsBuilder<TUser, TGroup>, LdapMapper<TUser, TGroup>>(
                 options);
-            return services;
-        }
 
         /// <summary>
         /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
@@ -122,19 +113,10 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TClaims : class, IClaimsBuilder<TUser, TGroup>
-                where TMapper : class, ILdapMapper<TUser, TGroup> {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            return services.Configure(options)
-                .AddSingleton<IValidator<LdapMapping>, LdapMappingValidator>()
-                .AddSingleton<IValidator<LdapOptions>, LdapOptionsValidator>()
-                .AddSingleton<IValidator<LdapServer>, LdapServerValidator>()
-                .AddSingleton<ILdapMapper<TUser, TGroup>,TMapper>()
-                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
-                .AddSingleton<ILdapConnectionService, LdapConnectionService>()
+                where TMapper : class, ILdapMapper<TUser, TGroup>
+            => services.AddShared<TUser, TGroup, TClaims, TMapper>(options)
                 .AddScoped<ILdapSearchService<TUser, TGroup>,
                     LdapSearchService<TUser, TGroup>>();
-        }
 
         /// <summary>
         /// Adds an <see cref="ILdapSearchService"/> to the dependency injection
@@ -157,8 +139,8 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, new()
                 where TGroup : class, new()
             =>  services.AddLdapSearchService<TUser, TGroup,
-                ClaimsBuilder<TUser, TGroup>,
-                LdapMapper<TUser, TGroup>>(options);
+                ClaimsBuilder<TUser, TGroup>, LdapMapper<TUser, TGroup>>(
+                options);
 
         /// <summary>
         /// Adds an <see cref="ILdapSearchService"/> to the dependency injection
@@ -196,21 +178,12 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TClaims : class, IClaimsBuilder<TUser, TGroup>
-                where TMapper : class, ILdapMapper<TUser, TGroup> {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            return services.Configure(options)
-                .AddSingleton<IValidator<LdapMapping>, LdapMappingValidator>()
-                .AddSingleton<IValidator<LdapOptions>, LdapOptionsValidator>()
-                .AddSingleton<IValidator<LdapServer>, LdapServerValidator>()
-                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
-                .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
+                where TMapper : class, ILdapMapper<TUser, TGroup>
+            => services.AddShared<TUser, TGroup, TClaims, TMapper>(options)
                 .AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>()
                 .AddScoped<ILdapSearchService<TUser, TGroup>,
-                    LdapSearchService<TUser, TGroup>>()
-                .AddSingleton<ILdapConnectionService, LdapConnectionService>();
-        }
+                    LdapSearchService<TUser, TGroup>>();
 
         /// <summary>
         /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
@@ -230,8 +203,7 @@ namespace Visus.DirectoryAuthentication {
                 where TUser : class, new()
                 where TGroup : class, new()
             =>  services.AddLdapServices<TUser, TGroup,
-                ClaimsBuilder<TUser, TGroup>,
-                LdapMapper<TUser, TGroup>>(
+                ClaimsBuilder<TUser, TGroup>, LdapMapper<TUser, TGroup>>(
                 options);
 
         /// <summary>
@@ -250,6 +222,29 @@ namespace Visus.DirectoryAuthentication {
         public static IServiceCollection AddLdapServices(
                 this IServiceCollection services, Action<LdapOptions> options)
             => services.AddLdapServices<LdapUser, LdapGroup>(options);
+
+        #region Private methods
+        private static IServiceCollection AddShared<
+                TUser, TGroup, TClaims, TMapper>(
+            this IServiceCollection services, Action<LdapOptions> options)
+                where TUser : class, new()
+                where TGroup : class, new()
+                where TClaims : class, IClaimsBuilder<TUser, TGroup>
+                where TMapper : class, ILdapMapper<TUser, TGroup> {
+            _ = services ?? throw new ArgumentNullException(nameof(services));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+
+            var optionsBuilder = services.AddOptions<LdapOptions>()
+                .Configure(options);
+            optionsBuilder.Services.AddSingleton<IValidateOptions<LdapOptions>,
+                ValidateLdapOptions>();
+
+            return services
+                .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
+                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
+                .AddSingleton<ILdapConnectionService, LdapConnectionService>();
+        }
+        #endregion
 
     }
 }

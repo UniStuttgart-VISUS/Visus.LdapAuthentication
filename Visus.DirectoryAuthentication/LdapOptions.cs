@@ -6,9 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.DirectoryServices.Protocols;
-using System.Runtime.InteropServices;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -17,6 +15,13 @@ namespace Visus.DirectoryAuthentication {
     /// Stores the configuration options for the LDAP server.
     /// </summary>
     public sealed class LdapOptions {
+
+        #region Public constants
+        /// <summary>
+        /// The suggested name of the LDAP configuration section.
+        /// </summary>
+        public const string SectionName = "LdapOptions";
+        #endregion
 
         #region Public properties
         /// <summary>

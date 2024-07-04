@@ -6,6 +6,7 @@
 
 using FluentValidation;
 using FluentValidation.Results;
+using Visus.DirectoryAuthentication.Properties;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -27,10 +28,14 @@ namespace Visus.DirectoryAuthentication {
             // *Mapping* is relevant for the library to function correctly.
             this.RuleFor(context => context.Schema).NotEmpty();
             this.RuleFor(context => context.SearchBases).NotEmpty();
+            this.RuleForEach(context => context.SearchBases)
+                .Must(b => !string.IsNullOrWhiteSpace(b.Key))
+                .When(context => context.SearchBases != null)
+                .WithMessage(Resources.ErrorEmptySearchBase);
             this.RuleFor(context => context.Servers).NotEmpty();
             this.RuleForEach(context => context.Servers)
-                .SetValidator(new LdapServerValidator());
-
+                .SetValidator(new LdapServerValidator())
+                .When(context => context.Servers != null);
 
             return base.Validate(context);
         }

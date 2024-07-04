@@ -117,5 +117,20 @@ namespace Visus.DirectoryAuthentication.Tests {
             var options = provider.GetService<IOptions<LdapOptions>>();
             Assert.IsNotNull(options?.Value, "Options resolved");
         }
+
+
+        [TestMethod]
+        public void TestValidation() {
+            Assert.ThrowsException<OptionsValidationException>(() => {
+                var configuration = TestExtensions.CreateConfiguration();
+
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapServices(o => { });
+
+                var provider = collection.BuildServiceProvider();
+
+                var service = provider.GetService<ILdapConnectionService>();
+            });
+        }
     }
 }
