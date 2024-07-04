@@ -74,16 +74,23 @@ The configuration section can have any name of your choice as long as it can be 
 ```JSON
 {
     "LdapConfiguration": {
-        "Server": "dc.your-domain.de",
+        "Servers": [
+            {
+                "Address": "dc.your-domain.de",
+                "Port": 636,
+                "IsSsl": true,
+                "IsNoCertificateCheck": true
+            }
+        ],
         "SearchBases": { "DC=your-domain,DC=de": "Subtree" },
         "Schema": "Active Directory",
         "IsRecursiveGroupMembership": true,
-        "Port": 636,
-        "IsSsl": true,
-        "IsNoCertificateCheck": true
     }
 }
 ```
+
+> [!NOTE]
+> Support for multiple serviers is in preparation! Only the first one will be used at the moment.
 
 While you can fully customise the properties and claims the library loads for a user (see below), there are certain things that must be provided. This is controlled via the `Schema` property in the JSON above. The schema selects the [`LdapMapping`](LdapMapping.cs) the library uses the select users and determine group membership. We provide several built-in schemas for frequently used LDAP servers in  [`LdapOptions`](LdapOptions.cs), namely "Active Directory" for Active Directory Domain Services, "IDMU" for Active Directory with Identity Management for Unix installed and "RFC 2307" for this RFC, which is the schema typically used be OpenLDAP servers.
 
