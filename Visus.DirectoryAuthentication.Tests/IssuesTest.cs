@@ -22,15 +22,6 @@ namespace Visus.DirectoryAuthentication.Tests {
     [TestClass]
     public sealed class IssuesTest {
 
-        #region Public constructors
-        public IssuesTest() {
-            new ConfigurationBuilder()
-                .AddUserSecrets<TestSecrets>()
-                .Build()
-                .Bind(this._testSecrets = new());
-        }
-        #endregion
-
         #region Issue #1
         public sealed class CustomLdapUser : LdapUserBase<LdapGroup> {
 
@@ -43,13 +34,15 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void Test1() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
+                var connection = new LdapConnectionService(options,
+                    Mock.Of<ILogger<LdapConnectionService>>());
                 var mapper = new LdapMapper<CustomLdapUser, LdapGroup>(options,
                     Mock.Of<ILogger<LdapMapper<CustomLdapUser, LdapGroup>>>());
                 var claims = new ClaimsBuilder<CustomLdapUser, LdapGroup>(
                     mapper,
                     Mock.Of<ILogger<ClaimsBuilder<CustomLdapUser, LdapGroup>>>());
                 var service = new LdapSearchService<CustomLdapUser, LdapGroup>(
-                    options,
+                    connection,
                     mapper,
                     claims,
                     Mock.Of<ILogger<LdapSearchService<CustomLdapUser, LdapGroup>>>());
@@ -95,13 +88,15 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void Test10() {
             if (this._testSecrets?.LdapOptions != null) {
                 var options = Options.Create(this._testSecrets.LdapOptions);
+                var connection = new LdapConnectionService(options,
+                    Mock.Of<ILogger<LdapConnectionService>>());
                 var mapper = new LdapMapper<LdapUser, LdapGroup>(options,
                     Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
                 var claims = new ClaimsBuilder<LdapUser, LdapGroup>(
                     mapper,
                     Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
                 var service = new LdapAuthenticationService<LdapUser, LdapGroup>(
-                    options,
+                    connection,
                     mapper,
                     claims,
                     Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
@@ -118,21 +113,19 @@ namespace Visus.DirectoryAuthentication.Tests {
         [TestMethod]
         public void Test12() {
             if (this._testSecrets?.LdapOptions != null) {
-                var configuration = new ConfigurationBuilder()
-                    .AddUserSecrets<TestSecrets>()
-                    .Build();
-                var secrets = new TestSecrets();
-                configuration.Bind(secrets);
-                secrets.LdapOptions.PageSize = 0;
+                var secrets = TestExtensions.CreateSecrets();
+                secrets.LdapOptions.Servers.First().PageSize = 0;
 
                 var options = Options.Create(secrets.LdapOptions);
+                var connection = new LdapConnectionService(options,
+                    Mock.Of<ILogger<LdapConnectionService>>());
                 var mapper = new LdapMapper<LdapUser, LdapGroup>(options,
                     Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
                 var claims = new ClaimsBuilder<LdapUser, LdapGroup>(
                     mapper,
                     Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
                 var service = new LdapSearchService<LdapUser, LdapGroup>(
-                    options,
+                    connection,
                     mapper,
                     claims,
                     Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
@@ -144,7 +137,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         #endregion
 
         #region Private fields
-        private readonly TestSecrets _testSecrets;
+        private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
         #endregion
     }
 }

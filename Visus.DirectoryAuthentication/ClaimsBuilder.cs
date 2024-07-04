@@ -47,7 +47,7 @@ namespace Visus.DirectoryAuthentication {
         #region Public methods
         /// <inheritdoc />
         public TUser AddClaims(TUser user)
-            => this._mapper.Assign(user, this.GetClaims(user));
+            => this._mapper.Assign(this.GetClaims(user), user);
 
         /// <inheritdoc />
         public IEnumerable<Claim> GetClaims(TUser user) {

@@ -47,6 +47,7 @@ namespace Visus.DirectoryAuthentication {
             return services.Configure(options)
                 .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
                 .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
+                .AddSingleton<ILdapConnectionService, LdapConnectionService>()
                 .AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>();
         }
@@ -94,26 +95,6 @@ namespace Visus.DirectoryAuthentication {
                 options);
 
         /// <summary>
-        /// Adds an <see cref="ILdapConnectionService"/> to the dependency
-        /// injection container.
-        /// </summary>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapConnectionService(
-                this IServiceCollection services,
-                Action<LdapOptions> options) {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            return services.Configure(options)
-                .AddSingleton<ILdapConnectionService, LdapConnectionService>();
-        }
-
-        /// <summary>
         /// Adds an <see cref="ILdapSearchService"/> with a custom user
         /// mapper to the dependency injection container.
         /// </summary>
@@ -143,6 +124,7 @@ namespace Visus.DirectoryAuthentication {
             return services.Configure(options)
                 .AddSingleton<ILdapMapper<TUser, TGroup>,TMapper>()
                 .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
+                .AddSingleton<ILdapConnectionService, LdapConnectionService>()
                 .AddScoped<ILdapSearchService<TUser, TGroup>,
                     LdapSearchService<TUser, TGroup>>();
         }

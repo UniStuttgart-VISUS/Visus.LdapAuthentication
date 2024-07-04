@@ -105,11 +105,25 @@ namespace Visus.DirectoryAuthentication {
             this._userProperties = LdapAttributeAttribute.GetLdapProperties(
                 typeof(TUser), this._options.Schema);
 
-            // Determine which attributes we must load for users/groups.
-            this._requiredGroupAttributes = LdapAttributeAttribute
-                .GetRequiredAttributes<TGroup>(this._options.Schema).ToArray();
-            this._requiredUserAttributes = LdapAttributeAttribute
-                .GetRequiredAttributes<TUser>(this._options.Schema).ToArray();
+            // Determine which attributes we must load for users/groups. Note
+            // that we need some globally defined attributes for to determine
+            // group membership (recursively) as well.
+            var groupMembershipAttributes = new[] {
+                this._options.Mapping.DistinguishedNameAttribute,
+                this._options.Mapping.GroupsAttribute,
+                this._options.Mapping.PrimaryGroupAttribute
+            };
+
+            this.RequiredGroupAttributes = LdapAttributeAttribute
+                .GetRequiredAttributes<TGroup>(this._options.Schema)
+                .Concat(groupMembershipAttributes)
+                .Distinct()
+                .ToArray();
+            this.RequiredUserAttributes = LdapAttributeAttribute
+                .GetRequiredAttributes<TUser>(this._options.Schema)
+                .Concat(groupMembershipAttributes)
+                .Distinct()
+                .ToArray();
         }
 
         /// <summary>
@@ -126,19 +140,17 @@ namespace Visus.DirectoryAuthentication {
 
         #region Public properties
         /// <inheritdoc />
-        public IEnumerable<string> RequiredGroupAttributes
-            => this._requiredGroupAttributes;
+        public string[] RequiredGroupAttributes { get; }
 
         /// <inheritdoc />
-        public IEnumerable<string> RequiredUserAttributes
-            => this._requiredUserAttributes;
+        public string[] RequiredUserAttributes { get; }
         #endregion
 
         #region Public methods
         /// <inheritdoc />
-        public TUser Assign(TUser user,
-                SearchResultEntry entry,
-                LdapConnection connection) {
+        public TUser Assign(SearchResultEntry entry,
+                LdapConnection connection,
+                TUser user) {
             _ = user
                 ?? throw new ArgumentNullException(nameof(user));
             _ = entry
@@ -147,7 +159,7 @@ namespace Visus.DirectoryAuthentication {
                 ?? throw new ArgumentNullException(nameof(connection));
 
             // Assign properties from cached mappings.
-            this.Assign(user, entry, this._userProperties);
+            this.Assign(entry, this._userProperties, user);
 
             // If requested, determine group memberships.
             if (this._groupsProperty != null) {
@@ -167,7 +179,7 @@ namespace Visus.DirectoryAuthentication {
                 var isPrimary = true;
 
                 foreach (var e in entries) {
-                    var g = this.Assign(new TGroup(), e, this._groupProperties);
+                    var g = this.Assign(e, this._groupProperties, new TGroup());
 
                     if (this._primaryGroupFlagProperty != null) {
                         this._primaryGroupFlagProperty.SetValue(g, isPrimary);
@@ -184,20 +196,20 @@ namespace Visus.DirectoryAuthentication {
         }
 
         /// <inheritdoc />
-        public TGroup Assign(TGroup group,
-                SearchResultEntry entry,
-                LdapConnection connection) {
+        public TGroup Assign(SearchResultEntry entry,
+                LdapConnection connection,
+                TGroup group) {
             _ = group
                 ?? throw new ArgumentNullException(nameof(group));
             _ = entry
                 ?? throw new ArgumentNullException(nameof(entry));
             _ = connection
                 ?? throw new ArgumentNullException(nameof(connection));
-            return this.Assign(group, entry, this._groupProperties);
+            return this.Assign(entry, this._groupProperties, group);
         }
 
         /// <inheritdoc />
-        public TUser Assign(TUser user, IEnumerable<Claim> claims) {
+        public TUser Assign(IEnumerable<Claim> claims, TUser user) {
             _ = user
                 ?? throw new ArgumentNullException(nameof(user));
             if ((this._claimsProperty != null) && (claims!= null)) {
@@ -238,13 +250,13 @@ namespace Visus.DirectoryAuthentication {
         /// <paramref name="from"/>.
         /// </summary>
         /// <typeparam name="TObject"></typeparam>
-        /// <param name="to"></param>
         /// <param name="from"></param>
         /// <param name="properties"></param>
+        /// <param name="to"></param>
         /// <returns><paramref name="to"/>.</returns>
-        private TObject Assign<TObject>(TObject to,
-                SearchResultEntry from,
-                IDictionary<PropertyInfo, LdapAttributeAttribute> properties) {
+        private TObject Assign<TObject>(SearchResultEntry from,
+                IDictionary<PropertyInfo, LdapAttributeAttribute> properties,
+                TObject to) {
             foreach (var p in properties) {
                 try {
                     var a = p.Value;
@@ -312,7 +324,7 @@ namespace Visus.DirectoryAuthentication {
                         var req = new SearchRequest(b.Key,
                             $"({mapping.DistinguishedNameAttribute}={q})",
                             SearchScope.Subtree,
-                            this._requiredGroupAttributes);
+                            this.RequiredGroupAttributes);
                         var res = connection.SendRequest(req, this._options);
 
                         if (res is SearchResponse r) {
@@ -375,14 +387,13 @@ namespace Visus.DirectoryAuthentication {
                 LdapConnection connection) {
             Debug.Assert(entry != null);
             Debug.Assert(connection != null);
-            var mapping = this._options.Mapping;
             var gid = this.GetPrimaryGroup(entry);
 
             foreach (var b in this._options.SearchBases) {
                 var req = new SearchRequest(b.Key,
                     $"({this._groupIdentityAttribute.Name}={gid})",
                     SearchScope.Subtree,
-                    mapping.RequiredGroupAttributes);
+                    this.RequiredGroupAttributes);
                 var res = connection.SendRequest(req, this._options);
 
                 if (res is SearchResponse r) {
@@ -436,8 +447,6 @@ namespace Visus.DirectoryAuthentication {
         private readonly PropertyInfo _groupsProperty;
         private readonly LdapOptions _options;
         private readonly PropertyInfo _primaryGroupFlagProperty;
-        private readonly string[] _requiredGroupAttributes;
-        private readonly string[] _requiredUserAttributes;
         private readonly LdapAttributeAttribute _userIdentityAttribute;
         private readonly PropertyInfo _userIdentityProperty;
         private readonly IDictionary<PropertyInfo, LdapAttributeAttribute>

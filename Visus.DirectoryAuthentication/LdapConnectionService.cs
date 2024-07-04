@@ -35,6 +35,7 @@ namespace Visus.DirectoryAuthentication {
                 ?? throw new ArgumentNullException(nameof(logger));
             this.Options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
+            this._serverSelector = new();
         }
         #endregion
 
@@ -47,19 +48,23 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         public LdapConnection Connect() {
             // TODO: Add the option to connect with negotiate on Windows.
-            return this.Options.Connect(this.Options.User,
-                this.Options.Password,
-                this._logger);
+            return this.Connect(this.Options.User, this.Options.Password);
         }
 
         /// <inheritdoc />
         public LdapConnection Connect(string username, string password) {
-            return this.Options.Connect(username, password, this._logger);
+            return this._serverSelector
+                .Select(this.Options)
+                .Connect(username,
+                    password,
+                    this.Options.DefaultDomain,
+                    this._logger);
         }
         #endregion
 
         #region Private fields
         private readonly ILogger _logger;
+        private readonly ServerSelector _serverSelector;
         #endregion
     }
 }

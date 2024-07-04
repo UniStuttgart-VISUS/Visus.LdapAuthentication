@@ -22,19 +22,14 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestAuthServiceResolution() {
-            var configuration = new ConfigurationBuilder()
-                .AddUserSecrets<TestSecrets>()
-                .Build();
+            var configuration = TestExtensions.CreateConfiguration();
 
-            var collection = new ServiceCollection();
+            var collection = new ServiceCollection().AddMockLoggers();
             collection.AddLdapAuthenticationService(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
                 o.Schema = Schema.ActiveDirectory;
             });
-            collection.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
 
             var provider = collection.BuildServiceProvider();
 
@@ -50,19 +45,17 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestConnectionServiceResolution() {
-            var configuration = new ConfigurationBuilder()
-                .AddUserSecrets<TestSecrets>()
-                .Build();
+            var configuration = TestExtensions.CreateConfiguration();
 
-            var collection = new ServiceCollection();
-            collection.AddLdapConnectionService(o => {
+            var collection = new ServiceCollection().AddMockLoggers();
+            collection.AddLdapServices(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
                 o.Schema = Schema.ActiveDirectory;
             });
-            collection.AddScoped(s => Mock.Of<ILogger<LdapConnectionService>>());
 
             var provider = collection.BuildServiceProvider();
+
             var service = provider.GetService<ILdapConnectionService>();
             Assert.IsNotNull(service, "Service resolved");
 
@@ -72,19 +65,14 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestSearchServiceResolution() {
-            var configuration = new ConfigurationBuilder()
-                .AddUserSecrets<TestSecrets>()
-                .Build();
+            var configuration = TestExtensions.CreateConfiguration();
 
-            var collection = new ServiceCollection();
+            var collection = new ServiceCollection().AddMockLoggers();
             collection.AddLdapSearchService(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
                 o.Schema = Schema.ActiveDirectory;
             });
-            collection.AddScoped(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
 
             var provider = collection.BuildServiceProvider();
 
@@ -100,22 +88,14 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestResolveAll() {
-            var configuration = new ConfigurationBuilder()
-                .AddUserSecrets<TestSecrets>()
-                .Build();
+            var configuration = TestExtensions.CreateConfiguration();
 
-            var collection = new ServiceCollection();
-
+            var collection = new ServiceCollection().AddMockLoggers();
             collection.AddLdapServices(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
                 o.Schema = Schema.ActiveDirectory;
             });
-            collection.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<LdapConnectionService>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
-            collection.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
 
             var provider = collection.BuildServiceProvider();
 

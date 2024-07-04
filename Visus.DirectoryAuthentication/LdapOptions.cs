@@ -18,25 +18,7 @@ namespace Visus.DirectoryAuthentication {
     /// </summary>
     public sealed class LdapOptions {
 
-        #region Public constructors
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        public LdapOptions() {
-            this.AuthenticationType = 
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? AuthType.Negotiate
-                : AuthType.Basic;
-            this.PageSize = 1000;   // Reasonable default for AD.
-        }
-        #endregion
-
         #region Public properties
-        /// <summary>
-        /// The authentication type used to bind to the LDAP server.
-        /// </summary>
-        public AuthType AuthenticationType { get; set; }
-
         /// <summary>
         /// Gets the default domain appended to a user name.
         /// </summary>
@@ -51,17 +33,6 @@ namespace Visus.DirectoryAuthentication {
         public string DefaultDomain { get; set; }
 
         /// <summary>
-        /// Gets whether the certificate check is disabled for accessing the
-        /// LDAP server.
-        /// </summary>
-        /// <remarks>
-        /// <para>You should not do that for production code. This is only
-        /// intended for development setups where you are working with
-        /// self-signed certificates.</para>
-        /// </remarks>
-        public bool IsNoCertificateCheck { get; set; }
-
-        /// <summary>
         /// Gets whether group memberships should be looked up recursively.
         /// </summary>
         /// <remarks>
@@ -73,11 +44,6 @@ namespace Visus.DirectoryAuthentication {
         /// performed for each login.</para>
         /// </remarks>
         public bool IsRecursiveGroupMembership { get; set; }
-
-        /// <summary>
-        /// Get whether the LDAP connection uses SSL or not.
-        /// </summary>
-        public bool IsSsl { get; set; }
 
         /// <summary>
         /// Gets the global LDAP mapping for the selected schema.
@@ -145,21 +111,6 @@ namespace Visus.DirectoryAuthentication {
             };
 
         /// <summary>
-        /// Gets the maximum number of results the LDAP client should request.
-        /// </summary>
-        /// <remarks>
-        /// <para>This property is initialised to 1000, which is a reasonable
-        /// default for Active Directory servers.</para>
-        /// <para>If this property is zero (or negative), the implementation
-        /// will not perform any paging. Results might be truncated in this
-        /// case.</para>
-        /// </remarks>
-        public int PageSize {
-            get => this._pageSize;
-            set => this._pageSize = Math.Max(0, value);
-        }
-
-        /// <summary>
         /// Gets the password used to connect to the LDAP server.
         /// </summary>
         /// <remarks>
@@ -171,16 +122,6 @@ namespace Visus.DirectoryAuthentication {
         /// order to fill <see cref="ILdapUser"/>.</para>
         /// </remarks>
         public string Password { get; set; }
-
-        /// <summary>
-        /// Gets the port of the LDAP server.
-        /// </summary>
-        public int Port { get; set; } = 389;
-
-        /// <summary>
-        /// Gets the version of the LDAP protocol to request from the server.
-        /// </summary>
-        public int ProtocolVersion { get; set; } = 3;
 
         /// <summary>
         /// Gets the name of the LDAP schema which is used by
@@ -200,38 +141,9 @@ namespace Visus.DirectoryAuthentication {
         } = new Dictionary<string, SearchScope>();
 
         /// <summary>
-        /// Gets the host name or IP of the LDAP server.
+        /// Gets or sets the servers to connect to.
         /// </summary>
-        [Required]
-        public string Server { get; set; }
-
-        /// <summary>
-        /// Gets the acceptable issuer of the server certificate.
-        /// </summary>
-        /// <remarks>
-        /// <para>If this property is <c>null</c>, any issuer will be considered
-        /// acceptable.</para>
-        /// <para>This property is only relevant if <see cref="UseSsl"/> is
-        /// enabled.</para>
-        /// </remarks>
-        public string ServerCertificateIssuer { get; set; }
-
-        /// <summary>
-        /// Gets the certificate thumbprints for the LDAP servers that are
-        /// accepted during certificate validation.
-        /// </summary>
-        /// <remarks>
-        /// <para>If this array is empty, any server certificate will be
-        /// accepted. Note that if <see cref="ServerCertificateIssuer"/> is set
-        /// as well, the server certificate must have been issued by the
-        /// specified issuer, too.</para>
-        /// <para>This property is only relevant if <see cref="UseSsl"/> is
-        /// enabled.</para>
-        /// </remarks>
-        public string[] ServerThumbprint {
-            get;
-            set;
-        } = Array.Empty<string>();
+        public LdapServer[] Servers { get; set; } = Array.Empty<LdapServer>();
 
         /// <summary>
         /// Gets the timeout for LDAP queries.

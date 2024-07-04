@@ -40,19 +40,6 @@ namespace Visus.DirectoryAuthentication {
         public string PrimaryGroupAttribute { get; set; }
 
         /// <summary>
-        /// Gets or sets the attributes that are required to retrieve
-        /// (transitive) group memberships.
-        /// </summary>
-        public string[] RequiredGroupAttributes {
-            get => this._requiredGroupAttributes ?? new[] {
-                this.DistinguishedNameAttribute,
-                this.GroupsAttribute,
-                this.PrimaryGroupAttribute
-            };
-            set => this._requiredGroupAttributes = value;
-        }
-
-        /// <summary>
         /// Gets or sets the filter to identify a single user by the user name.
         /// </summary>
         /// <remarks>
@@ -72,8 +59,5 @@ namespace Visus.DirectoryAuthentication {
         /// </remarks>
         public string UsersFilter { get; set; }
 
-        #region Private fields
-        private string[] _requiredGroupAttributes;
-        #endregion
     }
 }
