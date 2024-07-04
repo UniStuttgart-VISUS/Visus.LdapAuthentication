@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -45,6 +46,9 @@ namespace Visus.DirectoryAuthentication {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
+                .AddSingleton<IValidator<LdapMapping>, LdapMappingValidator>()
+                .AddSingleton<IValidator<LdapOptions>, LdapOptionsValidator>()
+                .AddSingleton<IValidator<LdapServer>, LdapServerValidator>()
                 .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
                 .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
                 .AddSingleton<ILdapConnectionService, LdapConnectionService>()
@@ -122,6 +126,9 @@ namespace Visus.DirectoryAuthentication {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
+                .AddSingleton<IValidator<LdapMapping>, LdapMappingValidator>()
+                .AddSingleton<IValidator<LdapOptions>, LdapOptionsValidator>()
+                .AddSingleton<IValidator<LdapServer>, LdapServerValidator>()
                 .AddSingleton<ILdapMapper<TUser, TGroup>,TMapper>()
                 .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
                 .AddSingleton<ILdapConnectionService, LdapConnectionService>()
@@ -193,6 +200,9 @@ namespace Visus.DirectoryAuthentication {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = options ?? throw new ArgumentNullException(nameof(options));
             return services.Configure(options)
+                .AddSingleton<IValidator<LdapMapping>, LdapMappingValidator>()
+                .AddSingleton<IValidator<LdapOptions>, LdapOptionsValidator>()
+                .AddSingleton<IValidator<LdapServer>, LdapServerValidator>()
                 .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaims>()
                 .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
                 .AddScoped<ILdapAuthenticationService<TUser>,

@@ -42,7 +42,6 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Gets the host name or IP of the LDAP server.
         /// </summary>
-        [Required]
         public string Address { get; set; }
 
         /// <summary>

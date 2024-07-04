@@ -19,11 +19,19 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         public override ValidationResult Validate(
                 ValidationContext<LdapOptions> context) {
-            this.RuleFor(context => context.Mapping).NotNull()
+            this.RuleFor(context => context.Mapping)
+                .NotNull()
                 .SetValidator(new LdapMappingValidator());
+            this.RuleFor(context => context.Mappings).NotNull();
+            // Note: The content of Mapping*s* is optional, only the active
+            // *Mapping* is relevant for the library to function correctly.
             this.RuleFor(context => context.Schema).NotEmpty();
             this.RuleFor(context => context.SearchBases).NotEmpty();
             this.RuleFor(context => context.Servers).NotEmpty();
+            this.RuleForEach(context => context.Servers)
+                .SetValidator(new LdapServerValidator());
+
+
             return base.Validate(context);
         }
     }
