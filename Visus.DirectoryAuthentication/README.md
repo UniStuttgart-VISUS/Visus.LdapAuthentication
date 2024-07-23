@@ -150,6 +150,11 @@ public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [Fr
         var retval = this._authService.Login(username, password);
         await this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, retval.ToClaimsPrincipal());
         return this.Ok(retval);
+    } catch (DirectoryOperationException ex) {
+        // For LDAP errors, it might be helpful to have the error message from
+        // the server.
+        this._logger.LogError(ex, ex.Response.ErrorMessage);
+        return this.Unauthorized();
     } catch {
         return this.Unauthorized();
     }
