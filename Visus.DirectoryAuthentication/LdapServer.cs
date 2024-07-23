@@ -137,7 +137,11 @@ namespace Visus.DirectoryAuthentication {
             var id = new LdapDirectoryIdentifier(this.Address, this.Port);
             var retval = new LdapConnection(id);
             retval.AuthType = this.AuthenticationType;
-            retval.SessionOptions.SecureSocketLayer = this.IsSsl;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                // SSL is not supported on Linux atm.
+                // Cf. https://github.com/dotnet/runtime/issues/43890
+                retval.SessionOptions.SecureSocketLayer = this.IsSsl;
+            }
             retval.SessionOptions.ProtocolVersion = this.ProtocolVersion;
             retval.SessionOptions.VerifyServerCertificate
                 = (con, cert) => this.VerifyCertificate(cert, logger);
