@@ -141,10 +141,10 @@ namespace Visus.DirectoryAuthentication {
                 // SSL is not supported on Linux atm.
                 // Cf. https://github.com/dotnet/runtime/issues/43890
                 retval.SessionOptions.SecureSocketLayer = this.IsSsl;
+                retval.SessionOptions.VerifyServerCertificate
+                    = (con, cert) => this.VerifyCertificate(cert, logger);
             }
             retval.SessionOptions.ProtocolVersion = this.ProtocolVersion;
-            retval.SessionOptions.VerifyServerCertificate
-                = (con, cert) => this.VerifyCertificate(cert, logger);
             // Cf. https://stackoverflow.com/questions/10336553/system-directoryservices-protocols-paged-get-all-users-code-suddenly-stopped-get
             retval.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
 
