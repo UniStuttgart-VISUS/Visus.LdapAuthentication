@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
@@ -19,7 +20,10 @@ namespace Visus.DirectoryAuthentication.Tests {
         [TestMethod]
         public void GetDefaultNamingContext() {
             if (this._testSecrets?.LdapOptions != null) {
-                var connection = this._testSecrets.LdapOptions.Servers.First().Connect(Mock.Of<ILogger>());
+                var service = new LdapConnectionService(
+                    Options.Create(this._testSecrets.LdapOptions),
+                    Mock.Of<ILogger<LdapConnectionService>>());
+                var connection = service.Connect();
                 Assert.IsNotNull(connection);
                 var defaultNamingContext = connection.GetDefaultNamingContext();
                 Assert.IsFalse(string.IsNullOrWhiteSpace(defaultNamingContext));
@@ -29,7 +33,10 @@ namespace Visus.DirectoryAuthentication.Tests {
         [TestMethod]
         public async Task GetDefaultNamingContextAsync() {
             if (this._testSecrets?.LdapOptions != null) {
-                var connection = this._testSecrets.LdapOptions.Servers.First().Connect(Mock.Of<ILogger>());
+                var service = new LdapConnectionService(
+                    Options.Create(this._testSecrets.LdapOptions),
+                    Mock.Of<ILogger<LdapConnectionService>>());
+                var connection = service.Connect();
                 Assert.IsNotNull(connection);
                 var defaultNamingContext = await connection.GetDefaultNamingContextAsync();
                 Assert.IsFalse(string.IsNullOrWhiteSpace(defaultNamingContext));
@@ -39,7 +46,10 @@ namespace Visus.DirectoryAuthentication.Tests {
         [TestMethod]
         public void GetRootDse() {
             if (this._testSecrets?.LdapOptions != null) {
-                var connection = this._testSecrets.LdapOptions.Servers.First().Connect(Mock.Of<ILogger>());
+                var service = new LdapConnectionService(
+                    Options.Create(this._testSecrets.LdapOptions),
+                    Mock.Of<ILogger<LdapConnectionService>>());
+                var connection = service.Connect();
                 Assert.IsNotNull(connection);
                 var rootDse = connection.GetRootDse();
                 Assert.IsNotNull(rootDse);
@@ -49,7 +59,10 @@ namespace Visus.DirectoryAuthentication.Tests {
         [TestMethod]
         public async Task GetRootDseAsync() {
             if (this._testSecrets?.LdapOptions != null) {
-                var connection = this._testSecrets.LdapOptions.Servers.First().Connect(Mock.Of<ILogger>());
+                var service = new LdapConnectionService(
+                    Options.Create(this._testSecrets.LdapOptions),
+                    Mock.Of<ILogger<LdapConnectionService>>());
+                var connection = service.Connect();
                 Assert.IsNotNull(connection);
                 var rootDse = await connection.GetRootDseAsync();
                 Assert.IsNotNull(rootDse);

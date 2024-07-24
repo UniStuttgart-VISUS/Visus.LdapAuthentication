@@ -289,6 +289,15 @@ namespace Visus.DirectoryAuthentication {
             retval.SessionOptions.ProtocolVersion = this.ProtocolVersion;
             // Cf. https://stackoverflow.com/questions/10336553/system-directoryservices-protocols-paged-get-all-users-code-suddenly-stopped-get
             retval.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
+            retval.SessionOptions.ReferralHopLimit = 0;
+
+            logger.LogDebug("LdapConnection created for server {server} "
+                + "using authentication type {authType} and protocol version "
+                + "{protocol}. Referral chasing is {referralChasing}.",
+                retval.SessionOptions.HostName,
+                retval.AuthType,
+                retval.SessionOptions.ProtocolVersion,
+                retval.SessionOptions.ReferralChasing);
 
             return retval;
         }

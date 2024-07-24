@@ -81,6 +81,10 @@ namespace Visus.DirectoryAuthentication {
                 this._logger.LogInformation(Resources.InfoBoundAsUser, username);
             }
 
+            this._logger.LogDebug("Effective authentication type after bind is "
+                + "{authType}. Automatic binding is {autoBind}.",
+                retval.AuthType, retval.AutoBind);
+
             return retval;
         }
         #endregion

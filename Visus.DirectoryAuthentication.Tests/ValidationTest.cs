@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
@@ -60,7 +61,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             {
                 var options = new LdapOptions();
                 options.Mapping = new();
-                options.Servers = new[] { new LdapServer() };
+                options.Servers = Array.Empty<string>();
                 var result = validator.Validate(options);
                 Assert.IsNotNull(result);
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == $"{nameof(LdapOptions.Mapping)}.{nameof(LdapMapping.DistinguishedNameAttribute)}"));
@@ -70,18 +71,14 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == $"{nameof(LdapOptions.Mapping)}.{nameof(LdapMapping.UsersFilter)}"));
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapOptions.Schema)));
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapOptions.SearchBases)));
-                Assert.IsTrue(result.Errors.Any(r => r.PropertyName == $"{nameof(LdapOptions.Servers)}[0].{nameof(LdapServer.Address)}"));
+                Assert.IsTrue(result.Errors.Any(r => r.PropertyName == $"{nameof(LdapOptions.Servers)}"));
             }
 
             {
                 var options = new LdapOptions() {
                     Schema = Schema.ActiveDirectory
                 };
-                options.Servers = new[] {
-                    new LdapServer() {
-                        Address = "127.0.0.1"
-                    }
-                };
+                options.Servers = new[] { "127.0.0.1" };
                 options.SearchBases = new Dictionary<string, SearchScope> {
                     { "DC=visus,DC=uni-stuttgart,DC=de", SearchScope.Base }
                 };
@@ -91,34 +88,5 @@ namespace Visus.DirectoryAuthentication.Tests {
             }
         }
 
-        [TestMethod]
-        public void TestLdapServerValidator() {
-            var validator = new LdapServerValidator();
-
-            {
-                var server = new LdapServer();
-                var result = validator.Validate(server);
-                Assert.IsNotNull(result);
-                Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapServer.Address)));
-            }
-
-            {
-                var server = new LdapServer() {
-                    Address = string.Empty
-                };
-                var result = validator.Validate(server);
-                Assert.IsNotNull(result);
-                Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapServer.Address)));
-            }
-
-            {
-                var server = new LdapServer() {
-                    Address = "127.0.0.1"
-                };
-                var result = validator.Validate(server);
-                Assert.IsNotNull(result);
-                Assert.IsTrue(result.IsValid);
-            }
-        }
     }
 }

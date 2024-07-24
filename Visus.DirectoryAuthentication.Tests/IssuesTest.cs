@@ -114,7 +114,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         public void Test12() {
             if (this._testSecrets?.LdapOptions != null) {
                 var secrets = TestExtensions.CreateSecrets();
-                secrets.LdapOptions.Servers.First().PageSize = 0;
+                secrets.LdapOptions.PageSize = 0;
 
                 var options = Options.Create(secrets.LdapOptions);
                 var connection = new LdapConnectionService(options,

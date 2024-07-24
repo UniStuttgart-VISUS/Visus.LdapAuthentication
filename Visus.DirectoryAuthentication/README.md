@@ -74,14 +74,10 @@ The configuration section can have any name of your choice as long as it can be 
 ```JSON
 {
     "LdapConfiguration": {
-        "Servers": [
-            {
-                "Address": "dc.your-domain.de",
-                "Port": 636,
-                "IsSsl": true,
-                "IsNoCertificateCheck": true
-            }
-        ],
+        "Servers": [ "dc.your-domain.de" ],
+        "Port": 636,
+        "IsSsl": true,
+        "IsNoCertificateCheck": true
         "SearchBases": { "DC=your-domain,DC=de": "Subtree" },
         "Schema": "Active Directory",
         "IsRecursiveGroupMembership": true,
