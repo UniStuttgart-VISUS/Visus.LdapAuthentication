@@ -34,8 +34,7 @@ namespace Visus.DirectoryAuthentication {
                 .WithMessage(Resources.ErrorEmptySearchBase);
             this.RuleFor(context => context.Servers).NotEmpty();
             this.RuleForEach(context => context.Servers)
-                .SetValidator(new LdapServerValidator())
-                .When(context => context.Servers != null);
+                .NotEmpty();
 
             return base.Validate(context);
         }

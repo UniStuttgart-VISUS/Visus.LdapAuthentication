@@ -195,4 +195,10 @@
   <data name="InfoConnectingLdap" xml:space="preserve">
     <value>Connecting to LDAP server {0}:{1}.</value>
   </data>
+  <data name="WarnCertCheckDisabled" xml:space="preserve">
+    <value>LDAP SSL certificate check has been disabled.</value>
+  </data>
+  <data name="WarnNoSsl" xml:space="preserve">
+    <value>SSL is most likely not working due to https://github.com/dotnet/runtime/issues/43890.</value>
+  </data>
 </root>

@@ -7,7 +7,11 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Diagnostics;
 using System.DirectoryServices.Protocols;
+using System.Net;
+using System.Text.RegularExpressions;
+using Visus.DirectoryAuthentication.Properties;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -35,7 +39,6 @@ namespace Visus.DirectoryAuthentication {
                 ?? throw new ArgumentNullException(nameof(logger));
             this.Options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
-            this._serverSelector = new();
         }
         #endregion
 
@@ -53,18 +56,37 @@ namespace Visus.DirectoryAuthentication {
 
         /// <inheritdoc />
         public LdapConnection Connect(string username, string password) {
-            return this._serverSelector
-                .Select(this.Options)
-                .Connect(username,
-                    password,
-                    this.Options.DefaultDomain,
-                    this._logger);
+            var retval = this.Options.ToConnection(this._logger);
+            Debug.Assert(retval != null);
+
+            var rxUpn = new Regex(@".+@.+");
+            if ((username != null)
+                    && !string.IsNullOrWhiteSpace(this.Options.DefaultDomain)
+                    && !rxUpn.IsMatch(username)) {
+                username = $"{username}@{this.Options.DefaultDomain}";
+            }
+
+            this._logger.LogDebug("User name to bind (possibly expanded by the "
+                + "default domain) is {username}.", username);
+
+            if ((username == null) && (password == null)) {
+                this._logger.LogInformation(Resources.InfoBindCurrent);
+                retval.Bind();
+                this._logger.LogInformation(Resources.InfoBoundCurrent);
+
+            } else {
+                this._logger.LogInformation(Resources.InfoBindingAsUser,
+                    username);
+                retval.Bind(new NetworkCredential(username, password));
+                this._logger.LogInformation(Resources.InfoBoundAsUser, username);
+            }
+
+            return retval;
         }
         #endregion
 
         #region Private fields
         private readonly ILogger _logger;
-        private readonly ServerSelector _serverSelector;
         #endregion
     }
 }

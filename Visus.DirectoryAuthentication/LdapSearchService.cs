@@ -82,7 +82,7 @@ namespace Visus.DirectoryAuthentication {
                     b.Value,
                     filter,
                     Array.Empty<string>(),
-                    this.Options.Servers.First().PageSize,  // TODO: fix this if fallback available
+                    this.Options.PageSize,
                     "CN",
                     this.Options.Timeout);
 
@@ -106,7 +106,7 @@ namespace Visus.DirectoryAuthentication {
                     b.Value,
                     filter,
                     Array.Empty<string>(),
-                    this.Options.Servers.First().PageSize,  // TODO: fix this if fallback available
+                    this.Options.PageSize,
                     "CN",
                     this.Options.Timeout).ConfigureAwait(false);
 
@@ -293,7 +293,7 @@ namespace Visus.DirectoryAuthentication {
                 b.Value,
                 filter,
                 this._mapper.RequiredUserAttributes.ToArray(),
-                this.Options.Servers.First().PageSize,  // TODO: fix this if fallback available
+                this.Options.PageSize,
                 sortAttribute.Name,
                 this.Options.Timeout);
 

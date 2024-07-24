@@ -71,6 +71,10 @@ namespace Visus.DirectoryAuthentication {
             var connection = this._connectionService.Connect(
                 username ?? string.Empty,
                 password ?? string.Empty);
+            this._logger.LogDebug("Connected to {server} with authentication "
+                    + "type {authType}.",
+                    connection.SessionOptions.HostName,
+                    connection.AuthType);
 
             var retval = new TUser();
 
@@ -135,6 +139,9 @@ namespace Visus.DirectoryAuthentication {
                 filter,
                 scope,
                 this._mapper.RequiredUserAttributes.ToArray());
+            this._logger.LogDebug("Requesting {filter} in search base {base} "
+                    + "with search scope {scope}.",
+                    filter, searchBase, scope);
             return retval;
         }
 

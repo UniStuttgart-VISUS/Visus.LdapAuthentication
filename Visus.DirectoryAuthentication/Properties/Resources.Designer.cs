@@ -293,5 +293,23 @@ namespace Visus.DirectoryAuthentication.Properties {
                 return ResourceManager.GetString("InfoConnectingLdap", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LDAP SSL certificate check has been disabled..
+        /// </summary>
+        internal static string WarnCertCheckDisabled {
+            get {
+                return ResourceManager.GetString("WarnCertCheckDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SSL is most likely not working due to https://github.com/dotnet/runtime/issues/43890..
+        /// </summary>
+        internal static string WarnNoSsl {
+            get {
+                return ResourceManager.GetString("WarnNoSsl", resourceCulture);
+            }
+        }
     }
 }
