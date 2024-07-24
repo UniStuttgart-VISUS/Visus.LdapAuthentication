@@ -126,6 +126,9 @@
   <data name="ErrorEmptySearchBase" xml:space="preserve">
     <value>A search base must be a non-empty string.</value>
   </data>
+  <data name="ErrorInvalidFileTimeTarget" xml:space="preserve">
+    <value>FILETIME values can only be converted to DateTime or DateTimeOffset.</value>
+  </data>
   <data name="ErrorInvalidSid" xml:space="preserve">
     <value>The given byte sequence "{0}" does not represent a valid security identifier.</value>
   </data>

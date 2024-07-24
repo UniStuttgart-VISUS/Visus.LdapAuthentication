@@ -88,6 +88,15 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to FILETIME values can only be converted to DateTime or DateTimeOffset..
+        /// </summary>
+        internal static string ErrorInvalidFileTimeTarget {
+            get {
+                return ResourceManager.GetString("ErrorInvalidFileTimeTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given byte sequence &quot;{0}&quot; does not represent a valid security identifier..
         /// </summary>
         internal static string ErrorInvalidSid {
