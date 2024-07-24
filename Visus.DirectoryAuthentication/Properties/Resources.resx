@@ -132,6 +132,9 @@
   <data name="ErrorCertThumbprintMismatch" xml:space="preserve">
     <value>The LDAP SSL certificate has the thumbprint "{0}", which is not one of the expected ones.</value>
   </data>
+  <data name="ErrorEmptyPassword" xml:space="preserve">
+    <value>The password for the LDAP service account must be specified if a service user is configured.</value>
+  </data>
   <data name="ErrorEmptySearchBase" xml:space="preserve">
     <value>The search base must be a non-empty string.</value>
   </data>

@@ -106,6 +106,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The password for the LDAP service account must be specified if a service user is configured..
+        /// </summary>
+        internal static string ErrorEmptyPassword {
+            get {
+                return ResourceManager.GetString("ErrorEmptyPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The search base must be a non-empty string..
         /// </summary>
         internal static string ErrorEmptySearchBase {

@@ -35,6 +35,10 @@ namespace Visus.DirectoryAuthentication {
             this.RuleFor(context => context.Servers).NotEmpty();
             this.RuleForEach(context => context.Servers)
                 .NotEmpty();
+            this.RuleFor(context => context.Password)
+                .NotNull()
+                .When(o => !string.IsNullOrWhiteSpace(o.User))
+                .WithMessage(Resources.ErrorEmptyPassword);
 
             return base.Validate(context);
         }

@@ -72,8 +72,10 @@ namespace Visus.DirectoryAuthentication {
                 username ?? string.Empty,
                 password ?? string.Empty);
             this._logger.LogDebug("Connected to {server} with authentication "
-                    + "type {authType}.",
+                    + "type {authType} and protocol version {version}. "
+                    + "Retrieving user claims is next ...",
                     connection.SessionOptions.HostName,
+                    connection.SessionOptions.ProtocolVersion,
                     connection.AuthType);
 
             var retval = new TUser();
@@ -82,6 +84,8 @@ namespace Visus.DirectoryAuthentication {
                 var req = this.GetRequest(username, b);
                 var res = connection.SendRequest(req, this.Options);
                 if ((res is SearchResponse s) && s.Any()) {
+                    this._logger.LogDebug("Successfully retrieved {entry}.",
+                        s.Entries[0].DistinguishedName);
                     this._mapper.Assign(s.Entries[0], connection, retval);
                     this._claimsBuilder.AddClaims(retval);
                     return retval;

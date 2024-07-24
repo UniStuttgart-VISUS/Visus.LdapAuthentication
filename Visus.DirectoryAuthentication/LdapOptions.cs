@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using Visus.DirectoryAuthentication.Properties;
 
@@ -273,27 +274,44 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>A new connection object that is configured, but not yet
         /// bound.</returns>
         internal LdapConnection ToConnection(ILogger logger) {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                    && this.IsNoCertificateCheck) {
+                // Note: On Linux, the verification callback does not work, so
+                // we need to tell OpenLDAP to skip the verification via setting
+                // an environment variable. This must be done using glibc
+                // according to https://github.com/dotnet/runtime/issues/60972.
+                logger.LogWarning(Resources.WarnCertCheckDisabled);
+                setenv("LDAPTLS_REQCERT", "never");
+            }
+
             var id = new LdapDirectoryIdentifier(this.Servers, this.Port, false, false);
             var retval = new LdapConnection(id);
             retval.AuthType = this.AuthenticationType;
 
             try {
                 retval.SessionOptions.SecureSocketLayer = this.IsSsl;
-                retval.SessionOptions.VerifyServerCertificate
-                        = (con, cert) => this.VerifyCertificate(cert, logger);
             } catch (Exception ex) {
                 // Cf. https://github.com/dotnet/runtime/issues/43890
                 logger.LogWarning(ex, Resources.WarnNoSsl);
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                // This API is only supported on Windows.
+                // Cf. https://github.com/dotnet/runtime/issues/60972
+                retval.SessionOptions.VerifyServerCertificate
+                    = (con, cert) => this.VerifyCertificate(cert, logger);
             }
 
             retval.SessionOptions.ProtocolVersion = this.ProtocolVersion;
             // Cf. https://stackoverflow.com/questions/10336553/system-directoryservices-protocols-paged-get-all-users-code-suddenly-stopped-get
             retval.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
 
-            logger.LogDebug("LdapConnection created for server {server} "
-                + "using authentication type {authType} and protocol version "
-                + "{protocol}. Referral chasing is {referralChasing}.",
-                retval.SessionOptions.HostName,
+            logger.LogDebug("LdapConnection created for server(s) {server} "
+                + "using port {port}, authentication type {authType} and "
+                + "protocol version {protocol}. Referral chasing is "
+                + "{referralChasing}.",
+                string.Join(", ", this.Servers),
+                this.Port,
                 retval.AuthType,
                 retval.SessionOptions.ProtocolVersion,
                 retval.SessionOptions.ReferralChasing);
@@ -372,6 +390,15 @@ namespace Visus.DirectoryAuthentication {
 
             return true;
         }
+        #endregion
+
+        #region Private class methods
+        /// <summary>
+        /// Provide access to the native <c>setenv</c> on Linux.
+        /// </summary>
+        [SupportedOSPlatform("Linux")]
+        [DllImport("libc")]
+        private static extern void setenv(string name, string value);
         #endregion
 
         #region Private fields

@@ -232,9 +232,10 @@ namespace Visus.DirectoryAuthentication {
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
             var optionsBuilder = services.AddOptions<LdapOptions>()
-                .Configure(options);
-            optionsBuilder.Services.AddSingleton<IValidateOptions<LdapOptions>,
-                ValidateLdapOptions>();
+                .Configure(options)
+                .ValidateOnStart()
+                .Services.AddSingleton<IValidateOptions<LdapOptions>,
+                    ValidateLdapOptions>();
 
             return services
                 .AddSingleton<ILdapMapper<TUser, TGroup>, TMapper>()
