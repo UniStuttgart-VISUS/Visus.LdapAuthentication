@@ -193,6 +193,17 @@ namespace Visus.DirectoryAuthentication {
         public int ProtocolVersion { get; set; } = 3;
 
         /// <summary>
+        /// Gets the thumbprint of the trusted root CA for the LDAP server.
+        /// </summary>
+        /// <remarks>
+        /// <para>If this property is <c>null</c>, the certificate chain will
+        /// not be checked, ie any root CA will be acceptable.</para>
+        /// <para>This property is only relevant if <see cref="IsSsl"/> is
+        /// enabled.</para>
+        /// </remarks>
+        string RootCaThumbprint { get; }
+
+        /// <summary>
         /// Gets the name of the LDAP schema which is used by
         /// <see cref="LdapUserBase"/> to automatically retrieve the required
         /// properties.
