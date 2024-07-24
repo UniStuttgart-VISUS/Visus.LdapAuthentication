@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System.Collections.Generic;
 using System.Security.Claims;
 using Visus.Ldap.Mapping;
 
@@ -70,13 +71,11 @@ namespace Visus.Ldap {
         [Claim(ClaimTypes.Email)]
         public string? EmailAddress { get; internal set; }
 
-#if false
         /// <summary>
         /// Gets the groups the user is member of.
         /// </summary>
-        [LdapGroups]
-        public IEnumerable<TGroup> Groups { get; internal set; }
-#endif
+        [GroupMemberships]
+        public IEnumerable<LdapGroup> Groups { get; internal set; } = null!;
 
         /// <summary>
         /// Gets the security identifier of the user.

@@ -23,10 +23,16 @@ namespace Visus.Ldap.Mapping {
 
         #region Public properties
         /// <inheritdoc />
+        public bool GroupIsGroupMember => false;
+
+        /// <inheritdoc />
         public string[] RequiredGroupAttributes { get; }
 
         /// <inheritdoc />
         public string[] RequiredUserAttributes { get; }
+
+        /// <inheritdoc />
+        public bool UserIsGroupMember => true;
         #endregion
 
         #region Public methods
@@ -79,7 +85,10 @@ namespace Visus.Ldap.Mapping {
         /// <inheritdoc />
         public LdapUser SetGroups(LdapUser user,
                 IEnumerable<LdapGroup> groups) {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            ArgumentNullException.ThrowIfNull(groups, nameof(groups));
+            user.Groups = groups;
+            return user;
         }
         #endregion
 

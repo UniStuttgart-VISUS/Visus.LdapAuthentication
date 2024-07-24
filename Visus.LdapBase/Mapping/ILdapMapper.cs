@@ -25,6 +25,17 @@ namespace Visus.Ldap.Mapping {
 
         #region Public properties
         /// <summary>
+        /// Gets whether <typeparamref name="TGroup"/> has a property holding the
+        /// group memberships of the group.
+        /// </summary>
+        /// <remarks>
+        /// This information enables the users for the mapper to find out whether
+        /// they need to query the directory to obtain the information about
+        /// group membership before doing so.
+        /// </remarks>
+        bool GroupIsGroupMember { get; }
+
+        /// <summary>
         /// Gets the attributes that must be loaded for each LDAP entry in order
         /// to fill all properties of a <typeparamref name="TGroup"/> object.
         /// </summary>
@@ -35,6 +46,17 @@ namespace Visus.Ldap.Mapping {
         /// to fill all properties of a <typeparamref name="TUser"/> object.
         /// </summary>
         string[] RequiredUserAttributes { get; }
+
+        /// <summary>
+        /// Gets whether <typeparamref name="TUser"/> has a property holding the
+        /// group memberships of the user.
+        /// </summary>
+        /// <remarks>
+        /// This information enables the users for the mapper to find out whether
+        /// they need to query the directory to obtain the information about
+        /// group membership before doing so.
+        /// </remarks>
+        bool UserIsGroupMember { get; }
         #endregion
 
         #region Public methods

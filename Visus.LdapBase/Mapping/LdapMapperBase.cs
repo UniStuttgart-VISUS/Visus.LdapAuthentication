@@ -32,10 +32,16 @@ namespace Visus.Ldap.Mapping {
 
         #region Public properties
         /// <inheritdoc />
+        public bool GroupIsGroupMember => (this._groupGroupMemberships != null);
+
+        /// <inheritdoc />
         public string[] RequiredGroupAttributes { get; private set; }
 
         /// <inheritdoc />
         public string[] RequiredUserAttributes { get; private set; }
+
+        /// <inheritdoc />
+        public bool UserIsGroupMember => (this._userGroupMemberships != null);
         #endregion
 
         #region Public methods
@@ -75,7 +81,14 @@ namespace Visus.Ldap.Mapping {
 
         /// <inheritdoc />
         public TUser SetGroups(TUser user, IEnumerable<TGroup> groups) {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            ArgumentNullException.ThrowIfNull(groups, nameof(groups));
+
+            if (this._userGroupMemberships != null) {
+                this._userGroupMemberships.SetValue(user, groups);
+            }
+
+            return user;
         }
         #endregion
 
@@ -156,6 +169,8 @@ namespace Visus.Ldap.Mapping {
             this._groupAccountName = AccountNameAttribute.GetProperty<TGroup>();
             this._groupDistinguishedName = DistinguishedNameAttribute
                 .GetProperty<TGroup>();
+            this._groupGroupMemberships = GroupMembershipsAttribute
+                .GetGroupMemberships<TGroup>();
             this._groupIdentity = IdentityAttribute.GetProperty<TGroup>();
             this._groupProperties = LdapAttributeAttribute.GetMap<TGroup>(
                 options.Schema);
@@ -163,6 +178,8 @@ namespace Visus.Ldap.Mapping {
             this._userAccountName = AccountNameAttribute.GetProperty<TUser>();
             this._userDistinguishedName = DistinguishedNameAttribute
                 .GetProperty<TUser>();
+            this._userGroupMemberships = GroupMembershipsAttribute
+                .GetGroupMemberships<TUser>();
             this._userIdentity = IdentityAttribute.GetProperty<TUser>();
             this._userProperties = LdapAttributeAttribute.GetMap<TUser>(
                 options.Schema);
@@ -181,10 +198,12 @@ namespace Visus.Ldap.Mapping {
         #region Protected fields
         protected readonly PropertyInfo? _groupAccountName;
         protected readonly PropertyInfo? _groupDistinguishedName;
+        protected readonly PropertyInfo? _groupGroupMemberships;
         protected readonly PropertyInfo? _groupIdentity;
         protected readonly LdapAttributeMap _groupProperties;
         protected readonly PropertyInfo? _userAccountName;
         protected readonly PropertyInfo? _userDistinguishedName;
+        protected readonly PropertyInfo? _userGroupMemberships;
         protected readonly PropertyInfo? _userIdentity;
         protected readonly LdapAttributeMap _userProperties;
         #endregion
