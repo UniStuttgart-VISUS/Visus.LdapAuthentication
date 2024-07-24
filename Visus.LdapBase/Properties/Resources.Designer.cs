@@ -88,11 +88,29 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The specified value cannot be converted into a number..
+        /// </summary>
+        internal static string ErrorInconvertibleNumber {
+            get {
+                return ResourceManager.GetString("ErrorInconvertibleNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to FILETIME values can only be converted to DateTime or DateTimeOffset..
         /// </summary>
         internal static string ErrorInvalidFileTimeTarget {
             get {
                 return ResourceManager.GetString("ErrorInvalidFileTimeTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The specified target type cannot be created from bitwise conversion of a number..
+        /// </summary>
+        internal static string ErrorInvalidNumberTarget {
+            get {
+                return ResourceManager.GetString("ErrorInvalidNumberTarget", resourceCulture);
             }
         }
         
@@ -111,6 +129,15 @@ namespace Visus.Ldap.Properties {
         internal static string ErrorInvalidSidTarget {
             get {
                 return ResourceManager.GetString("ErrorInvalidSidTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The specified target type does not have a Parse method to convert from strings..
+        /// </summary>
+        internal static string ErrorMissingNumberParse {
+            get {
+                return ResourceManager.GetString("ErrorMissingNumberParse", resourceCulture);
             }
         }
     }

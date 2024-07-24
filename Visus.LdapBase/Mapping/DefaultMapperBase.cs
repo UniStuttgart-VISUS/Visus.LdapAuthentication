@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using Visus.Ldap.Configuration;
 
 
@@ -105,6 +106,25 @@ namespace Visus.Ldap.Mapping {
             this.RequiredUserAttributes = LdapAttributeAttribute
                 .GetRequiredAttributes<LdapUser>(options.Schema).ToArray();
         }
+        #endregion
+
+        #region Protected methods
+        /// <summary>
+        /// Gets the value of the specified LDAP <paramref name="attribute"/>
+        /// from the given entry.
+        /// </summary>
+        /// <param name="entry">The entry to retrieve the attribute from.
+        /// </param>
+        /// <param name="attribute">Describes the attribute to retrieve,
+        /// in particula its name and a potenial <see cref="IValueConverter"/>
+        /// that should be used.</param>
+        /// <returns>The value of the attribute or <c>null</c> if the attribute
+        /// does not exit.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
+        /// is <c>null</c>, or if <paramref name="attribute"/> is <c>null</c>.
+        /// </exception>
+        protected abstract object? GetAttribute(TEntry entry,
+            LdapAttributeAttribute attribute);
         #endregion
     }
 }

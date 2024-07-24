@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using System.Security.Claims;
+using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
 
 

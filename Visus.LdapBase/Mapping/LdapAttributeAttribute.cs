@@ -15,7 +15,6 @@ using LdapAttributeMap = System.Collections.Generic.Dictionary<
     Visus.Ldap.Mapping.LdapAttributeAttribute>;
 
 
-
 namespace Visus.Ldap.Mapping {
 
     /// <summary>
@@ -217,38 +216,17 @@ namespace Visus.Ldap.Mapping {
         /// <returns>A <see cref="IValueConverter"/> or <c>null</c> if no
         /// converter was annotated.</returns>
         public IValueConverter? GetConverter() {
-            if (this.Converter != null) {
-                return Activator.CreateInstance(this.Converter)
+            if ((this.Converter != null) && (this._converter == null)) {
+                this._converter = Activator.CreateInstance(this.Converter)
                     as IValueConverter;
-            } else {
-                return null;
             }
+
+            return this._converter;
         }
+        #endregion
 
-#if false
-        /// <summary>
-        /// Gets the value described by the attribute from the given entry.
-        /// </summary>
-        /// <param name="entry">The entry to get the attribute from.</param>
-        /// <param name="parameter">An optional converter parameter.</param>
-        /// <returns>The value of the attribute, normally as
-        /// <see cref="string"/>.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="System.Collections.Generic.KeyNotFoundException">
-        /// If the designated attribute does not exist for the entry or if it
-        /// has not been loaded.</exception>
-        public object GetValue(SearchResultEntry entry,
-                object parameter = null) {
-            _ = entry ?? throw new ArgumentNullException(nameof(entry));
-
-            var attribute = entry.Attributes[this.Name];
-            var retval = attribute.GetValue(this, parameter);
-
-            return retval;
-        }
-#endif
-#endregion
+        #region Private fields
+        private IValueConverter? _converter;
+        #endregion
     }
 }

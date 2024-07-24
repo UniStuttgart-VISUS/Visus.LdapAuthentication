@@ -41,8 +41,9 @@ namespace Visus.Ldap.Mapping {
                     return DateTimeOffset.FromFileTime(ticks);
 
                 default:
-                    throw new ArgumentNullException(
-                        Resources.ErrorInvalidFileTimeTarget);
+                    throw new ArgumentException(
+                        Resources.ErrorInvalidFileTimeTarget,
+                        nameof(target));
             }
         }
         #endregion

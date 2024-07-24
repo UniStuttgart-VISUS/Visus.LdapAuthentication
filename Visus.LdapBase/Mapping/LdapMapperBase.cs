@@ -71,12 +71,18 @@ namespace Visus.Ldap.Mapping {
 
         /// <inheritdoc />
         public TGroup MapGroup(TEntry entry, TGroup group) {
-            throw new NotImplementedException();
+            foreach (var p in this._groupProperties) {
+                p.Key.SetValue(group, this.GetAttribute(entry, p.Value));
+            }
+            return group;
         }
 
         /// <inheritdoc />
         public TUser MapUser(TEntry entry, TUser user) {
-            throw new NotImplementedException();
+            foreach (var p in this._userProperties) {
+                p.Key.SetValue(user, this.GetAttribute(entry, p.Value));
+            }
+            return user;
         }
 
         /// <inheritdoc />
@@ -193,6 +199,25 @@ namespace Visus.Ldap.Mapping {
                 .Distinct()
                 .ToArray();
         }
+        #endregion
+
+        #region Protected methods
+        /// <summary>
+        /// Gets the value of the specified LDAP <paramref name="attribute"/>
+        /// from the given entry.
+        /// </summary>
+        /// <param name="entry">The entry to retrieve the attribute from.
+        /// </param>
+        /// <param name="attribute">Describes the attribute to retrieve,
+        /// in particula its name and a potenial <see cref="IValueConverter"/>
+        /// that should be used.</param>
+        /// <returns>The value of the attribute or <c>null</c> if the attribute
+        /// does not exit.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
+        /// is <c>null</c>, or if <paramref name="attribute"/> is <c>null</c>.
+        /// </exception>
+        protected abstract object? GetAttribute(TEntry entry,
+            LdapAttributeAttribute attribute);
         #endregion
 
         #region Protected fields

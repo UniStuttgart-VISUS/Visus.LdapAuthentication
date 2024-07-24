@@ -8,9 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Visus.Ldap.Mapping;
 
 
-namespace Visus.Ldap.Mapping {
+namespace Visus.Ldap.Claims {
 
     /// <summary>
     /// Marks a property as a claim that a
@@ -55,7 +56,7 @@ namespace Visus.Ldap.Mapping {
                 string property) {
             ArgumentNullException.ThrowIfNull(type, nameof(type));
             var prop = type.GetProperty(property);
-            return (prop != null)
+            return prop != null
                 ? GetClaims(prop)
                 : Enumerable.Empty<string>();
         }
@@ -82,7 +83,7 @@ namespace Visus.Ldap.Mapping {
         /// </summary>
         /// <param name="name">The name of the claim.</param>
         public ClaimAttribute(string name) {
-            this.Name = name ?? throw new ArgumentNullException(nameof(name));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
         }
         #endregion
 
