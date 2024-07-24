@@ -38,7 +38,7 @@ namespace Visus.DirectoryIdentity {
         /// <param name="searchService"></param>
         /// <param name="ldapOptions"></param>
         public LdapUserStore(ILdapAuthenticationService<TUser> authService,
-                ILdapSearchService<TUser> searchService,
+                ILdapSearchService<TUser, LdapGroup> searchService,
                 IOptions<LdapOptions> ldapOptions) {
             this._authService = authService
                 ?? throw new ArgumentNullException(nameof(authService));
@@ -51,7 +51,7 @@ namespace Visus.DirectoryIdentity {
 
             {
                 var prop = typeof(TUser).GetProperty(
-                    nameof(ILdapIdentityUser.AccountName));
+                    nameof(LdapIdentityUser.AccountName));
                 var att = LdapAttributeAttribute.GetLdapAttribute(prop, schema);
 
                 if (att == null) {
@@ -668,7 +668,7 @@ namespace Visus.DirectoryIdentity {
         private readonly ILdapAuthenticationService<TUser> _authService;
         private readonly string _emailAttribute;
         private readonly LdapPasswordHasher<TUser> _hasher;
-        private ILdapSearchService<TUser> _searchService;
+        private ILdapSearchService<TUser, LdapGroup> _searchService;
         #endregion
     }
 }

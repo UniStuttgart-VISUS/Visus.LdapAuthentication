@@ -13,7 +13,7 @@ namespace Visus.DirectoryIdentity {
     /// <summary>
     /// Basic implementation of <see cref="ILdapIdentityUser"/>.
     /// </summary>
-    public abstract class LdapIdentityUserBase : LdapUserBase,
+    public abstract class LdapIdentityUserBase : LdapUserBase<LdapGroup>,
             ILdapIdentityUser {
 
         /// <inheritdoc />

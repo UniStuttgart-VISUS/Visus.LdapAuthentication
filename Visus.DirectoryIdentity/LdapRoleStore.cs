@@ -181,7 +181,7 @@ namespace Visus.DirectoryIdentity {
         }
 
         #region Private fields
-        private ILdapSearchService _searchService;
+        private ILdapSearchService<LdapIdentityUser, LdapGroup> _searchService;
         #endregion
     }
 }

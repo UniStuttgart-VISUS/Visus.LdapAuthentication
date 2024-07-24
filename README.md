@@ -22,6 +22,7 @@ See [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/REA
 
 ## Differences between LdapAuthentication and DirectoryAuthentication
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
+1. Visus.DirectoryAuthentication requires .NET 8, which contains a series of bug fixes we rely on. We could not get it work on .NET 5 like Visus.LdapAuthentication.
 1. `System.DirectorySerices.Protocols` requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must be installed.
 1. `ILdapOptions` is not available. Services are configured using the `Add...(... Action<LdapOptions> options ...)` method. See  [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/README.md).  **This is a breaking change compared to version 0.10.0!** As of 1.15.0, all configuration methods besides the action-based one are considered obsolete in Visus.LdapAuthentication as well.
 1. The `LdapOptions.Timeout` property is a `System.TimeSpan` rather than a number representing milliseconds. When configuring from JSON, use a string in the format "hh:mm:ss".

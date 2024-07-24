@@ -14,7 +14,7 @@ namespace Visus.DirectoryIdentity {
     /// The interface for an LDAP user object to be used with the identity
     /// store.
     /// </summary>
-    public interface ILdapIdentityUser : ILdapUser {
+    public interface ILdapIdentityUser {
 
         /// <summary>
         /// Gets the number of failed login attempts.

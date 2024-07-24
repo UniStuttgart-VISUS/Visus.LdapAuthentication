@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visus.LdapAuthentication", "Visus.LdapAuthentication\Visus.LdapAuthentication.csproj", "{EA3F0535-EBE1-4037-A570-C08502E46A27}"
 EndProject
@@ -16,10 +16,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visus.DirectoryAuthentication", "Visus.DirectoryAuthentication\Visus.DirectoryAuthentication.csproj", "{3375D21C-6E5E-4483-A7F5-B84A5D884AD5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Visus.DirectoryAuthentication.Tests", "Visus.DirectoryAuthentication.Tests\Visus.DirectoryAuthentication.Tests.csproj", "{ED86AA3C-6140-49A3-B7AC-B67EA3677704}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.DirectoryIdentity", "Visus.DirectoryIdentity\Visus.DirectoryIdentity.csproj", "{3BF2265B-F892-4F07-9681-81311B9E450C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.DirectoryIdentity.Tests", "Visus.DirectoryIdentity.Tests\Visus.DirectoryIdentity.Tests.csproj", "{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,14 +39,6 @@ Global
 		{ED86AA3C-6140-49A3-B7AC-B67EA3677704}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED86AA3C-6140-49A3-B7AC-B67EA3677704}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED86AA3C-6140-49A3-B7AC-B67EA3677704}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3BF2265B-F892-4F07-9681-81311B9E450C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3BF2265B-F892-4F07-9681-81311B9E450C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3BF2265B-F892-4F07-9681-81311B9E450C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3BF2265B-F892-4F07-9681-81311B9E450C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{92C0A6D9-CDAB-4E0F-A5E1-ACBAC659150F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
