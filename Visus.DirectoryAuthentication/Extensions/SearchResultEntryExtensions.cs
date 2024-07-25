@@ -8,12 +8,12 @@ using System.DirectoryServices.Protocols;
 using System.Runtime.CompilerServices;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Extensions {
 
     /// <summary>
     /// Extension methods for <see cref="SearchResultEntry"/>.
     /// </summary>
-    internal static class SearchResultEntryExtensions {
+    public static class SearchResultEntryExtensions {
 
         #region Internal methods
         /// <summary>
@@ -31,9 +31,9 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>The <see cref="DirectoryAttribute"/> with the specified
         /// name.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static DirectoryAttribute GetAttribute(
-                this SearchResultEntry that, string attribute) {
-            return that?.Attributes[attribute];
+        internal static DirectoryAttribute? GetAttribute(
+                this SearchResultEntry? that, string attribute) {
+            return (that != null) ? that.Attributes[attribute] : null;
         }
         #endregion
     }

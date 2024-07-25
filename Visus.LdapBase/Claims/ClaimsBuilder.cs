@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Security.Claims;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.Ldap.Claims {
 
     /// <summary>
     /// The default implementation of

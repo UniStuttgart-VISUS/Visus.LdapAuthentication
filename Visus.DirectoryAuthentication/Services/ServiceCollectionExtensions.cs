@@ -7,9 +7,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Services;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Services {
 
     /// <summary>
     /// Extension methods for <see cref="IServiceCollection"/>.
@@ -41,9 +43,9 @@ namespace Visus.DirectoryAuthentication {
                 Action<LdapOptions> options)
                 where TUser : class, new()
                 where TGroup : class, new()
-                where TClaims: class, IClaimsBuilder<TUser, TGroup>
+                where TClaims : class, IClaimsBuilder<TUser, TGroup>
                 where TMapper : class, ILdapMapper<TUser, TGroup>
-            =>  services.AddShared<TUser, TGroup, TClaims, TMapper>(options)
+            => services.AddShared<TUser, TGroup, TClaims, TMapper>(options)
                 .AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>();
 
@@ -135,7 +137,7 @@ namespace Visus.DirectoryAuthentication {
                 Action<LdapOptions> options)
                 where TUser : class, new()
                 where TGroup : class, new()
-            =>  services.AddLdapSearchService<TUser, TGroup,
+            => services.AddLdapSearchService<TUser, TGroup,
                 ClaimsBuilder<TUser, TGroup>, LdapMapper<TUser, TGroup>>(
                 options);
 
@@ -199,7 +201,7 @@ namespace Visus.DirectoryAuthentication {
                 Action<LdapOptions> options)
                 where TUser : class, new()
                 where TGroup : class, new()
-            =>  services.AddLdapServices<TUser, TGroup,
+            => services.AddLdapServices<TUser, TGroup,
                 ClaimsBuilder<TUser, TGroup>, LdapMapper<TUser, TGroup>>(
                 options);
 

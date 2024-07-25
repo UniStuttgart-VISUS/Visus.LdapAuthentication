@@ -8,7 +8,7 @@ using System;
 using System.DirectoryServices.Protocols;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Extensions {
 
     /// <summary>
     /// Extension methods for <see cref="SearchRequest"/>.
@@ -28,11 +28,13 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>The request control for doing the paging. This can be
         /// <c>null</c> in case <paramref name="pageSize"/> is zero or
         /// negative.</returns>
-        public static PageResultRequestControl AddPaging(
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static PageResultRequestControl? AddPaging(
                 this SearchRequest that,
                 int pageSize,
                 string sortKey = "distinguishedName") {
-            _ = that ?? throw new ArgumentNullException(nameof(that));
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
 
             if (pageSize > 0) {
                 that.Controls.Add(new SortRequestControl(sortKey, false));
@@ -60,7 +62,7 @@ namespace Visus.DirectoryAuthentication {
         /// </exception>
         public static SearchRequest SetAttributes(this SearchRequest that,
                 string[] attributes) {
-            _ = that ?? throw new ArgumentNullException(nameof(that));
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
             that.Attributes.Clear();
             that.Attributes.AddRange(attributes);
             return that;

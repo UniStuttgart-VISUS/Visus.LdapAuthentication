@@ -7,7 +7,7 @@
 using System.DirectoryServices.Protocols;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Extensions {
 
     /// <summary>
     /// Extension methods for <see cref="DirectoryResponse"/> and derived
@@ -21,7 +21,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="that"></param>
         /// <returns></returns>
         public static bool Any(this SearchResponse that) {
-            return ((that != null) && (that.Entries.Count > 0));
+            return that != null && that.Entries.Count > 0;
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="that"></param>
         /// <returns></returns>
         public static bool IsSearchResponse(this DirectoryResponse that) {
-            return ((that != null) && (that is SearchResponse));
+            return that != null && that is SearchResponse;
         }
     }
 }

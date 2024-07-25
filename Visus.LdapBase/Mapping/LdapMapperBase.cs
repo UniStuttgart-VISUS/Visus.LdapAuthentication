@@ -86,11 +86,18 @@ namespace Visus.Ldap.Mapping {
         }
 
         /// <inheritdoc />
-        public TUser SetGroups(TUser user, IEnumerable<TGroup> groups) {
+        public TUser SetGroups(TUser user,
+                TGroup? primaryGroup,
+                IEnumerable<TGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
 
             if (this._userGroupMemberships != null) {
+                if (primaryGroup != null) {
+                    this._groupIsPrimary?.SetValue(primaryGroup, true);
+                    groups = groups.Append(primaryGroup);
+                }
+
                 this._userGroupMemberships.SetValue(user, groups);
             }
 
@@ -178,8 +185,8 @@ namespace Visus.Ldap.Mapping {
             this._groupGroupMemberships = GroupMembershipsAttribute
                 .GetGroupMemberships<TGroup>();
             this._groupIdentity = IdentityAttribute.GetProperty<TGroup>();
-            this._groupProperties = LdapAttributeAttribute.GetMap<TGroup>(
-                options.Schema);
+            this._groupIsPrimary = PrimaryGroupFlagAttribute
+                .GetProperty<TGroup>();
 
             this._userAccountName = AccountNameAttribute.GetProperty<TUser>();
             this._userDistinguishedName = DistinguishedNameAttribute
@@ -187,8 +194,9 @@ namespace Visus.Ldap.Mapping {
             this._userGroupMemberships = GroupMembershipsAttribute
                 .GetGroupMemberships<TUser>();
             this._userIdentity = IdentityAttribute.GetProperty<TUser>();
-            this._userProperties = LdapAttributeAttribute.GetMap<TUser>(
-                options.Schema);
+
+            (this._groupProperties, this._userProperties)
+                = LdapAttributeAttribute.GetMap<TGroup, TUser>(options.Schema);
 
             this.RequiredGroupAttributes = this._groupProperties.Values
                 .Select(a => a.Name)
@@ -212,7 +220,7 @@ namespace Visus.Ldap.Mapping {
         /// in particula its name and a potenial <see cref="IValueConverter"/>
         /// that should be used.</param>
         /// <returns>The value of the attribute or <c>null</c> if the attribute
-        /// does not exit.</returns>
+        /// does not exist.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
         /// is <c>null</c>, or if <paramref name="attribute"/> is <c>null</c>.
         /// </exception>
@@ -225,6 +233,7 @@ namespace Visus.Ldap.Mapping {
         protected readonly PropertyInfo? _groupDistinguishedName;
         protected readonly PropertyInfo? _groupGroupMemberships;
         protected readonly PropertyInfo? _groupIdentity;
+        protected readonly PropertyInfo? _groupIsPrimary;
         protected readonly LdapAttributeMap _groupProperties;
         protected readonly PropertyInfo? _userAccountName;
         protected readonly PropertyInfo? _userDistinguishedName;

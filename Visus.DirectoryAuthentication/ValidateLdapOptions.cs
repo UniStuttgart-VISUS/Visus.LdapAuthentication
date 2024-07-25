@@ -7,10 +7,10 @@
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
+using Visus.DirectoryAuthentication.Configuration;
 
 
 namespace Visus.DirectoryAuthentication {
-
 
     /// <summary>
     /// Wraps the <see cref="LdapOptionsValidator"/> in a

@@ -6,9 +6,11 @@
 
 using System;
 using System.DirectoryServices.Protocols;
+using System.Globalization;
+using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Extensions {
 
     /// <summary>
     /// Extension methods for <see cref="DirectoryAttribute"/>.
@@ -16,20 +18,30 @@ namespace Visus.DirectoryAuthentication {
     public static class LdapAttributeExtensions {
 
         /// <summary>
-        /// Gets the value of an attribute.
+        /// Gets the value of an attribute from the given
+        /// <paramref name="entry"/>, possibly converting it using the
+        /// <see cref="IValueConverter"/> configured in the
+        /// <see cref="LdapAttributeAttribute"/>.
         /// </summary>
-        /// <param name="that">An LDAP attribute.</param>
-        /// <param name="attribute">An annotation that specifies the
-        /// potential conversion of the value. It is safe to pass <c>null</c>,
-        /// in which case the string value will be returned directly.</param>
+        /// <param name="that">An LDAP attribute descriptor.</param>
+        /// <param name="entry">The entry to retrieve the attribute
+        /// from.</param>
         /// <param name="parameter">An optional parameter that will be passed
         /// to the converter from <paramref name="attribute"/>.</param>
+        /// <param name="cultureInfo">The culture possibly used to convert the
+        /// attribute value. This parameter can be <c>null</c>, in which case
+        /// <see cref="CultureInfo.CurrentCulture" /> will be used.</param>
         /// <returns>The value of the attribute.</returns>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="that"/> is <c>null</c>.</exception>
-        public static object GetValue(this DirectoryAttribute that,
-                LdapAttributeAttribute attribute, object parameter = null) {
-            return that.GetValue(attribute?.GetConverter(), parameter);
+        public static object? GetValue(this LdapAttributeAttribute that,
+                SearchResultEntry entry,
+                object? parameter = null,
+                CultureInfo? cultureInfo = null) {
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+            var attribute = entry?.GetAttribute(that.Name);
+            return attribute.GetValue(that.GetConverter(), parameter,
+                cultureInfo);
         }
 
         /// <summary>
@@ -53,17 +65,20 @@ namespace Visus.DirectoryAuthentication {
         /// in which case the string value will be returned directly.</param>
         /// <param name="parameter">An optional parameter that is passed to
         /// <paramref name="converter"/> as necessary.</param>
+        /// <param name="cultureInfo">The culture possibly used to convert the
+        /// attribute value. This parameter can be <c>null</c>, in which case
+        /// <see cref="CultureInfo.CurrentCulture" /> will be used.</param>
         /// <returns>The value of the attribute.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="that"/> is <c>null</c>.</exception>
-        public static object GetValue(this DirectoryAttribute that,
-                ILdapAttributeConverter converter,
-                object parameter = null) {
+        public static object? GetValue(this DirectoryAttribute? that,
+                IValueConverter? converter,
+                object? parameter = null,
+                CultureInfo? cultureInfo = null) {
             if (that == null) {
                 return null;
 
             } else if (converter != null) {
-                return converter.Convert(that, parameter);
+                return converter.Convert(that[0], typeof(string), parameter,
+                    cultureInfo ?? CultureInfo.CurrentCulture);
 
             } else if (that[0] is string s) {
                 return s;

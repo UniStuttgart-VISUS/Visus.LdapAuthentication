@@ -9,9 +9,11 @@ using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Threading.Tasks;
+using Visus.DirectoryAuthentication.Configuration;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Extensions
+{
 
     /// <summary>
     /// Extension methods for <see cref="LdapConnection"/>.
@@ -143,7 +145,7 @@ namespace Visus.DirectoryAuthentication {
             var reqControl = request.AddPaging(pageSize, sortingAttribute);
 
             do {
-                var results = (timeLimit > TimeSpan.Zero)
+                var results = timeLimit > TimeSpan.Zero
                     ? that.SendRequest(request, timeLimit)
                     : that.SendRequest(request);
 
@@ -156,7 +158,7 @@ namespace Visus.DirectoryAuthentication {
                 if (reqControl != null) {
                     var control = (from c in results.Controls
                                    let p = c as PageResultResponseControl
-                                   where (p != null)
+                                   where p != null
                                    select p).Single();
                     reqControl.Cookie = control.Cookie;
                 }
@@ -200,7 +202,7 @@ namespace Visus.DirectoryAuthentication {
             var retval = Enumerable.Empty<SearchResultEntry>();
 
             do {
-                var task = (timeLimit > TimeSpan.Zero)
+                var task = timeLimit > TimeSpan.Zero
                     ? that.SendRequestAsync(request, timeLimit)
                     : that.SendRequestAsync(request);
                 var results = await task.ConfigureAwait(false);
@@ -211,7 +213,7 @@ namespace Visus.DirectoryAuthentication {
 
                 var control = (from c in results.Controls
                                let p = c as PageResultResponseControl
-                               where (p != null)
+                               where p != null
                                select p).Single();
                 reqControl.Cookie = control.Cookie;
             } while (reqControl.Cookie.Length > 0);
@@ -236,7 +238,7 @@ namespace Visus.DirectoryAuthentication {
                 DirectoryRequest request,
                 LdapOptions options) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
-            return (options?.Timeout > TimeSpan.Zero)
+            return options?.Timeout > TimeSpan.Zero
                 ? that.SendRequest(request, options.Timeout)
                 : that.SendRequest(request);
         }

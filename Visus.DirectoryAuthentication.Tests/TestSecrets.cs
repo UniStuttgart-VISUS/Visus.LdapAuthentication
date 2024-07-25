@@ -5,7 +5,10 @@
 // <author>Christoph Müller</author>
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+using Visus.DirectoryAuthentication.Configuration;
+
+namespace Visus.DirectoryAuthentication.Tests
+{
 
     /// <summary>
     /// Container for secret test settings (LDAP credentials).

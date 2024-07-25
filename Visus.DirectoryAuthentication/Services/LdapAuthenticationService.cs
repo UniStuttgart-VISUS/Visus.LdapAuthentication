@@ -12,9 +12,12 @@ using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Extensions;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Services
+{
 
     /// <summary>
     /// Implements an <see cref="IAuthenticationService"/> using
@@ -52,13 +55,13 @@ namespace Visus.DirectoryAuthentication {
                 ILdapMapper<TUser, TGroup> mapper,
                 IClaimsBuilder<TUser, TGroup> claimsBuilder,
                 ILogger<LdapAuthenticationService<TUser, TGroup>> logger) {
-            this._claimsBuilder = claimsBuilder
+            _claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));
-            this._connectionService = connectionService
+            _connectionService = connectionService
                 ?? throw new ArgumentNullException(nameof(connectionService));
-            this._logger = logger
+            _logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._mapper = mapper
+            _mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
         }
         #endregion
@@ -68,10 +71,10 @@ namespace Visus.DirectoryAuthentication {
         public TUser Login(string username, string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
-            var connection = this._connectionService.Connect(
+            var connection = _connectionService.Connect(
                 username ?? string.Empty,
                 password ?? string.Empty);
-            this._logger.LogDebug("Connected to {server} with authentication "
+            _logger.LogDebug("Connected to {server} with authentication "
                     + "type {authType} and protocol version {version}. "
                     + "Retrieving user claims is next ...",
                     connection.SessionOptions.HostName,
@@ -80,20 +83,20 @@ namespace Visus.DirectoryAuthentication {
 
             var retval = new TUser();
 
-            foreach (var b in this.Options.SearchBases) {
-                var req = this.GetRequest(username, b);
-                var res = connection.SendRequest(req, this.Options);
-                if ((res is SearchResponse s) && s.Any()) {
-                    this._logger.LogDebug("Successfully retrieved {entry}.",
+            foreach (var b in Options.SearchBases) {
+                var req = GetRequest(username, b);
+                var res = connection.SendRequest(req, Options);
+                if (res is SearchResponse s && s.Any()) {
+                    _logger.LogDebug("Successfully retrieved {entry}.",
                         s.Entries[0].DistinguishedName);
-                    this._mapper.Assign(s.Entries[0], connection, retval);
-                    this._claimsBuilder.AddClaims(retval);
+                    _mapper.Assign(s.Entries[0], connection, retval);
+                    _claimsBuilder.AddClaims(retval);
                     return retval;
                 }
             }
 
             // Not found ad this point.
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            _logger.LogError(Properties.Resources.ErrorUserNotFound,
                 username);
             return null;
         }
@@ -103,33 +106,33 @@ namespace Visus.DirectoryAuthentication {
                 string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
-            var connection = this._connectionService.Connect(
+            var connection = _connectionService.Connect(
                 username ?? string.Empty,
                 password ?? string.Empty);
 
             var retval = new TUser();
 
-            foreach (var b in this.Options.SearchBases) {
-                var req = this.GetRequest(username, b);
-                var res = await connection.SendRequestAsync(req, this.Options)
+            foreach (var b in Options.SearchBases) {
+                var req = GetRequest(username, b);
+                var res = await connection.SendRequestAsync(req, Options)
                     .ConfigureAwait(false);
 
-                if ((res is SearchResponse s) && s.Any()) {
-                    this._mapper.Assign(s.Entries[0], connection, retval);
-                    this._claimsBuilder.AddClaims(retval);
+                if (res is SearchResponse s && s.Any()) {
+                    _mapper.Assign(s.Entries[0], connection, retval);
+                    _claimsBuilder.AddClaims(retval);
                     return retval;
                 }
             }
 
             // Not found ad this point.
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            _logger.LogError(Properties.Resources.ErrorUserNotFound,
                 username);
             return null;
         }
         #endregion
 
         #region Private properties
-        private LdapOptions Options => this._connectionService.Options;
+        private LdapOptions Options => _connectionService.Options;
         #endregion
 
         #region Private methods
@@ -137,13 +140,13 @@ namespace Visus.DirectoryAuthentication {
                 string searchBase,
                 SearchScope scope) {
             Debug.Assert(searchBase != null);
-            var filter = string.Format(this.Options.Mapping.UserFilter,
+            var filter = string.Format(Options.Mapping.UserFilter,
                 username);
             var retval = new SearchRequest(searchBase,
                 filter,
                 scope,
-                this._mapper.RequiredUserAttributes.ToArray());
-            this._logger.LogDebug("Requesting {filter} in search base {base} "
+                _mapper.RequiredUserAttributes.ToArray());
+            _logger.LogDebug("Requesting {filter} in search base {base} "
                     + "with search scope {scope}.",
                     filter, searchBase, scope);
             return retval;
@@ -151,7 +154,7 @@ namespace Visus.DirectoryAuthentication {
 
         private SearchRequest GetRequest(string username,
                 KeyValuePair<string, SearchScope> searchBase)
-            => this.GetRequest(username, searchBase.Key,
+            => GetRequest(username, searchBase.Key,
                 searchBase.Value);
         #endregion
 

@@ -9,7 +9,7 @@ using FluentValidation.Results;
 using Visus.DirectoryAuthentication.Properties;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Configuration {
 
     /// <summary>
     /// Validates the settings in <see cref="LdapOptions"/>.
@@ -20,22 +20,22 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         public override ValidationResult Validate(
                 ValidationContext<LdapOptions> context) {
-            this.RuleFor(context => context.Mapping)
+            RuleFor(context => context.Mapping)
                 .NotNull()
                 .SetValidator(new LdapMappingValidator());
-            this.RuleFor(context => context.Mappings).NotNull();
+            RuleFor(context => context.Mappings).NotNull();
             // Note: The content of Mapping*s* is optional, only the active
             // *Mapping* is relevant for the library to function correctly.
-            this.RuleFor(context => context.Schema).NotEmpty();
-            this.RuleFor(context => context.SearchBases).NotEmpty();
-            this.RuleForEach(context => context.SearchBases)
+            RuleFor(context => context.Schema).NotEmpty();
+            RuleFor(context => context.SearchBases).NotEmpty();
+            RuleForEach(context => context.SearchBases)
                 .Must(b => !string.IsNullOrWhiteSpace(b.Key))
                 .When(context => context.SearchBases != null)
                 .WithMessage(Resources.ErrorEmptySearchBase);
-            this.RuleFor(context => context.Servers).NotEmpty();
-            this.RuleForEach(context => context.Servers)
+            RuleFor(context => context.Servers).NotEmpty();
+            RuleForEach(context => context.Servers)
                 .NotEmpty();
-            this.RuleFor(context => context.Password)
+            RuleFor(context => context.Password)
                 .NotNull()
                 .When(o => !string.IsNullOrWhiteSpace(o.User))
                 .WithMessage(Resources.ErrorEmptyPassword);

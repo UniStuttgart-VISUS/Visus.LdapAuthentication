@@ -233,7 +233,7 @@ namespace Visus.Ldap.Configuration {
         /// <summary>
         /// Gets or sets the transport-level encryption that should be used.
         /// </summary>
-        TransportSecurity TransportSecurity {
+        public TransportSecurity TransportSecurity {
             get;
             set;
         } = TransportSecurity.None;

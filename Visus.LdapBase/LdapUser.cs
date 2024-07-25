@@ -15,7 +15,22 @@ namespace Visus.Ldap {
     /// <summary>
     /// The basic representation of a user from LDAP.
     /// </summary>
-    public sealed class LdapUser {
+    /// <remarks>
+    /// <para>This class provides mappings for LDAP attributes typically used
+    /// for authenticating users along with <see cref="Groups"/> that might be
+    /// mapped to roles.</para>
+    /// <para>If you need additional data from the directory, you can derive
+    /// from this class and add these properties with appropriate attributes.
+    /// Make sure to use the attribute-based mapper in this case as the
+    /// performance-optimised ones derived from
+    /// <see cref="DefaultMapperBase{TEntry}"/> only fill the properties
+    /// in this class, but not the ones you may have added.</para>
+    /// <para>Note to implementors: When changing this class, make sure to
+    /// reflect the hard-coded assignments of properties in
+    /// <see cref="DefaultMapperBase{TEntry}.MapUser(TEntry, LdapUser)"/>.
+    /// </para>
+    /// </remarks>
+    public class LdapUser {
 
         #region Public properties
         /// <summary>
@@ -27,7 +42,7 @@ namespace Visus.Ldap {
         [Claim(ClaimTypes.Name)]
         [Claim(ClaimTypes.WindowsAccountName)]
         [AccountName]
-        public string AccountName { get; internal set; } = null!;
+        public string AccountName { get; set; } = null!;
 
         /// <summary>
         /// Gets the Christian name of the user.
@@ -36,15 +51,7 @@ namespace Visus.Ldap {
         [LdapAttribute(Schema.IdentityManagementForUnix, "givenName")]
         [LdapAttribute(Schema.Rfc2307, "givenName")]
         [Claim(ClaimTypes.GivenName)]
-        public string? ChristianName { get; internal set; }
-
-#if false
-        /// <summary>
-        /// Gets the claims (eg group memberships) for the user.
-        /// </summary>
-        [Claims]
-        public IEnumerable<Claim> Claims { get; internal set; }
-#endif
+        public string? ChristianName { get; set; }
 
         /// <summary>
         /// Gets the display name of the user.
@@ -52,7 +59,7 @@ namespace Visus.Ldap {
         [LdapAttribute(Schema.ActiveDirectory, "displayName")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "displayName")]
         [LdapAttribute(Schema.Rfc2307, "displayName")]
-        public string? DisplayName { get; internal set; }
+        public string? DisplayName { get; set; }
 
         /// <summary>
         /// Gets the distinguished name of the user.
@@ -61,7 +68,7 @@ namespace Visus.Ldap {
         [LdapAttribute(Schema.IdentityManagementForUnix, "distinguishedName")]
         [LdapAttribute(Schema.Rfc2307, "distinguishedName")]
         [DistinguishedName]
-        public string DistinguishedName { get; internal set; } = null!;
+        public string DistinguishedName { get; set; } = null!;
 
         /// <summary>
         /// Gets the e-mail address of the user.
@@ -70,7 +77,7 @@ namespace Visus.Ldap {
         [LdapAttribute(Schema.IdentityManagementForUnix, "mail")]
         [LdapAttribute(Schema.Rfc2307, "mail")]
         [Claim(ClaimTypes.Email)]
-        public string? EmailAddress { get; internal set; }
+        public string? EmailAddress { get; set; }
 
         /// <summary>
         /// Gets the groups the user is member of.
@@ -89,7 +96,7 @@ namespace Visus.Ldap {
         [Claim(ClaimTypes.Sid)]
         [Claim(ClaimTypes.NameIdentifier)]
         [Identity]
-        public string Identity { get; internal set; } = null!;
+        public string Identity { get; set; } = null!;
 
         /// <summary>
         /// Gets the surname of the user.
@@ -98,7 +105,7 @@ namespace Visus.Ldap {
         [LdapAttribute(Schema.IdentityManagementForUnix, "sn")]
         [LdapAttribute(Schema.Rfc2307, "sn")]
         [Claim(ClaimTypes.Surname)]
-        public string? Surname { get; internal set; }
+        public string? Surname { get; set; }
         #endregion
     }
 }

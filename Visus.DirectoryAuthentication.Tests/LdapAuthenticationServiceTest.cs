@@ -8,9 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using Visus.DirectoryAuthentication.Services;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests
+{
 
     /// <summary>
     /// Tests for the <see cref="LdapAuthenticationService"/>.

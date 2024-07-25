@@ -139,6 +139,22 @@ namespace Visus.Ldap.Mapping {
         public static LdapAttributeMap GetMap<TType>(string schema)
             => GetMap(typeof(TType), schema);
 
+        /// <summary>
+        /// Gets all annodated properties of <typeparamref name="T1"> and
+        /// <typeparamref name="T2"/> that support the given schema.
+        /// </summary>
+        /// <typeparam name="T1">A type to retrieve the attributes for.
+        /// </typeparam>
+        /// <typeparam name="T2">A type to retrieve the attributes for.
+        /// </typeparam>
+        /// <param name="schema">he LDAP schema to retrieve the attribute for.
+        /// </param>
+        /// <returns>The properties and their attributes for
+        /// <typeparamref name="T1"/> and <typeparamref name="T2"/>.
+        /// </returns>
+        public static (LdapAttributeMap, LdapAttributeMap) GetMap<T1, T2>(
+                string schema)
+            => (GetMap(typeof(T1), schema), GetMap(typeof(T2), schema));
 
         /// <summary>
         /// Gets the LDAP attributes that are required to populate all

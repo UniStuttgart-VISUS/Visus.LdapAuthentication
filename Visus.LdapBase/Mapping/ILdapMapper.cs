@@ -172,13 +172,18 @@ namespace Visus.Ldap.Mapping {
         /// <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to the the groups of.</param>
+        /// <param name="primaryGroup">If non-<c>null</c>, mark the given
+        /// group as the primary one and add it along with
+        /// <paramref name="groups"/>. If <c>null</c>, this parameter
+        /// will be ignored.</param>
         /// <param name="groups">The groups <paramref name="user"/> belongs
         /// to.</param>
         /// <returns><paramref name="user"/>.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="user"/> is <c>null</c>,
         /// or if <paramref name="groups"/> is <c>null</c>.</exception>
-        TUser SetGroups(TUser user, IEnumerable<TGroup> groups);
+        TUser SetGroups(TUser user, TGroup? primaryGroup,
+            IEnumerable<TGroup> groups);
         #endregion
     }
 }

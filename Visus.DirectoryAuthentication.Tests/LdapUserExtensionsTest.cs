@@ -8,9 +8,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Visus.DirectoryAuthentication.Claims;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests
+{
 
     /// <summary>
     /// Tests <see cref="LdapUserExtensions"/>.

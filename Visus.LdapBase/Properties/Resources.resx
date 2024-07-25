@@ -141,7 +141,13 @@
   <data name="ErrorInvalidSidTarget" xml:space="preserve">
     <value>SIDs can only be converted into strings.</value>
   </data>
+  <data name="ErrorMissingLdapAnnotation" xml:space="preserve">
+    <value>The property {0} of {1} lacks the required [LdapAttribute] annotation. This indicates an internal error in the library. Please report this bug.</value>
+  </data>
   <data name="ErrorMissingNumberParse" xml:space="preserve">
     <value>The specified target type does not have a Parse method to convert from strings.</value>
+  </data>
+  <data name="ErrorMissingRequiredAttribute" xml:space="preserve">
+    <value>The LDAP entry {0} is lacking the required attribute {1}.</value>
   </data>
 </root>

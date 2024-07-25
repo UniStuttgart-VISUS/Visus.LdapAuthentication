@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.Ldap.Claims {
 
     /// <summary>
     /// The interface for a service class that creates <see cref="Claim"/>s for

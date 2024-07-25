@@ -10,9 +10,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Services;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests
+{
 
     /// <summary>
     /// Tests our extensions for <see cref="IServiceCollection"/>.

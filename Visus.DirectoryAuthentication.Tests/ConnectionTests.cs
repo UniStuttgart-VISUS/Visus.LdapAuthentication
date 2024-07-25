@@ -10,9 +10,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
 using System.Threading.Tasks;
+using Visus.DirectoryAuthentication.Extensions;
+using Visus.DirectoryAuthentication.Services;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests
+{
 
     [TestClass]
     public sealed class ConnectionTests {

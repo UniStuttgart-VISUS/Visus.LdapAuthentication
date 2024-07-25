@@ -11,10 +11,12 @@ using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Net;
 using System.Text.RegularExpressions;
+using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Properties;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.DirectoryAuthentication.Services
+{
 
     /// <summary>
     /// Generic LDAP connection service using the server and credentials
@@ -35,9 +37,9 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="logger"></param>
         public LdapConnectionService(IOptions<LdapOptions> options,
                 ILogger<LdapConnectionService> logger) {
-            this._logger = logger
+            _logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this.Options = options?.Value
+            Options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
         #endregion
@@ -51,37 +53,37 @@ namespace Visus.DirectoryAuthentication {
         /// <inheritdoc />
         public LdapConnection Connect() {
             // TODO: Add the option to connect with negotiate on Windows.
-            return this.Connect(this.Options.User, this.Options.Password);
+            return Connect(Options.User, Options.Password);
         }
 
         /// <inheritdoc />
         public LdapConnection Connect(string username, string password) {
-            var retval = this.Options.ToConnection(this._logger);
+            var retval = Options.ToConnection(_logger);
             Debug.Assert(retval != null);
 
             var rxUpn = new Regex(@".+@.+");
-            if ((username != null)
-                    && !string.IsNullOrWhiteSpace(this.Options.DefaultDomain)
+            if (username != null
+                    && !string.IsNullOrWhiteSpace(Options.DefaultDomain)
                     && !rxUpn.IsMatch(username)) {
-                username = $"{username}@{this.Options.DefaultDomain}";
+                username = $"{username}@{Options.DefaultDomain}";
             }
 
-            this._logger.LogDebug("User name to bind (possibly expanded by the "
+            _logger.LogDebug("User name to bind (possibly expanded by the "
                 + "default domain) is {username}.", username);
 
-            if ((username == null) && (password == null)) {
-                this._logger.LogInformation(Resources.InfoBindCurrent);
+            if (username == null && password == null) {
+                _logger.LogInformation(Resources.InfoBindCurrent);
                 retval.Bind();
-                this._logger.LogInformation(Resources.InfoBoundCurrent);
+                _logger.LogInformation(Resources.InfoBoundCurrent);
 
             } else {
-                this._logger.LogInformation(Resources.InfoBindingAsUser,
+                _logger.LogInformation(Resources.InfoBindingAsUser,
                     username);
                 retval.Bind(new NetworkCredential(username, password));
-                this._logger.LogInformation(Resources.InfoBoundAsUser, username);
+                _logger.LogInformation(Resources.InfoBoundAsUser, username);
             }
 
-            this._logger.LogDebug("Effectively connected to {server} after bind "
+            _logger.LogDebug("Effectively connected to {server} after bind "
                 + "as {user} using authentication type {authType} and protocol "
                 + "version {version}. Automatic binding is {autoBind}.",
                 username,

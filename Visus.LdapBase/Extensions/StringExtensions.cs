@@ -5,7 +5,7 @@
 // <author>Christoph Müller</author>
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.Ldap.Extensions {
 
     /// <summary>
     /// LDAP-related extension methods for <see cref="string"/>.
@@ -20,7 +20,7 @@ namespace Visus.DirectoryAuthentication {
         /// to pass <c>null</c>, in which case the result will be <c>null</c>.
         /// </param>
         /// <returns>The escapted filter string.</returns>
-        public static string EscapeLdapFilterExpression(this string that) {
+        public static string? EscapeLdapFilterExpression(this string? that) {
             if (that == null) {
                 return null;
             }

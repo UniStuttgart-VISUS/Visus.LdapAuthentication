@@ -12,9 +12,11 @@ using Moq;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
+using Visus.DirectoryAuthentication.Services;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests
+{
 
     /// <summary>
     /// Tests for issues from GitHub.

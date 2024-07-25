@@ -15,15 +15,10 @@ namespace Visus.DirectoryAuthentication {
     public interface ILdapConnectionService {
 
         /// <summary>
-        /// Gets the <see cref="LdapOptions"/> used by the service.
-        /// </summary>
-        LdapOptions Options { get; }
-
-        /// <summary>
         /// Connect to the preconfigured LDAP service with the preconfigured
-        /// credentials.
+        /// credentials from <see cref="Options"/>.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A new LDAP connection.</returns>
         LdapConnection Connect();
 
         /// <summary>
@@ -34,7 +29,7 @@ namespace Visus.DirectoryAuthentication {
         /// </param>
         /// <param name="password">The password used to perfom the LDAP bind.
         /// </param>
-        /// <returns></returns>
+        /// <returns>A new LDAP connection</returns>
         LdapConnection Connect(string username, string password);
     }
 }

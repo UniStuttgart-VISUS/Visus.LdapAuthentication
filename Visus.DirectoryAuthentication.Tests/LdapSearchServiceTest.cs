@@ -14,9 +14,12 @@ using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Services;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests
+{
 
     /// <summary>
     /// Tests the <see cref="LdapSearchService"/>.

@@ -133,11 +133,29 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The property {0} of {1} lacks the required [LdapAttribute] annotation. This indicates an internal error in the library. Please report this bug..
+        /// </summary>
+        internal static string ErrorMissingLdapAnnotation {
+            get {
+                return ResourceManager.GetString("ErrorMissingLdapAnnotation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified target type does not have a Parse method to convert from strings..
         /// </summary>
         internal static string ErrorMissingNumberParse {
             get {
                 return ResourceManager.GetString("ErrorMissingNumberParse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The LDAP entry {0} is lacking the required attribute {1}..
+        /// </summary>
+        internal static string ErrorMissingRequiredAttribute {
+            get {
+                return ResourceManager.GetString("ErrorMissingRequiredAttribute", resourceCulture);
             }
         }
     }
