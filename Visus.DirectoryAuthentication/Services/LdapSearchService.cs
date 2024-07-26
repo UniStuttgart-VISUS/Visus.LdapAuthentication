@@ -13,10 +13,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
+using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryAuthentication.Services
-{
+namespace Visus.DirectoryAuthentication.Services {
 
     /// <summary>
     /// Implementation of <see cref="ILdapSearchService"/> using the search
@@ -52,16 +52,13 @@ namespace Visus.DirectoryAuthentication.Services
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public LdapSearchService(ILdapConnectionService connectionService,
-                ILdapMapper<TUser, TGroup> mapper,
-                IClaimsBuilder<TUser, TGroup> claimsBuilder,
+                ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
                 ILogger<LdapSearchService<TUser, TGroup>> logger) {
-            _claimsBuilder = claimsBuilder
-                ?? throw new ArgumentNullException(nameof(claimsBuilder));
-            _connectionService = connectionService
+            this._connectionService = connectionService
                 ?? throw new ArgumentNullException(nameof(connectionService));
-            _logger = logger
+            this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            _mapper = mapper
+            this._mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
         }
         #endregion
@@ -202,17 +199,12 @@ namespace Visus.DirectoryAuthentication.Services
         /// </summary>
         private LdapConnection Connection {
             get {
-                if (_connection == null) {
-                    _connection = _connectionService.Connect();
+                if (this._connection == null) {
+                    this._connection = this._connectionService.Connect();
                 }
-                return _connection;
+                return this._connection;
             }
         }
-
-        /// <summary>
-        /// Gets the <see cref="LdapOptions"/> via the connection service.
-        /// </summary>
-        private LdapOptions Options => _connectionService.Options;
         #endregion
 
         #region Private methods
@@ -371,11 +363,10 @@ namespace Visus.DirectoryAuthentication.Services
         #endregion
 
         #region Private fields
-        private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
         private readonly ILdapConnectionService _connectionService;
-        private LdapConnection _connection;
+        private LdapConnection? _connection;
         private readonly ILogger _logger;
-        private readonly ILdapMapper<TUser, TGroup> _mapper;
+        private readonly ILdapMapper<SearchResultEntry, TUser, TGroup> _mapper;
         #endregion
     }
 }

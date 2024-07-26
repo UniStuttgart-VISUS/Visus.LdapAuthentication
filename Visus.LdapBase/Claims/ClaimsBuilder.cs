@@ -4,54 +4,90 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using Visus.Ldap.Mapping;
+using ClaimMap = System.Collections.Generic.Dictionary<
+    System.Reflection.PropertyInfo,
+    System.Collections.Generic.IEnumerable<Visus.Ldap.Claims.ClaimAttribute>>;
 
 
 namespace Visus.Ldap.Claims {
 
     /// <summary>
     /// The default implementation of
-    /// <see cref="IClaimsBuilder{TUser, TGroup}"/> which is based on attribute
-    /// annotations of the user and group objects.
+    /// <see cref="IClaimsBuilder{TEntry, TUser, TGroup}"/> which is based on
+    /// attribute annotations of the user and group objects.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TGroup"></typeparam>
-    public sealed class ClaimsBuilder<TUser, TGroup>
-            : IClaimsBuilder<TUser, TGroup> {
+    /// <typeparam name="TEntry">The type of the LDAP entry, which is dependent
+    /// on the underlying library.</typeparam>
+    /// <typeparam name="TUser">The type of the user to create the claims for.
+    /// </typeparam>
+    /// <typeparam name="TGroup">The type of the group to create the claims for.
+    /// </typeparam>
+    public abstract class ClaimsBuilder<TEntry, TUser, TGroup>
+            : IClaimsBuilder<TEntry, TUser, TGroup> {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="mapper">The mapper used to access relevant
-        /// properties of the user.</param>
-        /// <param name="logger">A logger for writing debug messages.
-        /// </param>
-        public ClaimsBuilder(ILdapMapper<TUser, TGroup> mapper,
-                ILogger<ClaimsBuilder<TUser, TGroup>> logger) {
-            this._logger = logger
-                ?? throw new ArgumentNullException(nameof(logger));
-            this._mapper = mapper
-                ?? throw new ArgumentNullException(nameof(mapper));
-
-            this._groupClaims = GetClaims<TGroup>();
-            this._userClaims = GetClaims<TUser>();
+        public ClaimsBuilder() {
+            this._groupClaims = ClaimAttribute.GetMap<TGroup>();
+            this._groupGroups = GroupMembershipsAttribute
+                .GetGroupMemberships<TGroup>();
+            this._userClaims = ClaimAttribute.GetMap<TUser>();
+            this._userGroups = GroupMembershipsAttribute
+                .GetGroupMemberships<TUser>();
         }
+        #endregion
+
+        #region Public properties
+        /// <inheritdoc />
+        public virtual bool SupportsDirectBuild => false;
         #endregion
 
         #region Public methods
         /// <inheritdoc />
-        public TUser AddClaims(TUser user)
-            => this._mapper.Assign(this.GetClaims(user), user);
+        public virtual IEnumerable<Claim> GetClaims(
+                TEntry user,
+                IEnumerable<TEntry> groups,
+                ClaimFilter? filter = null)
+            => Enumerable.Empty<Claim>();
 
         /// <inheritdoc />
-        public IEnumerable<Claim> GetClaims(TUser user) {
-            _ = user ?? throw new ArgumentNullException(nameof(user));
+        public IEnumerable<Claim> GetClaims(TGroup group,
+                ClaimFilter? filter = null) {
+            ArgumentNullException.ThrowIfNull(group, nameof(group));
+
+            // Add claims derived from properties of the group.
+            foreach (var p in this._groupClaims) {
+                var v = p.Key.GetValue(group) as string;
+
+                if (v != null) {
+                    foreach (var c in p.Value) {
+                        if (filter?.Invoke(c.Name, v) != false) {
+                            yield return new(c.Name, v);
+                        }
+                    }
+                }
+            }
+
+            // Add the claims derived from parent groups.
+            foreach (var g in this.GetGroups(group)) {
+                foreach (var c in this.GetClaims(g)) {
+                    yield return c;
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<Claim> GetClaims(TUser user,
+                ClaimFilter? filter = null) {
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
 
             // Add claims derived from properties of the user.
             foreach (var p in this._userClaims) {
@@ -59,58 +95,47 @@ namespace Visus.Ldap.Claims {
 
                 if (v != null) {
                     foreach (var c in p.Value) {
-                        this._logger.LogTrace("Adding claim {claim} with "
-                            + "value \"{value}\".", c, v);
-                        yield return new(c, v);
-                    }
-                }
-            }
-
-            // Add the claims derived from groups.
-            var groups = this._mapper.GetGroups(user);
-            foreach (var g in groups) {
-                foreach (var p in this._groupClaims) {
-                    var v = p.Key.GetValue(g) as string;
-
-                    if (v != null) {
-                        foreach (var c in p.Value) {
-                            this._logger.LogTrace("Adding claim {claim} with "
-                                + "value \"{value}\".", c, v);
-                            yield return new(c, v);
+                        if (filter?.Invoke(c.Name, v) != false) {
+                            yield return new(c.Name, v);
                         }
                     }
                 }
             }
+
+            // Add the claims derived from groups the user is member of.
+            foreach (var g in this.GetGroups(user)) {
+                foreach (var c in this.GetClaims(g)) {
+                    yield return c;
+                }
+            }
         }
         #endregion
 
-        #region Private methods
+        #region Protected methods
         /// <summary>
-        /// Gets the attribute-based claims of the given
-        /// <typeparamref name="TObject"/>.
+        /// Gets the groups that <paramref name="group"/> is member of.
         /// </summary>
-        /// <typeparam name="TObject"></typeparam>
+        /// <param name="group"></param>
         /// <returns></returns>
-        private static IDictionary<PropertyInfo, IEnumerable<string>> GetClaims<
-                TObject>() {
-            var props = from p in typeof(TObject).GetProperties()
-                        let a = p.GetCustomAttributes<ClaimAttribute>()
-                        where (p.PropertyType == typeof(string)) && (a != null) && a.Any()
-                        select new {
-                            Property = p,
-                            Claims = a.Select(aa => aa.Name)
-                        };
-            return props.ToDictionary(p => p.Property, p => p.Claims);
-        }
+        protected IEnumerable<TGroup> GetGroups(TGroup group)
+            => this._groupGroups?.GetValue(group) as IEnumerable<TGroup>
+            ?? Enumerable.Empty<TGroup>();
+
+        /// <summary>
+        /// Gets the groups that <paramref name="user"/> is member of.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        protected IEnumerable<TGroup> GetGroups(TUser user)
+            => this._userGroups?.GetValue(user) as IEnumerable<TGroup>
+            ?? Enumerable.Empty<TGroup>();
         #endregion
 
         #region Private fields
-        private readonly IDictionary<PropertyInfo, IEnumerable<string>>
-            _groupClaims;
-        private readonly ILogger _logger;
-        private ILdapMapper<TUser, TGroup> _mapper;
-        private readonly IDictionary<PropertyInfo, IEnumerable<string>> 
-            _userClaims;
+        private readonly ClaimMap _groupClaims;
+        private readonly PropertyInfo? _groupGroups;
+        private readonly ClaimMap _userClaims;
+        private readonly PropertyInfo? _userGroups;
         #endregion
     }
 }

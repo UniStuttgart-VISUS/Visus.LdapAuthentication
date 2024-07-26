@@ -11,14 +11,12 @@ using System.Security.Claims;
 using Visus.Ldap.Claims;
 
 
-namespace Visus.DirectoryAuthentication.Claims
-{
+namespace Visus.DirectoryAuthentication.Claims {
 
     /// <summary>
     /// Extension methods for LDAP user classes.
     /// </summary>
-    public static class LdapUserExtensions
-    {
+    public static class LdapUserExtensions {
 
         /// <summary>
         /// Creates a <see cref="ClaimsIdentity"/> for the given LDAP user
@@ -45,35 +43,29 @@ namespace Visus.DirectoryAuthentication.Claims
         public static ClaimsIdentity ToClaimsIdentity<TUser>(this TUser that,
                 Func<Claim, bool> filter = null,
                 string authenticationType = null)
-                where TUser : class
-        {
-            if (that == null)
-            {
+                where TUser : class {
+            if (that == null) {
                 // There is no user, so the identity is null, too.
                 return null;
             }
 
             var property = ClaimAttribute.GetClaims<TUser>();
-            if (property == null)
-            {
+            if (property == null) {
                 // If the user has no claims, we cannot create the identity.
                 return null;
             }
 
             var claims = property.GetValue(that) as IEnumerable<Claim>;
-            if (claims == null)
-            {
+            if (claims == null) {
                 // If the claims are invalid, we cannot create the identity.
                 return null;
             }
 
-            if (authenticationType == null)
-            {
+            if (authenticationType == null) {
                 authenticationType = nameof(ILdapAuthenticationService<TUser>);
             }
 
-            if (filter == null)
-            {
+            if (filter == null) {
                 // There is no filter, so return all claims.
                 return new ClaimsIdentity(claims, authenticationType);
             }
@@ -101,8 +93,7 @@ namespace Visus.DirectoryAuthentication.Claims
                 this TUser that,
                 Func<Claim, bool> filter = null,
                 string authenticationType = null)
-                where TUser : class
-        {
+                where TUser : class {
             return that != null
                 ? new ClaimsPrincipal(that.ToClaimsIdentity(filter,
                     authenticationType))

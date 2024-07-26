@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Visus.Ldap.Mapping;
+using ClaimMap = System.Collections.Generic.Dictionary<
+    System.Reflection.PropertyInfo,
+    System.Collections.Generic.IEnumerable<Visus.Ldap.Claims.ClaimAttribute>>;
 
 
 namespace Visus.Ldap.Claims {
@@ -75,6 +78,37 @@ namespace Visus.Ldap.Claims {
         public static IEnumerable<string> GetClaims<TType>(string property) {
             return GetClaims(typeof(TType), property);
         }
+
+        /// <summary>
+        /// Gets all annotated <<see cref="string" /> properties of
+        /// <paramref name="type"/> that are annotated with
+        /// <see cref="ClaimAttribute"/>.
+        /// </summary>
+        /// <param name="type">The type to retrieve the claims for.</param>
+        /// <returns>The properties and their attributes.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="type"/>
+        /// is <c>null</c>.</exception>
+        public static ClaimMap GetMap(Type type) {
+            ArgumentNullException.ThrowIfNull(type, nameof(type));
+            return (from p in type.GetProperties()
+                    let a = p.GetCustomAttributes<ClaimAttribute>()
+                    where a != null
+                    select new {
+                        Property = p,
+                        Attributes = a
+                    }).ToDictionary(v => v.Property, v => v.Attributes);
+        }
+
+        /// <summary>
+        /// Gets all annotated <<see cref="string" /> properties of
+        /// <typeparamref name="TType"/> that are annotated with
+        /// <see cref="ClaimAttribute"/>.
+        /// </summary>
+        /// <typeparam name="TType">The type to retrieve the claims for.
+        /// </typeparam>
+        /// <param name="type"></param>
+        /// <returns>The properties and their attributes.</returns>
+        public static ClaimMap GetMap<TType>() => GetMap(typeof(TType));
         #endregion
 
         #region Public constructors

@@ -94,6 +94,8 @@ namespace Visus.Ldap.Mapping {
 
             if (this._userGroupMemberships != null) {
                 if (primaryGroup != null) {
+                    // If we have a primary group, mark it as necessary and add
+                    // it to the list of groups.
                     this._groupIsPrimary?.SetValue(primaryGroup, true);
                     groups = groups.Append(primaryGroup);
                 }

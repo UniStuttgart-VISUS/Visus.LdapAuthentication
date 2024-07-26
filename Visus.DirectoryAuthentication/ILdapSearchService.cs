@@ -27,6 +27,28 @@ namespace Visus.DirectoryAuthentication {
     public interface ILdapSearchService<TUser, TGroup> where TUser : class {
 
         /// <summary>
+        /// Gets a user with the specified distinguished name.
+        /// </summary>
+        /// <param name="distinguishedName">The distinguished name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="distinguishedName"/> is <c>null</c>.</exception>
+        TUser GetUserByDistinguishedName(string distinguishedName);
+
+        /// <summary>
+        /// Asynchronously gets a user with the specified distinguished name.
+        /// </summary>
+        /// <param name="distinguishedName">The distinguished name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="distinguishedName"/> is <c>null</c>.</exception>
+        Task<TUser> GetUserByDistinguishedNameAsync(string distinguishedName);
+
+        /// <summary>
         /// Gets a user with the specified value for the identity attribute.
         /// </summary>
         /// <param name="identity">The value of the identity attribute to

@@ -140,9 +140,13 @@ namespace Visus.Ldap.Mapping {
             => GetMap(typeof(TType), schema);
 
         /// <summary>
-        /// Gets all annodated properties of <typeparamref name="T1"> and
+        /// Gets all annotated properties of <typeparamref name="T1"> and
         /// <typeparamref name="T2"/> that support the given schema.
         /// </summary>
+        /// <remarks>
+        /// This method is intended to facilitate getting the mappings of a user
+        /// and an associated group class at the same time.
+        /// </remarks>
         /// <typeparam name="T1">A type to retrieve the attributes for.
         /// </typeparam>
         /// <typeparam name="T2">A type to retrieve the attributes for.
