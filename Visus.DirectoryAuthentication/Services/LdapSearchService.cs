@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -47,19 +48,26 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <see cref="Claim"/>s from a user object.</param>
         /// <param name="logger">A logger for persisting important messages like
         /// failed search requests.</param>
-        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapSearchService(ILdapConnectionService connectionService,
+        /// <exception cref="ArgumentNullException">If <paramref name="options"/>
+        /// is <c>null</c>, or if <paramref name="connectionService"/> is
+        /// <c>null</c>, or if <paramref name="mapper"/> is <c>null</c>, or if
+        /// <paramref name="userMap"/> is <c>null</c>, or if
+        /// <paramref name="logger"/> is <c>null</c>.</exception>
+        public LdapSearchService(IOptions<LdapOptions> options,
+                ILdapConnectionService connectionService,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
+                IClaimMap<TUser> userMap,
                 ILogger<LdapSearchService<TUser, TGroup>> logger) {
             this._connectionService = connectionService
                 ?? throw new ArgumentNullException(nameof(connectionService));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
+            this._options = options?.Value
+                ?? throw new ArgumentNullException(nameof(options));
             this._mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
+            this._userMap = userMap
+                ?? throw new ArgumentNullException(nameof(userMap));
         }
         #endregion
 
@@ -72,19 +80,19 @@ namespace Visus.DirectoryAuthentication.Services {
 
         /// <inheritdoc />
         public IEnumerable<string> GetDistinguishedNames(string filter) {
-            _ = filter ?? throw new ArgumentNullException(nameof(filter));
+            ArgumentNullException.ThrowIfNull(filter, nameof(filter));
 
-            foreach (var b in Options.SearchBases) {
+            foreach (var b in this._options.SearchBases) {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
-                var entries = Connection.PagedSearch(
+                var entries = this.Connection.PagedSearch(
                     b.Key,
                     b.Value,
                     filter,
                     Array.Empty<string>(),
-                    Options.PageSize,
+                    this._options.PageSize,
                     "CN",
-                    Options.Timeout);
+                    this._options.Timeout);
 
                 foreach (var e in entries) {
                     yield return e.DistinguishedName;
@@ -95,10 +103,10 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <inheritdoc />
         public async Task<IEnumerable<string>> GetDistinguishedNamesAsync(
                 string filter) {
-            _ = filter ?? throw new ArgumentNullException(nameof(filter));
+            ArgumentNullException.ThrowIfNull(filter, nameof(filter));
             var retval = Enumerable.Empty<string>();
 
-            foreach (var b in Options.SearchBases) {
+            foreach (var b in this._options.SearchBases) {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
                 var entries = await Connection.PagedSearchAsync(
@@ -106,9 +114,9 @@ namespace Visus.DirectoryAuthentication.Services {
                     b.Value,
                     filter,
                     Array.Empty<string>(),
-                    Options.PageSize,
+                    this._options.PageSize,
                     "CN",
-                    Options.Timeout).ConfigureAwait(false);
+                    this._options.Timeout).ConfigureAwait(false);
 
                 retval = retval.Concat(
                     entries.Select(e => e.DistinguishedName));
@@ -118,13 +126,24 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <inheritdoc />
+        public TUser GetUserByDistinguishedName(string distinguishedName) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public Task<TUser> GetUserByDistinguishedNameAsync(
+                string distinguishedName) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
         public TUser GetUserByIdentity(string identity) {
             var retval = new TUser();
 
-            foreach (var b in Options.SearchBases) {
+            foreach (var b in this._options.SearchBases) {
                 var req = GetUserByIdentitySearchRequest(retval, identity,
                     b);
-                var res = Connection.SendRequest(req, Options);
+                var res = Connection.SendRequest(req, this._options);
 
                 if (res is SearchResponse s && s.Any()) {
                     _mapper.Assign(s.Entries[0], Connection, retval);
@@ -142,14 +161,14 @@ namespace Visus.DirectoryAuthentication.Services {
         public async Task<TUser> GetUserByIdentityAsync(string identity) {
             var retval = new TUser();
 
-            foreach (var b in Options.SearchBases) {
+            foreach (var b in this._options.SearchBases) {
                 var req = GetUserByIdentitySearchRequest(retval, identity,
                     b);
                 var res = await Connection.SendRequestAsync(req,
-                    Options).ConfigureAwait(false);
+                    this._options).ConfigureAwait(false);
 
                 if (res is SearchResponse s && s.Any()) {
-                    _mapper.Assign(s.Entries[0], Connection, retval);
+                    _mapper.MapUser(s.Entries[0], retval);
                     _claimsBuilder.AddClaims(retval);
                     return retval;
                 }
@@ -162,35 +181,35 @@ namespace Visus.DirectoryAuthentication.Services {
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers()
-            => GetUsers0(Options.Mapping.UsersFilter,
-                Options.SearchBases);
+            => GetUsers0(this._options.Mapping!.UsersFilter,
+                this._options.SearchBases);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync()
-            => GetUsersAsync0(Options.Mapping.UsersFilter,
-                Options.SearchBases);
+            => GetUsersAsync0(this._options.Mapping!.UsersFilter,
+                this._options.SearchBases);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string filter)
-            => GetUsers(Options.SearchBases, filter);
+            => GetUsers(this._options.SearchBases, filter);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync(string filter)
-            => GetUsersAsync(Options.SearchBases, filter);
+            => GetUsersAsync(this._options.SearchBases, filter);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
             => GetUsers0(MergeFilter(filter),
-                searchBases ?? Options.SearchBases);
+                searchBases ?? this._options.SearchBases);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync(
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
             => GetUsersAsync0(MergeFilter(filter),
-                searchBases ?? Options.SearchBases);
+                searchBases ?? this._options.SearchBases);
         #endregion
 
         #region Private Properties
@@ -217,9 +236,9 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <returns>The actual filter to be used in a query.</returns>
         private string MergeFilter(string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
-                return Options.Mapping.UsersFilter;
+                return this._options.Mapping!.UsersFilter;
             } else {
-                return $"(&{Options.Mapping.UsersFilter}{filter})";
+                return $"(&{this._options.Mapping!.UsersFilter}{filter})";
             }
         }
 
@@ -230,12 +249,10 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="isDisposing"></param>
         private void Dispose(bool isDisposing) {
             if (isDisposing) {
-                if (_connection != null) {
-                    _connection.Dispose();
-                }
+                this._connection?.Dispose();
             }
 
-            _connection = null;
+            this._connection = null;
         }
 
         /// <summary>
@@ -252,8 +269,8 @@ namespace Visus.DirectoryAuthentication.Services {
             _ = identity ?? throw new ArgumentNullException(nameof(identity));
             Debug.Assert(user != null);
 
-            var idAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
-                nameof(LdapUser.Identity), Options.Schema);
+            var idAttribute = this._userMap.IdentityAttribute;
+            Debug.Assert(idAttribute != null);
 
             return new SearchRequest(searchBase.Key,
                 $"({idAttribute.Name}={identity})",
@@ -277,8 +294,8 @@ namespace Visus.DirectoryAuthentication.Services {
 
             // Determine the property to sort the results, which is required
             // as paging LDAP results requires sorting.
-            var sortAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
-                nameof(LdapUser.Identity), Options.Schema);
+            var sortAttribute = this._userMap.IdentityAttribute;
+            Debug.Assert(sortAttribute != null);
 
             foreach (var b in searchBases) {
                 // Perform a paged search (there might be a lot of users, which
@@ -288,14 +305,16 @@ namespace Visus.DirectoryAuthentication.Services {
                 b.Value,
                 filter,
                 _mapper.RequiredUserAttributes.ToArray(),
-                Options.PageSize,
+                this._options.PageSize,
                 sortAttribute.Name,
-                Options.Timeout);
+                this._options.Timeout);
 
                 // Convert LDAP entries to user objects.
                 foreach (var e in entries) {
-                    _mapper.Assign(e, Connection, user);
-                    yield return _claimsBuilder.AddClaims(user);
+                    _mapper.MapUser(e, user);
+                    // TODO: map groups as necessary
+
+                    yield return user;
                     user = new TUser();
                 }
             }
@@ -351,14 +370,12 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <summary>
-        /// Logs that the entry with the specified Identity was not found.
+        /// Logs that the entry with the specified user identity was not found.
         /// </summary>
         /// <param name="identity"></param>
         private void LogEntryNotFound(string identity) {
-            var att = LdapAttributeAttribute.GetLdapAttribute<TUser>(
-                nameof(LdapUser.Identity), Options.Schema);
             _logger.LogError(Properties.Resources.ErrorEntryNotFound,
-                att.Name, identity);
+                this._userMap.IdentityAttribute?.Name, identity);
         }
         #endregion
 
@@ -367,6 +384,8 @@ namespace Visus.DirectoryAuthentication.Services {
         private LdapConnection? _connection;
         private readonly ILogger _logger;
         private readonly ILdapMapper<SearchResultEntry, TUser, TGroup> _mapper;
+        private readonly LdapOptions _options;
+        private readonly IClaimMap<TUser> _userMap;
         #endregion
     }
 }

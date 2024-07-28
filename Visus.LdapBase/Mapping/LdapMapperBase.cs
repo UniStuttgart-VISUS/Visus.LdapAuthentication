@@ -11,9 +11,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Properties;
-using LdapAttributeMap = System.Collections.Generic.Dictionary<
-    System.Reflection.PropertyInfo,
-    Visus.Ldap.Mapping.LdapAttributeAttribute>;
 
 
 namespace Visus.Ldap.Mapping {
@@ -32,75 +29,82 @@ namespace Visus.Ldap.Mapping {
 
         #region Public properties
         /// <inheritdoc />
-        public bool GroupIsGroupMember => (this._groupGroupMemberships != null);
+        public virtual bool GroupIsGroupMember
+            => (this._groupMap.GroupMembershipsProperty != null);
 
         /// <inheritdoc />
-        public string[] RequiredGroupAttributes { get; private set; }
+        public virtual IEnumerable<string> RequiredGroupAttributes
+            => this._groupMap.AttributeNames;
 
         /// <inheritdoc />
-        public string[] RequiredUserAttributes { get; private set; }
+        public virtual IEnumerable<string> RequiredUserAttributes
+            => this._userMap.AttributeNames;
 
         /// <inheritdoc />
-        public bool UserIsGroupMember => (this._userGroupMemberships != null);
+        public virtual bool UserIsGroupMember
+            => (this._userMap.GroupMembershipsProperty != null);
         #endregion
 
         #region Public methods
         /// <inheritdoc />
-        public string GetAccountName(TGroup group)
-            => GetProperty<string>(group, this._groupAccountName);
+        public virtual string GetAccountName(TGroup group)
+            => GetProperty<string>(group, this._groupMap.AccountNameProperty);
 
         /// <inheritdoc />
-        public string GetAccountName(TUser user)
-            => GetProperty<string>(user, this._userAccountName);
+        public virtual string GetAccountName(TUser user)
+            => GetProperty<string>(user, this._userMap.AccountNameProperty);
 
         /// <inheritdoc />
-        public string GetDistinguishedName(TGroup group)
-            => GetProperty<string>(group, this._groupDistinguishedName);
+        public virtual string GetDistinguishedName(TGroup group)
+            => GetProperty<string>(group,
+                this._groupMap.DistinguishedNameProperty);
 
         /// <inheritdoc />
-        public string GetDistinguishedName(TUser user)
-            => GetProperty<string>(user, this._userDistinguishedName);
+        public virtual string GetDistinguishedName(TUser user)
+            => GetProperty<string>(user,
+                this._userMap.DistinguishedNameProperty);
 
         /// <inheritdoc />
-        public string GetIdentity(TGroup group)
-            => GetProperty<string>(group, this._groupIdentity);
+        public virtual string GetIdentity(TGroup group)
+            => GetProperty<string>(group, this._groupMap.IdentityProperty);
 
         /// <inheritdoc />
-        public string GetIdentity(TUser user)
-            => GetProperty<string>(user, this._userIdentity);
+        public virtual string GetIdentity(TUser user)
+            => GetProperty<string>(user, this._userMap.IdentityProperty);
 
         /// <inheritdoc />
-        public TGroup MapGroup(TEntry entry, TGroup group) {
-            foreach (var p in this._groupProperties) {
+        public virtual TGroup MapGroup(TEntry entry, TGroup group) {
+            foreach (var p in this._groupMap) {
                 p.Key.SetValue(group, this.GetAttribute(entry, p.Value));
             }
             return group;
         }
 
         /// <inheritdoc />
-        public TUser MapUser(TEntry entry, TUser user) {
-            foreach (var p in this._userProperties) {
+        public virtual TUser MapUser(TEntry entry, TUser user) {
+            foreach (var p in this._userMap) {
                 p.Key.SetValue(user, this.GetAttribute(entry, p.Value));
             }
             return user;
         }
 
         /// <inheritdoc />
-        public TUser SetGroups(TUser user,
+        public virtual TUser SetGroups(TUser user,
                 TGroup? primaryGroup,
                 IEnumerable<TGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
 
-            if (this._userGroupMemberships != null) {
+            if (this._userMap.GroupMembershipsProperty != null) {
                 if (primaryGroup != null) {
                     // If we have a primary group, mark it as necessary and add
                     // it to the list of groups.
-                    this._groupIsPrimary?.SetValue(primaryGroup, true);
+                    this._groupMap.IsPrimaryGroupProperty?.SetValue(
+                        primaryGroup, true);
                     groups = groups.Append(primaryGroup);
                 }
 
-                this._userGroupMemberships.SetValue(user, groups);
+                this._userMap.GroupMembershipsProperty.SetValue(user, groups);
             }
 
             return user;
@@ -177,37 +181,19 @@ namespace Visus.Ldap.Mapping {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
+        /// <param name="options"></param>
+        /// <param name="userMap"></param>
+        /// <param name="groupMap"></param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected LdapMapperBase(LdapOptionsBase options) {
+        protected LdapMapperBase(LdapOptionsBase options,
+                ILdapAttributeMap<TUser> userMap,
+                ILdapAttributeMap<TGroup> groupMap) {
             ArgumentNullException.ThrowIfNull(options, nameof(options));
-            this._groupAccountName = AccountNameAttribute.GetProperty<TGroup>();
-            this._groupDistinguishedName = DistinguishedNameAttribute
-                .GetProperty<TGroup>();
-            this._groupGroupMemberships = GroupMembershipsAttribute
-                .GetGroupMemberships<TGroup>();
-            this._groupIdentity = IdentityAttribute.GetProperty<TGroup>();
-            this._groupIsPrimary = PrimaryGroupFlagAttribute
-                .GetProperty<TGroup>();
-
-            this._userAccountName = AccountNameAttribute.GetProperty<TUser>();
-            this._userDistinguishedName = DistinguishedNameAttribute
-                .GetProperty<TUser>();
-            this._userGroupMemberships = GroupMembershipsAttribute
-                .GetGroupMemberships<TUser>();
-            this._userIdentity = IdentityAttribute.GetProperty<TUser>();
-
-            (this._groupProperties, this._userProperties)
-                = LdapAttributeAttribute.GetMap<TGroup, TUser>(options.Schema);
-
-            this.RequiredGroupAttributes = this._groupProperties.Values
-                .Select(a => a.Name)
-                .Distinct()
-                .ToArray();
-            this.RequiredUserAttributes = this._userProperties.Values
-                .Select(a => a.Name)
-                .Distinct()
-                .ToArray();
+            this._groupMap = groupMap
+                ?? throw new ArgumentNullException(nameof(groupMap));
+            this._userMap = userMap
+                ?? throw new ArgumentNullException(nameof(userMap));
         }
         #endregion
 
@@ -231,17 +217,8 @@ namespace Visus.Ldap.Mapping {
         #endregion
 
         #region Protected fields
-        protected readonly PropertyInfo? _groupAccountName;
-        protected readonly PropertyInfo? _groupDistinguishedName;
-        protected readonly PropertyInfo? _groupGroupMemberships;
-        protected readonly PropertyInfo? _groupIdentity;
-        protected readonly PropertyInfo? _groupIsPrimary;
-        protected readonly LdapAttributeMap _groupProperties;
-        protected readonly PropertyInfo? _userAccountName;
-        protected readonly PropertyInfo? _userDistinguishedName;
-        protected readonly PropertyInfo? _userGroupMemberships;
-        protected readonly PropertyInfo? _userIdentity;
-        protected readonly LdapAttributeMap _userProperties;
+        protected readonly ILdapAttributeMap<TGroup> _groupMap;
+        protected readonly ILdapAttributeMap<TUser> _userMap;
         #endregion
     }
 }

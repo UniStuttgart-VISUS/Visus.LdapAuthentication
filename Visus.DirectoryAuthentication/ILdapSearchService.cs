@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Threading.Tasks;
@@ -24,7 +25,8 @@ namespace Visus.DirectoryAuthentication {
     /// the directory.</typeparam>
     /// <typeparam name="TGroup">The type used to represent group memberships
     /// of <typeparamref name="TUser"/>.</typeparam>
-    public interface ILdapSearchService<TUser, TGroup> where TUser : class {
+    public interface ILdapSearchService<TUser, TGroup> : IDisposable
+            where TUser : class {
 
         /// <summary>
         /// Gets a user with the specified distinguished name.

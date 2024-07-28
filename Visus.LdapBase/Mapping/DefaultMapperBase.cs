@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Reflection;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Properties;
 
@@ -18,97 +18,94 @@ namespace Visus.Ldap.Mapping {
     /// <summary>
     /// The base class for an optimised
     /// <see cref="ILdapMapper{TEntry, TUser, TGroup}"/> for the default
-    /// <see cref="LdapUser"/> and <see cref="LdapGroup"/> classes.
+    /// <see cref="LdapUser"/> and <see cref="LdapGroup"/> classes, which
+    /// accesses well-known properties of the user and group object directly
+    /// rather than relying on reflection like
+    /// <see cref="LdapMapperBase{TEntry, TUser, TGroup}"/>.
     /// </summary>
     /// <typeparam name="TEntry"></typeparam>
     public abstract class DefaultMapperBase<TEntry>
-            : ILdapMapper<TEntry, LdapUser, LdapGroup> {
+            : LdapMapperBase<TEntry, LdapUser, LdapGroup> {
 
         #region Public properties
         /// <inheritdoc />
-        public bool GroupIsGroupMember => false;
+        public override bool GroupIsGroupMember => false;
 
         /// <inheritdoc />
-        public string[] RequiredGroupAttributes { get; }
-
-        /// <inheritdoc />
-        public string[] RequiredUserAttributes { get; }
-
-        /// <inheritdoc />
-        public bool UserIsGroupMember => true;
+        public override bool UserIsGroupMember => true;
         #endregion
 
         #region Public methods
         /// <inheritdoc />
-        public string GetAccountName(LdapGroup group) {
+        public override string GetAccountName(LdapGroup group) {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
             return group.AccountName;
         }
 
         /// <inheritdoc />
-        public string GetAccountName(LdapUser user) {
+        public override string GetAccountName(LdapUser user) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return user.AccountName;
         }
 
         /// <inheritdoc />
-        public string GetDistinguishedName(LdapGroup group) {
+        public override string GetDistinguishedName(LdapGroup group) {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
             return group.DistinguishedName;
         }
 
         /// <inheritdoc />
-        public string GetDistinguishedName(LdapUser user) {
+        public override string GetDistinguishedName(LdapUser user) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return user.DistinguishedName;
         }
 
         /// <inheritdoc />
-        public string GetIdentity(LdapGroup group) {
+        public override string GetIdentity(LdapGroup group) {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
             return group.Identity;
         }
 
         /// <inheritdoc />
-        public string GetIdentity(LdapUser user) {
+        public override string GetIdentity(LdapUser user) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return user.Identity;
         }
 
         /// <inheritdoc />
-        public LdapGroup MapGroup(TEntry entry, LdapGroup group) {
+        public override LdapGroup MapGroup(TEntry entry, LdapGroup group) {
             ArgumentNullException.ThrowIfNull(entry, nameof(entry));
             ArgumentNullException.ThrowIfNull(group, nameof(group));
 
             group.AccountName = this.GetRequiredAttribute<string>(
-                entry, this._groupAccountName);
+                entry, this._groupMap.AccountNameAttribute!);
             group.DisplayName = this.GetAttribute<string>(
                 entry, this._groupDisplayName);
             group.DistinguishedName = this.GetRequiredAttribute<string>(
-                entry, this._groupDistinguishedName);
+                entry, this._groupMap.DistinguishedNameAttribute!);
             group.Identity = this.GetRequiredAttribute<string>(
-                entry, this._groupIdentity);
+                entry, this._groupMap.IdentityAttribute!);
 
             return group;
         }
 
         /// <inheritdoc />
-        public LdapUser MapUser(TEntry entry, LdapUser user) {
+        public override LdapUser MapUser(TEntry entry, LdapUser user) {
             ArgumentNullException.ThrowIfNull(entry, nameof(entry));
             ArgumentNullException.ThrowIfNull(user, nameof(user));
 
             user.AccountName = this.GetRequiredAttribute<string>(
-                entry, this._userAccountName);
+                entry, this._userMap.AccountNameAttribute!);
             user.ChristianName = this.GetAttribute<string>(
                 entry, this._userChristianName);
             user.DisplayName = this.GetAttribute<string>(
                 entry, this._userDisplayName);
             user.DistinguishedName = this.GetRequiredAttribute<string>(
-                entry, this._userDistinguishedName);
+                entry, this._userMap.DistinguishedNameAttribute!);
             user.EmailAddress = this.GetAttribute<string>(
                 entry, this._userEmailAddress);
             user.Identity = this.GetRequiredAttribute<string>(
-                entry, this._userIdentity);
+                entry, this._userMap.IdentityAttribute!);
             user.Surname = this.GetAttribute<string>(
                 entry, this._userSurname);
 
@@ -116,7 +113,7 @@ namespace Visus.Ldap.Mapping {
         }
 
         /// <inheritdoc />
-        public LdapUser SetGroups(LdapUser user,
+        public override LdapUser SetGroups(LdapUser user,
                 LdapGroup? primaryGroup,
                 IEnumerable<LdapGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
@@ -137,60 +134,32 @@ namespace Visus.Ldap.Mapping {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
+        /// <param name="options"></param>
+        /// <param name="userMap"></param>
+        /// <param name="groupMap"></param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected DefaultMapperBase(LdapOptionsBase options) {
+        protected DefaultMapperBase(LdapOptionsBase options,
+                ILdapAttributeMap<LdapUser> userMap,
+                ILdapAttributeMap<LdapGroup> groupMap)
+                : base(options, userMap, groupMap) {
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            this._groupAccountName = GetLdapAttribute<LdapGroup>(
-                nameof(LdapGroup.AccountName), options);
             this._groupDisplayName = GetLdapAttribute<LdapGroup>(
                 nameof(LdapGroup.DisplayName), options);
-            this._groupDistinguishedName= GetLdapAttribute<LdapGroup>(
-                nameof(LdapGroup.DistinguishedName), options);
-            this._groupIdentity= GetLdapAttribute<LdapGroup>(
-                nameof(LdapGroup.Identity), options);
 
-            this._userAccountName = GetLdapAttribute<LdapUser>(
-                nameof(LdapUser.AccountName), options);
             this._userChristianName = GetLdapAttribute<LdapUser>(
                 nameof(LdapUser.ChristianName), options);
             this._userDisplayName = GetLdapAttribute<LdapUser>(
                 nameof(LdapUser.DisplayName), options);
-            this._userDistinguishedName = GetLdapAttribute<LdapUser>(
-                nameof(LdapUser.DistinguishedName), options);
             this._userEmailAddress = GetLdapAttribute<LdapUser>(
                 nameof(LdapUser.EmailAddress), options);
-            this._userIdentity = GetLdapAttribute<LdapUser>(
-                nameof(LdapUser.Identity), options);
             this._userSurname= GetLdapAttribute<LdapUser>(
                 nameof(LdapUser.Surname), options);
-
-            this.RequiredGroupAttributes = LdapAttributeAttribute
-                .GetRequiredAttributes<LdapGroup>(options.Schema).ToArray();
-            this.RequiredUserAttributes = LdapAttributeAttribute
-                .GetRequiredAttributes<LdapUser>(options.Schema).ToArray();
         }
         #endregion
 
         #region Protected methods
-        /// <summary>
-        /// Gets the value of the specified LDAP <paramref name="attribute"/>
-        /// from the given entry.
-        /// </summary>
-        /// <param name="entry">The entry to retrieve the attribute from.
-        /// </param>
-        /// <param name="attribute">Describes the attribute to retrieve,
-        /// in particula its name and a potenial <see cref="IValueConverter"/>
-        /// that should be used.</param>
-        /// <returns>The value of the attribute or <c>null</c> if the attribute
-        /// does not exist.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
-        /// is <c>null</c>, or if <paramref name="attribute"/> is <c>null</c>.
-        /// </exception>
-        protected abstract object? GetAttribute(TEntry entry,
-            LdapAttributeAttribute attribute);
-
         /// <summary>
         /// Gets the value of the specified LDAP <paramref name="attribute"/> and
         /// tries to cast it to the specified type or returns <c>null</c> or the
@@ -266,8 +235,12 @@ namespace Visus.Ldap.Mapping {
             Debug.Assert(property != null);
             Debug.Assert(options != null);
 
-            var retval = LdapAttributeAttribute.GetLdapAttribute<TType>(
-                property, options.Schema);
+            var propInfo = typeof(TType).GetProperty(property)!;
+            Debug.Assert(propInfo != null);
+
+            var retval = (from a in propInfo.GetCustomAttributes<LdapAttributeAttribute>()
+                          where a.Schema == options.Schema
+                          select a).FirstOrDefault();
 
             if (retval == null) {
                 var msg = Resources.ErrorMissingLdapAnnotation;
@@ -277,20 +250,13 @@ namespace Visus.Ldap.Mapping {
 
             return retval;
         }
-
         #endregion
 
         #region Private fields
-        private readonly LdapAttributeAttribute _groupAccountName;
         private readonly LdapAttributeAttribute _groupDisplayName;
-        private readonly LdapAttributeAttribute _groupDistinguishedName;
-        private readonly LdapAttributeAttribute _groupIdentity;
-        private readonly LdapAttributeAttribute _userAccountName;
         private readonly LdapAttributeAttribute _userChristianName;
         private readonly LdapAttributeAttribute _userDisplayName;
-        private readonly LdapAttributeAttribute _userDistinguishedName;
         private readonly LdapAttributeAttribute _userEmailAddress;
-        private readonly LdapAttributeAttribute _userIdentity;
         private readonly LdapAttributeAttribute _userSurname;
         #endregion
     }

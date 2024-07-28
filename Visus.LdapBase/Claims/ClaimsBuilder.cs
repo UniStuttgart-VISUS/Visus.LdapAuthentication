@@ -10,67 +10,70 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using Visus.Ldap.Mapping;
-using ClaimMap = System.Collections.Generic.Dictionary<
-    System.Reflection.PropertyInfo,
-    System.Collections.Generic.IEnumerable<Visus.Ldap.Claims.ClaimAttribute>>;
 
 
 namespace Visus.Ldap.Claims {
 
     /// <summary>
     /// The default implementation of
-    /// <see cref="IClaimsBuilder{TEntry, TUser, TGroup}"/> which is based on
+    /// <see cref="IClaimsBuilder{TUser, TGroup}"/> which is based on
     /// attribute annotations of the user and group objects.
     /// </summary>
-    /// <typeparam name="TEntry">The type of the LDAP entry, which is dependent
-    /// on the underlying library.</typeparam>
+    /// <remarks>
+    /// <para>This builder can be used for any user and group type that uses
+    /// <see cref="ClaimAttribute"/>s to mark the properties of the user
+    /// or group as a claim. Note that for adding group-based claims to a
+    /// user automatically, the property holding the groups in the user
+    /// must be marked with <see cref="GroupMembershipsAttribute"/> and
+    /// return an <see cref="IEnumerable{T}"/> of
+    /// <typeparamref name="TGroup"/>.</para>
+    /// </remarks>
     /// <typeparam name="TUser">The type of the user to create the claims for.
     /// </typeparam>
     /// <typeparam name="TGroup">The type of the group to create the claims for.
     /// </typeparam>
-    public abstract class ClaimsBuilder<TEntry, TUser, TGroup>
-            : IClaimsBuilder<TEntry, TUser, TGroup> {
+    public sealed class ClaimsBuilder<TUser, TGroup>
+            : IClaimsBuilder<TUser, TGroup> {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        public ClaimsBuilder() {
-            this._groupClaims = ClaimAttribute.GetMap<TGroup>();
+        public ClaimsBuilder(IClaimMap userClaims,
+                ILdapAttributeMap<TUser> userMap,
+                IClaimMap groupClaims,
+                ILdapAttributeMap<TGroup> groupMap) {
+            this._groupClaims = groupClaims
+                ?? throw new ArgumentNullException(nameof(groupClaims));
             this._groupGroups = GroupMembershipsAttribute
                 .GetGroupMemberships<TGroup>();
-            this._userClaims = ClaimAttribute.GetMap<TUser>();
+            this._groupMap = groupMap
+                ?? throw new ArgumentNullException(nameof(groupMap));
+            this._userClaims = userClaims
+                ?? throw new ArgumentNullException(nameof(userClaims));
             this._userGroups = GroupMembershipsAttribute
                 .GetGroupMemberships<TUser>();
+            this._userMap = userMap
+                ?? throw new ArgumentNullException(nameof(userMap));
         }
         #endregion
 
-        #region Public properties
-        /// <inheritdoc />
-        public virtual bool SupportsDirectBuild => false;
-        #endregion
-
         #region Public methods
-        /// <inheritdoc />
-        public virtual IEnumerable<Claim> GetClaims(
-                TEntry user,
-                IEnumerable<TEntry> groups,
-                ClaimFilter? filter = null)
-            => Enumerable.Empty<Claim>();
-
         /// <inheritdoc />
         public IEnumerable<Claim> GetClaims(TGroup group,
                 ClaimFilter? filter = null) {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
 
             // Add claims derived from properties of the group.
-            foreach (var p in this._groupClaims) {
-                var v = p.Key.GetValue(group) as string;
+            foreach (var p in this._groupMap) {
+                var value = p.Key.GetValue(group) as string;
 
-                if (v != null) {
-                    foreach (var c in p.Value) {
-                        if (filter?.Invoke(c.Name, v) != false) {
-                            yield return new(c.Name, v);
+                if (value != null) {
+                    var claims = this._groupClaims[p.Value];
+
+                    foreach (var c in claims) {
+                        if (filter?.Invoke(c.Name, value) != false) {
+                            yield return new(c.Name, value);
                         }
                     }
                 }
@@ -90,13 +93,15 @@ namespace Visus.Ldap.Claims {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
 
             // Add claims derived from properties of the user.
-            foreach (var p in this._userClaims) {
-                var v = p.Key.GetValue(user) as string;
+            foreach (var p in this._userMap) {
+                var value = p.Key.GetValue(user) as string;
 
-                if (v != null) {
-                    foreach (var c in p.Value) {
-                        if (filter?.Invoke(c.Name, v) != false) {
-                            yield return new(c.Name, v);
+                if (value != null) {
+                    var claims = this._userClaims[p.Value];
+
+                    foreach (var c in claims) {
+                        if (filter?.Invoke(c.Name, value) != false) {
+                            yield return new(c.Name, value);
                         }
                     }
                 }
@@ -111,13 +116,13 @@ namespace Visus.Ldap.Claims {
         }
         #endregion
 
-        #region Protected methods
+        #region Private methods
         /// <summary>
         /// Gets the groups that <paramref name="group"/> is member of.
         /// </summary>
         /// <param name="group"></param>
         /// <returns></returns>
-        protected IEnumerable<TGroup> GetGroups(TGroup group)
+        private IEnumerable<TGroup> GetGroups(TGroup group)
             => this._groupGroups?.GetValue(group) as IEnumerable<TGroup>
             ?? Enumerable.Empty<TGroup>();
 
@@ -126,16 +131,18 @@ namespace Visus.Ldap.Claims {
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        protected IEnumerable<TGroup> GetGroups(TUser user)
+        private IEnumerable<TGroup> GetGroups(TUser user)
             => this._userGroups?.GetValue(user) as IEnumerable<TGroup>
             ?? Enumerable.Empty<TGroup>();
         #endregion
 
         #region Private fields
-        private readonly ClaimMap _groupClaims;
+        private readonly IClaimMap _groupClaims;
+        private readonly ILdapAttributeMap<TGroup> _groupMap;
         private readonly PropertyInfo? _groupGroups;
-        private readonly ClaimMap _userClaims;
+        private readonly IClaimMap _userClaims;
         private readonly PropertyInfo? _userGroups;
+        private readonly ILdapAttributeMap<TUser> _userMap;
         #endregion
     }
 }

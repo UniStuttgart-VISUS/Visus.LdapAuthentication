@@ -55,7 +55,7 @@ namespace Visus.DirectoryAuthentication.Services {
         public LdapAuthenticationService(IOptions<LdapOptions> options,
                 ILdapConnectionService connectionService,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
-                IClaimsBuilder<SearchResultEntry, TUser, TGroup> claimsBuilder,
+                IClaimsBuilder<TUser, TGroup> claimsBuilder,
                 ILogger<LdapAuthenticationService<TUser, TGroup>> logger) {
             this._claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));

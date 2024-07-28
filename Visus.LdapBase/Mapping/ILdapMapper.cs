@@ -11,7 +11,7 @@ namespace Visus.Ldap.Mapping {
 
     /// <summary>
     /// Defines the interface of a mapper for mapping LDAP entries of
-    /// type <typeparamref name="TEntry"/> to either 
+    /// type <typeparamref name="TEntry"/> to either
     /// <typeparamref name="TUser" /> or <typeparamref name="TGroup" /> and
     /// provides the LDAP services access to well-known properties.
     /// </summary>
@@ -39,13 +39,13 @@ namespace Visus.Ldap.Mapping {
         /// Gets the attributes that must be loaded for each LDAP entry in order
         /// to fill all properties of a <typeparamref name="TGroup"/> object.
         /// </summary>
-        string[] RequiredGroupAttributes { get; }
+        IEnumerable<string> RequiredGroupAttributes { get; }
 
         /// <summary>
         /// Gets the attributes that must be loaded for each LDAP entry in order
         /// to fill all properties of a <typeparamref name="TUser"/> object.
         /// </summary>
-        string[] RequiredUserAttributes { get; }
+        IEnumerable<string> RequiredUserAttributes { get; }
 
         /// <summary>
         /// Gets whether <typeparamref name="TUser"/> has a property holding the
