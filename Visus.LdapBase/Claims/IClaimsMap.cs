@@ -1,4 +1,4 @@
-﻿// <copyright file="IClaimMap.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="IClaimsMap.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -14,11 +14,11 @@ using ClaimMapping = System.Collections.Generic.KeyValuePair<
 namespace Visus.Ldap.Claims {
 
     /// <summary>
-    /// Provides mapping information for mapping the values of
+    /// Provides mapping information for directly mapping the values of
     /// <see cref="LdapAttributeAttribute"/> to <see cref="ClaimAttribute"/>s.
     /// </summary>
     /// <typeparam name="TObject">The object to be reflected.</typeparam>
-    public interface IClaimMap : IEnumerable<ClaimMapping> {
+    public interface IClaimsMap : IEnumerable<ClaimMapping> {
 
         /// <summary>
         /// Gets the distinct names of all <see cref="Attributes"/>.

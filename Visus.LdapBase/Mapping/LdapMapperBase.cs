@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -186,7 +187,7 @@ namespace Visus.Ldap.Mapping {
         /// <param name="groupMap"></param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected LdapMapperBase(LdapOptionsBase options,
+        protected LdapMapperBase(IOptions<LdapOptionsBase> options,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap) {
             ArgumentNullException.ThrowIfNull(options, nameof(options));

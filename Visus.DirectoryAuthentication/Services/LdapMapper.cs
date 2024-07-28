@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using Visus.DirectoryAuthentication.Configuration;
@@ -11,8 +12,7 @@ using Visus.DirectoryAuthentication.Extensions;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryAuthentication.Services
-{
+namespace Visus.DirectoryAuthentication.Services {
 
     /// <summary>
     /// The LDAP mapper based on attribute annotations on the
@@ -28,7 +28,12 @@ namespace Visus.DirectoryAuthentication.Services
         /// </summary>
         /// <param name="options">The LDAP options defining the mapping to
         /// be performed.</param>
-        public LdapMapper(LdapOptions options) : base(options) { }
+        /// <param name="userMap"></param>
+        /// <param name="groupMap"></param>
+        public LdapMapper(IOptions<LdapOptions> options,
+                ILdapAttributeMap<TUser> userMap,
+                ILdapAttributeMap<TGroup> groupMap)
+            : base(options, userMap, groupMap) { }
 
         /// <inheritdoc />
         protected override object? GetAttribute(SearchResultEntry entry,

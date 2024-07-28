@@ -73,11 +73,13 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 IValueConverter? converter,
                 object? parameter = null,
                 CultureInfo? cultureInfo = null) {
-            if (that == null) {
+            if ((that == null)  || (that.Count == 0)) {
                 return null;
 
             } else if (converter != null) {
-                return converter.Convert(that[0], typeof(string), parameter,
+                return converter.Convert(that[0],
+                    typeof(string),
+                    parameter,
                     cultureInfo ?? CultureInfo.CurrentCulture);
 
             } else if (that[0] is string s) {

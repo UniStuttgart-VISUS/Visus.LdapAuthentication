@@ -25,18 +25,39 @@ namespace Visus.DirectoryAuthentication {
     /// the directory.</typeparam>
     /// <typeparam name="TGroup">The type used to represent group memberships
     /// of <typeparamref name="TUser"/>.</typeparam>
-    public interface ILdapSearchService<TUser, TGroup> : IDisposable
-            where TUser : class {
+    public interface ILdapSearchService<TUser, TGroup> : IDisposable {
 
         /// <summary>
-        /// Gets a user with the specified distinguished name.
+        /// Gets a user with the specified account name.
         /// </summary>
-        /// <param name="distinguishedName">The distinguished name of the user
+        /// <param name="accountName">The account name of the user
         /// to look for.</param>
         /// <returns>The user or <c>null</c> if no user matching the query
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
-        /// <paramref name="distinguishedName"/> is <c>null</c>.</exception>
+        /// <paramref name="accountName"/> is <c>null</c>.</exception>
+        TUser GetUserByAccountName(string accountName);
+
+        /// <summary>
+        /// Asynchronously gets a user with the specified account name.
+        /// </summary>
+        /// <param name="accountName">The account name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="accountName"/> is <c>null</c>.</exception>
+        Task<TUser> GetUserByAccountNameAsync(string accountName);
+
+        /// <summary>
+        /// Gets a user with the specified distinguished name.
+        /// </summary>
+        /// <param name="accountName">The distinguished name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="accountName"/> is <c>null</c>.</exception>
         TUser GetUserByDistinguishedName(string distinguishedName);
 
         /// <summary>

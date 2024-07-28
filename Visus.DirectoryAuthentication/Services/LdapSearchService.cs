@@ -48,18 +48,17 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <see cref="Claim"/>s from a user object.</param>
         /// <param name="logger">A logger for persisting important messages like
         /// failed search requests.</param>
-        /// <exception cref="ArgumentNullException">If <paramref name="options"/>
-        /// is <c>null</c>, or if <paramref name="connectionService"/> is
-        /// <c>null</c>, or if <paramref name="mapper"/> is <c>null</c>, or if
-        /// <paramref name="userMap"/> is <c>null</c>, or if
-        /// <paramref name="logger"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If any of the parameters is
+        /// <c>null</c>.</exception>
         public LdapSearchService(IOptions<LdapOptions> options,
                 ILdapConnectionService connectionService,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
-                IClaimMap<TUser> userMap,
+                ILdapAttributeMap<TUser> userMap,
                 ILogger<LdapSearchService<TUser, TGroup>> logger) {
-            this._connectionService = connectionService
-                ?? throw new ArgumentNullException(nameof(connectionService));
+            ArgumentNullException.ThrowIfNull(connectionService,
+                nameof(connectionService));
+
+            this._connection = connectionService.Connect();
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._options = options?.Value
@@ -109,7 +108,7 @@ namespace Visus.DirectoryAuthentication.Services {
             foreach (var b in this._options.SearchBases) {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
-                var entries = await Connection.PagedSearchAsync(
+                var entries = await this.Connection.PagedSearchAsync(
                     b.Key,
                     b.Value,
                     filter,
@@ -123,6 +122,16 @@ namespace Visus.DirectoryAuthentication.Services {
             }
 
             return retval;
+        }
+
+        /// <inheritdoc />
+        public TUser GetUserByAccountName(string accountName) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public Task<TUser> GetUserByAccountNameAsync(string accountName) {
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc />
@@ -143,10 +152,10 @@ namespace Visus.DirectoryAuthentication.Services {
             foreach (var b in this._options.SearchBases) {
                 var req = GetUserByIdentitySearchRequest(retval, identity,
                     b);
-                var res = Connection.SendRequest(req, this._options);
+                var res = this.Connection.SendRequest(req, this._options);
 
                 if (res is SearchResponse s && s.Any()) {
-                    _mapper.Assign(s.Entries[0], Connection, retval);
+                    this._mapper.MapUser(s.Entries[0], retval);
                     _claimsBuilder.AddClaims(retval);
                     return retval;
                 }
@@ -164,7 +173,7 @@ namespace Visus.DirectoryAuthentication.Services {
             foreach (var b in this._options.SearchBases) {
                 var req = GetUserByIdentitySearchRequest(retval, identity,
                     b);
-                var res = await Connection.SendRequestAsync(req,
+                var res = await this.Connection.SendRequestAsync(req,
                     this._options).ConfigureAwait(false);
 
                 if (res is SearchResponse s && s.Any()) {
@@ -218,9 +227,7 @@ namespace Visus.DirectoryAuthentication.Services {
         /// </summary>
         private LdapConnection Connection {
             get {
-                if (this._connection == null) {
-                    this._connection = this._connectionService.Connect();
-                }
+                ObjectDisposedException.ThrowIf(this._connection == null, this);
                 return this._connection;
             }
         }
@@ -300,7 +307,7 @@ namespace Visus.DirectoryAuthentication.Services {
             foreach (var b in searchBases) {
                 // Perform a paged search (there might be a lot of users, which
                 // cannot be retruned at once.
-                var entries = Connection.PagedSearch(
+                var entries = this.Connection.PagedSearch(
                 b.Key,
                 b.Value,
                 filter,
@@ -380,12 +387,11 @@ namespace Visus.DirectoryAuthentication.Services {
         #endregion
 
         #region Private fields
-        private readonly ILdapConnectionService _connectionService;
         private LdapConnection? _connection;
         private readonly ILogger _logger;
         private readonly ILdapMapper<SearchResultEntry, TUser, TGroup> _mapper;
         private readonly LdapOptions _options;
-        private readonly IClaimMap<TUser> _userMap;
+        private readonly ILdapAttributeMap<TUser> _userMap;
         #endregion
     }
 }

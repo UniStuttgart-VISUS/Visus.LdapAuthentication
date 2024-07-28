@@ -45,6 +45,8 @@ namespace Visus.Ldap.Claims {
         /// <see cref="TEntry"/>.
         /// </summary>
         /// <param name="user">The entry representing the user.</param>
+        /// <param name="primaryGroup">The primary user group if any, which might
+        /// receive a special claim.</param>
         /// <param name="groups">The entries representing the groups.</param>
         /// <param name="filter">An optional <see cref="ClaimFilter"/> that
         /// decides on whether a specific claim is included in the return
@@ -56,6 +58,7 @@ namespace Visus.Ldap.Claims {
         /// <paramref name="user"/> is <c>null</c>, or if
         /// <paramref name="groups"/> is <c>null</c>.</exception>
         IEnumerable<Claim> GetClaims(TEntry user,
+            TEntry? primaryGroup,
             IEnumerable<TEntry> groups,
             ClaimFilter? filter = null);
         #endregion

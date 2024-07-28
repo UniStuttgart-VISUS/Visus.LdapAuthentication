@@ -157,8 +157,7 @@ namespace Visus.DirectoryAuthentication.Services {
         #endregion
 
         #region Private fields
-        private readonly IClaimsBuilder<SearchResultEntry, TUser, TGroup>
-            _claimsBuilder;
+        private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
         private readonly ILdapConnectionService _connectionService;
         private readonly ILogger _logger;
         private readonly LdapOptions _options;

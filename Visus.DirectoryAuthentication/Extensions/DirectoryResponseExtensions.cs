@@ -20,17 +20,15 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// </summary>
         /// <param name="that"></param>
         /// <returns></returns>
-        public static bool Any(this SearchResponse that) {
-            return that != null && that.Entries.Count > 0;
-        }
+        public static bool Any(this SearchResponse that)
+            => (that != null) && (that.Entries.Count > 0);
 
         /// <summary>
         /// Answer whether the response is a <see cref="SearchResponse"/>.
         /// </summary>
         /// <param name="that"></param>
         /// <returns></returns>
-        public static bool IsSearchResponse(this DirectoryResponse that) {
-            return that != null && that is SearchResponse;
-        }
+        public static bool IsSearchResponse(this DirectoryResponse that)
+            => (that != null) && (that is SearchResponse);
     }
 }

@@ -13,7 +13,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
     /// <summary>
     /// Extension methods for <see cref="SearchResultEntry"/>.
     /// </summary>
-    public static class SearchResultEntryExtensions {
+    internal static class SearchResultEntryExtensions {
 
         #region Internal methods
         /// <summary>

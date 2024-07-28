@@ -4,11 +4,14 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 
 
@@ -39,16 +42,19 @@ namespace Visus.Ldap.Claims {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        public ClaimsBuilder(IClaimMap userClaims,
+        public ClaimsBuilder(IClaimsMap userClaims,
                 ILdapAttributeMap<TUser> userMap,
-                IClaimMap groupClaims,
-                ILdapAttributeMap<TGroup> groupMap) {
+                IClaimsMap groupClaims,
+                ILdapAttributeMap<TGroup> groupMap,
+                IOptions<LdapOptionsBase> options) {
             this._groupClaims = groupClaims
                 ?? throw new ArgumentNullException(nameof(groupClaims));
             this._groupGroups = GroupMembershipsAttribute
                 .GetGroupMemberships<TGroup>();
             this._groupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
+            this._options = options?.Value
+                ?? throw new ArgumentNullException(nameof(options));
             this._userClaims = userClaims
                 ?? throw new ArgumentNullException(nameof(userClaims));
             this._userGroups = GroupMembershipsAttribute
@@ -74,6 +80,21 @@ namespace Visus.Ldap.Claims {
                     foreach (var c in claims) {
                         if (filter?.Invoke(c.Name, value) != false) {
                             yield return new(c.Name, value);
+                        }
+                    }
+                }
+            }
+
+            // Optionally add the primary group claim.
+            {
+                var c = this._options.PrimaryGroupIdentityClaim;
+
+                if (!string.IsNullOrEmpty(c) && this.IsPrimaryGroup(group)) {
+                    var value = this.GetIdentity(group);
+
+                    if (value != null) {
+                        if (filter?.Invoke(c, value) != false) {
+                            yield return new(c, value);
                         }
                     }
                 }
@@ -122,6 +143,7 @@ namespace Visus.Ldap.Claims {
         /// </summary>
         /// <param name="group"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IEnumerable<TGroup> GetGroups(TGroup group)
             => this._groupGroups?.GetValue(group) as IEnumerable<TGroup>
             ?? Enumerable.Empty<TGroup>();
@@ -131,16 +153,39 @@ namespace Visus.Ldap.Claims {
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IEnumerable<TGroup> GetGroups(TUser user)
             => this._userGroups?.GetValue(user) as IEnumerable<TGroup>
             ?? Enumerable.Empty<TGroup>();
+
+        /// <summary>
+        /// Gets the identity of the given <paramref name="group"/>.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private string? GetIdentity(TGroup group)
+            => (this._groupMap.IdentityProperty != null)
+            && (this._groupMap.IdentityProperty.GetValue(group) is string s)
+            ? s : null;
+
+        /// <summary>
+        /// Answer whether <paramref name="group"/> is the primary group.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsPrimaryGroup(TGroup group)
+            => (this._groupMap.IsPrimaryGroupProperty != null)
+            && (this._groupMap.IsPrimaryGroupProperty.GetValue(group) is bool b)
+            && b;
         #endregion
 
         #region Private fields
-        private readonly IClaimMap _groupClaims;
+        private readonly IClaimsMap _groupClaims;
         private readonly ILdapAttributeMap<TGroup> _groupMap;
         private readonly PropertyInfo? _groupGroups;
-        private readonly IClaimMap _userClaims;
+        private readonly LdapOptionsBase _options;
+        private readonly IClaimsMap _userClaims;
         private readonly PropertyInfo? _userGroups;
         private readonly ILdapAttributeMap<TUser> _userMap;
         #endregion

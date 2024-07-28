@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using Visus.Ldap.Mapping;
 using Schemas = Visus.Ldap.Mapping.Schema;
 
@@ -167,6 +168,15 @@ namespace Visus.Ldap.Configuration {
         /// Gets the version of the LDAP protocol to request from the server.
         /// </summary>
         public int ProtocolVersion { get; set; } = 3;
+
+        /// <summary>
+        /// Gets or sets the claim to be created for the identity of the primary
+        /// group of a user.
+        /// </summary>
+        public string? PrimaryGroupIdentityClaim {
+            get;
+            set;
+        } = ClaimTypes.PrimaryGroupSid;
 
         /// <summary>
         /// Gets the name of the LDAP schema which is used by

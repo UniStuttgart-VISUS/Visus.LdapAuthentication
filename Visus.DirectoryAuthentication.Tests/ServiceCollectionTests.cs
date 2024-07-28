@@ -10,8 +10,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
-using Visus.DirectoryAuthentication.Services;
 
 
 namespace Visus.DirectoryAuthentication.Tests
