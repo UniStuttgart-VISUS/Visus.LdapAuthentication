@@ -12,7 +12,6 @@ using Moq;
 using Novell.Directory.Ldap;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 
 namespace Visus.LdapAuthentication.Tests {
