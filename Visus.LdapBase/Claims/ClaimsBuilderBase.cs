@@ -4,7 +4,6 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,40 +34,12 @@ namespace Visus.Ldap.Claims {
     /// </typeparam>
     /// <typeparam name="TGroup">The type of the group to create the claims for.
     /// </typeparam>
-    /// <typeparam name="TOptions"></typeparam>
-    public sealed class ClaimsBuilder<TUser, TGroup, TOptions>
-            : IClaimsBuilder<TUser, TGroup>
-            where TOptions : LdapOptionsBase {
-
-        #region Public constructors
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        public ClaimsBuilder(IUserClaimsMap userClaims,
-                ILdapAttributeMap<TUser> userMap,
-                IGroupClaimsMap groupClaims,
-                ILdapAttributeMap<TGroup> groupMap,
-                IOptions<TOptions> options) {
-            this._groupClaims = groupClaims
-                ?? throw new ArgumentNullException(nameof(groupClaims));
-            this._groupGroups = GroupMembershipsAttribute
-                .GetGroupMemberships<TGroup>();
-            this._groupMap = groupMap
-                ?? throw new ArgumentNullException(nameof(groupMap));
-            this._options = options?.Value
-                ?? throw new ArgumentNullException(nameof(options));
-            this._userClaims = userClaims
-                ?? throw new ArgumentNullException(nameof(userClaims));
-            this._userGroups = GroupMembershipsAttribute
-                .GetGroupMemberships<TUser>();
-            this._userMap = userMap
-                ?? throw new ArgumentNullException(nameof(userMap));
-        }
-        #endregion
+    public abstract class ClaimsBuilderBase<TUser, TGroup>
+            : IClaimsBuilder<TUser, TGroup> {
 
         #region Public methods
         /// <inheritdoc />
-        public IEnumerable<Claim> GetClaims(TGroup group,
+        public virtual IEnumerable<Claim> GetClaims(TGroup group,
                 ClaimFilter? filter = null) {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
 
@@ -111,7 +82,7 @@ namespace Visus.Ldap.Claims {
         }
 
         /// <inheritdoc />
-        public IEnumerable<Claim> GetClaims(TUser user,
+        public virtual IEnumerable<Claim> GetClaims(TUser user,
                 ClaimFilter? filter = null) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
 
@@ -136,6 +107,32 @@ namespace Visus.Ldap.Claims {
                     yield return c;
                 }
             }
+        }
+        #endregion
+
+        #region Protected constructors
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        protected ClaimsBuilderBase(IUserClaimsMap userClaims,
+                ILdapAttributeMap<TUser> userMap,
+                IGroupClaimsMap groupClaims,
+                ILdapAttributeMap<TGroup> groupMap,
+                LdapOptionsBase options) {
+            this._groupClaims = groupClaims
+                ?? throw new ArgumentNullException(nameof(groupClaims));
+            this._groupGroups = GroupMembershipsAttribute
+                .GetGroupMemberships<TGroup>();
+            this._groupMap = groupMap
+                ?? throw new ArgumentNullException(nameof(groupMap));
+            this._options = options
+                ?? throw new ArgumentNullException(nameof(options));
+            this._userClaims = userClaims
+                ?? throw new ArgumentNullException(nameof(userClaims));
+            this._userGroups = GroupMembershipsAttribute
+                .GetGroupMemberships<TUser>();
+            this._userMap = userMap
+                ?? throw new ArgumentNullException(nameof(userMap));
         }
         #endregion
 
@@ -186,7 +183,7 @@ namespace Visus.Ldap.Claims {
         private readonly IGroupClaimsMap _groupClaims;
         private readonly ILdapAttributeMap<TGroup> _groupMap;
         private readonly PropertyInfo? _groupGroups;
-        private readonly TOptions _options;
+        private readonly LdapOptionsBase _options;
         private readonly IUserClaimsMap _userClaims;
         private readonly PropertyInfo? _userGroups;
         private readonly ILdapAttributeMap<TUser> _userMap;

@@ -43,7 +43,7 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         public static IServiceCollection AddMockLoggers(
                 this IServiceCollection services) {
-            services.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup, LdapOptions>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilderBase<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<ClaimsMapper>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapConnectionService>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
@@ -59,7 +59,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 LdapMapper<LdapUser, LdapGroup>,
                 LdapAttributeMap<LdapUser, LdapOptions>,
                 LdapAttributeMap<LdapGroup, LdapOptions>,
-                ClaimsBuilder<LdapUser, LdapGroup, LdapOptions>,
+                ClaimsBuilder<LdapUser, LdapGroup>,
                 ClaimsMapper,
                 ClaimsMap<LdapUser, LdapOptions>,
                 ClaimsMap<LdapGroup, LdapOptions>>(options);
