@@ -12,7 +12,7 @@ using Visus.DirectoryAuthentication.Extensions;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryAuthentication.Services {
+namespace Visus.DirectoryAuthentication.Mapping {
 
     /// <summary>
     /// The LDAP mapper based on attribute annotations on the
@@ -20,7 +20,7 @@ namespace Visus.DirectoryAuthentication.Services {
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
     /// <typeparam name="TGroup"></typeparam>
-    internal class LdapMapper<TUser, TGroup>
+    public sealed class LdapMapper<TUser, TGroup>
             : LdapMapperBase<SearchResultEntry, TUser, TGroup> {
 
         /// <summary>
@@ -43,5 +43,4 @@ namespace Visus.DirectoryAuthentication.Services {
             return attribute.GetValue(entry);
         }
     }
-
 }

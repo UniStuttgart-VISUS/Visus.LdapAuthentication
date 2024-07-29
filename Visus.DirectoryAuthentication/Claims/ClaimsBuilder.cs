@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.Ldap.Claims;
-using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 
 
@@ -32,25 +31,24 @@ namespace Visus.DirectoryAuthentication.Claims {
     /// </typeparam>
     /// <typeparam name="TGroup">The type of the group to create the claims for.
     /// </typeparam>
-    public class ClaimsBuilder<TUser, TGroup> : ClaimsBuilderBase<TUser, TGroup> {
-
-        /// <summary>
-        /// Initialises a new instance.
-        /// </summary>
-        /// <param name="userClaims"></param>
-        /// <param name="userMap"></param>
-        /// <param name="groupClaims"></param>
-        /// <param name="groupMap"></param>
-        /// <param name="options"></param>
-        public ClaimsBuilder(IUserClaimsMap userClaims,
-                ILdapAttributeMap<TUser> userMap,
-                IGroupClaimsMap groupClaims,
-                ILdapAttributeMap<TGroup> groupMap,
-                IOptions<LdapOptions> options)
-            : base(userClaims,
-                  userMap,
-                  groupClaims,
-                  groupMap,
-                  options?.Value!) { }
-    }
+    /// <param name="userClaims">The map from LDAP attributes to per-user claims.
+    /// </param>
+    /// <param name="userMap">The amp from LDAP attributes to properties of
+    /// <typeparamref name="TUser"/>.</param>
+    /// <param name="groupClaims">The map from LDAP attributes to per-group
+    /// claims.</param>
+    /// <param name="groupMap">The amp from LDAP attributes to properties of
+    /// <typeparamref name="TGroup"/>.</param>
+    /// <param name="options">The LDAP configuration which determines the schema
+    /// to be used.</param>
+    public class ClaimsBuilder<TUser, TGroup>(IUserClaimsMap userClaims,
+            ILdapAttributeMap<TUser> userMap,
+            IGroupClaimsMap groupClaims,
+            ILdapAttributeMap<TGroup> groupMap,
+            IOptions<LdapOptions> options)
+        : ClaimsBuilderBase<TUser, TGroup>(userClaims,
+            userMap,
+            groupClaims,
+            groupMap,
+            options?.Value!) { }
 }

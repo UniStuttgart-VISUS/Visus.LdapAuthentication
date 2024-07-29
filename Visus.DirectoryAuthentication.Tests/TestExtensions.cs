@@ -8,13 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
 using Visus.DirectoryAuthentication.Claims;
-using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Mapping;
 using Visus.DirectoryAuthentication.Services;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
-using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryAuthentication.Tests {
@@ -50,19 +48,6 @@ namespace Visus.DirectoryAuthentication.Tests {
             services.AddSingleton(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
             return services;
-        }
-
-        public static IServiceCollection AddDefaultLdapAuthentication(
-                this IServiceCollection services, Action<LdapOptions> options) {
-            return services.AddLdapAuthentication<LdapUser,
-                LdapGroup,
-                LdapMapper<LdapUser, LdapGroup>,
-                LdapAttributeMap<LdapUser, LdapOptions>,
-                LdapAttributeMap<LdapGroup, LdapOptions>,
-                ClaimsBuilder<LdapUser, LdapGroup>,
-                ClaimsMapper,
-                ClaimsMap<LdapUser, LdapOptions>,
-                ClaimsMap<LdapGroup, LdapOptions>>(options);
         }
     }
 }

@@ -21,14 +21,6 @@ namespace Visus.Ldap.Claims {
     /// <see cref="IClaimsBuilder{TUser, TGroup}"/> which is based on
     /// attribute annotations of the user and group objects.
     /// </summary>
-    /// <remarks>
-    /// <para>This builder can be used for any user and group type that uses
-    /// <see cref="ClaimAttribute"/>s to mark the properties of the user
-    /// or group as a claim. Note that for adding group-based claims to a
-    /// user automatically, the property holding the groups in the user
-    /// must be marked with <see cref="GroupMembershipsAttribute"/> and
-    /// return an <see cref="IEnumerable{T}"/> of
-    /// <typeparamref name="TGroup"/>.</para>
     /// </remarks>
     /// <typeparam name="TUser">The type of the user to create the claims for.
     /// </typeparam>

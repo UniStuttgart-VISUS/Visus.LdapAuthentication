@@ -4,14 +4,13 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Visus.Ldap.Configuration;
-using Attribute = Visus.Ldap.Mapping.LdapAttributeAttribute;
+using LdapAttribute = Visus.Ldap.Mapping.LdapAttributeAttribute;
 
 
 namespace Visus.Ldap.Claims {
@@ -21,13 +20,38 @@ namespace Visus.Ldap.Claims {
     /// <see cref="IGroupClaimsMap"/> using the claims derived from annotations
     /// in <typeparamref name="TObject"/>.
     /// </summary>
-    /// <typeparam name="TObject"></typeparam>
-    /// <typeparam name="TOptions"></typeparam>
-    internal sealed class ClaimsMap<TObject, TOptions>
-            : IUserClaimsMap, IGroupClaimsMap
-            where TOptions : LdapOptionsBase {
+    /// <typeparam name="TObject">The object used to reflect the claims from,
+    /// which must be annotated with <see cref="LdapAttribute"/> and
+    /// <see cref="ClaimAttribute"/> in order to automatically derive the claim
+    /// mapping.</typeparam>
+    public abstract class ClaimsMapBase<TObject>
+            : IUserClaimsMap, IGroupClaimsMap {
 
-        #region Public constructors
+        #region Public properties
+        /// <inheritdoc />
+        public IEnumerable<string> AttributeNames { get; }
+
+        /// <inheritdoc />
+        public IEnumerable<LdapAttribute> Attributes => this._claims.Keys;
+        #endregion
+
+        #region Public methods
+        /// <inheritdoc />
+        public IEnumerator<KeyValuePair<LdapAttribute, IEnumerable<ClaimAttribute>>>
+            GetEnumerator() => this._claims.GetEnumerator();
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() => this._claims.GetEnumerator();
+        #endregion
+
+        #region Public indexers
+        /// <inheritdoc />
+        public IEnumerable<ClaimAttribute> this[LdapAttribute attribute] {
+            get => this._claims[attribute];
+        }
+        #endregion
+
+        #region Protected constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
@@ -35,12 +59,12 @@ namespace Visus.Ldap.Claims {
         /// be used for reflecting LDAP attributes.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public ClaimsMap(IOptions<TOptions> options) {
-            ArgumentNullException.ThrowIfNull(options?.Value, nameof(options));
+        protected ClaimsMapBase(LdapOptionsBase options) {
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
             var flags = BindingFlags.Instance;
             this._claims = (from p in typeof(TObject).GetProperties(flags)
-                            let a = p.GetCustomAttributes<Attribute>()
-                                    .Where(a => a.Schema == options.Value.Schema)
+                            let a = p.GetCustomAttributes<LdapAttribute>()
+                                    .Where(a => a.Schema == options.Schema)
                                     .FirstOrDefault()
                             let c = p.GetCustomAttributes<ClaimAttribute>()
                             where (a != null) && (c != null) && c.Any()
@@ -55,32 +79,8 @@ namespace Visus.Ldap.Claims {
         }
         #endregion
 
-        #region Public properties
-        /// <inheritdoc />
-        public IEnumerable<string> AttributeNames { get; }
-
-        /// <inheritdoc />
-        public IEnumerable<Attribute> Attributes => this._claims.Keys;
-        #endregion
-
-        #region Public methods
-        /// <inheritdoc />
-        public IEnumerator<KeyValuePair<Attribute, IEnumerable<ClaimAttribute>>>
-            GetEnumerator() => this._claims.GetEnumerator();
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator() => this._claims.GetEnumerator();
-        #endregion
-
-        #region Public indexers
-        /// <inheritdoc />
-        public IEnumerable<ClaimAttribute> this[Attribute attribute] {
-            get => this._claims[attribute];
-        }
-        #endregion
-
         #region Private fields
-        private readonly Dictionary<Attribute, IEnumerable<ClaimAttribute>>
+        private readonly Dictionary<LdapAttribute, IEnumerable<ClaimAttribute>>
             _claims;
         #endregion
     }

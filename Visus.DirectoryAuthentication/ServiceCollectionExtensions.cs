@@ -8,8 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.DirectoryServices.Protocols;
+using System.Runtime.CompilerServices;
+using Visus.DirectoryAuthentication.Claims;
 using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Mapping;
 using Visus.DirectoryAuthentication.Services;
+using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
@@ -83,5 +87,45 @@ namespace Visus.DirectoryAuthentication {
                 .AddScoped<ILdapAuthenticationService<TUser>, LdapAuthenticationService<TUser, TGroup>>()
                 .AddScoped<ILdapSearchService<TUser, TGroup>, LdapSearchService<TUser, TGroup>>();
         }
+
+        /// <summary>
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> to the dependency
+        /// injection container and configures <see cref="LdapOptions"/>.
+        /// </summary>
+        /// <typeparam name="TUser"></typeparam>
+        /// <typeparam name="TGroup"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddLdapAuthentication<TUser, TGroup>(
+                this IServiceCollection services, Action<LdapOptions> options)
+                where TUser : class, new()
+                where TGroup : class, new()
+            => services.AddLdapAuthentication<TUser,
+                TGroup,
+                LdapMapper<TUser, TGroup>,
+                LdapAttributeMap<TUser>,
+                LdapAttributeMap<TGroup>,
+                ClaimsBuilder<TUser, TGroup>,
+                ClaimsMapper,
+                ClaimsMap<TUser>,
+                ClaimsMap<TGroup>>(options);
+
+        /// <summary>
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> using the default
+        /// <see cref="LdapUser"/> and <see cref="LdapGroup"/> representations
+        /// to the dependency injection container and configures
+        /// <see cref="LdapOptions"/>.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddLdapAuthentication(
+                this IServiceCollection services, Action<LdapOptions> options)
+            => services.AddLdapAuthentication<LdapUser, LdapGroup>(options);
     }
 }

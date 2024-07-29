@@ -15,7 +15,7 @@ namespace Visus.DirectoryAuthentication.Claims {
     /// <summary>
     /// Implementation of the entry to claim mapper.
     /// </summary>
-    internal sealed class ClaimsMapper
+    public sealed class ClaimsMapper
             : ClaimsMapperBase<SearchResultEntry> {
 
         #region Public constructors

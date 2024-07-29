@@ -28,7 +28,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             var configuration = TestExtensions.CreateConfiguration();
 
             var collection = new ServiceCollection().AddMockLoggers();
-            collection.AddDefaultLdapAuthentication(o => {
+            collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
                 o.Schema = Schema.ActiveDirectory;
@@ -82,7 +82,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             var configuration = TestExtensions.CreateConfiguration();
 
             var collection = new ServiceCollection().AddMockLoggers();
-            collection.AddDefaultLdapAuthentication(o => {
+            collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
                 o.Schema = Schema.ActiveDirectory;
@@ -112,7 +112,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var configuration = TestExtensions.CreateConfiguration();
 
                 var collection = new ServiceCollection().AddMockLoggers();
-                collection.AddDefaultLdapAuthentication(o => { });
+                collection.AddLdapAuthentication(o => { });
 
                 var provider = collection.BuildServiceProvider();
 
