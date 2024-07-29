@@ -93,8 +93,8 @@ namespace Visus.Ldap.Mapping {
         public virtual TUser SetGroups(TUser user, IEnumerable<TGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
-            // TODO: DISTINCT?
-            this._userMap.GroupMembershipsProperty?.SetValue(user, groups);
+            this._userMap.GroupMembershipsProperty?.SetValue(user,
+                groups.Distinct());
             return user;
         }
 

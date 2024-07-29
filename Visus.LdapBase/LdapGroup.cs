@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Diagnostics;
 using System.Security.Claims;
 using Visus.Ldap.Claims;
@@ -34,8 +35,9 @@ namespace Visus.Ldap {
     /// </para>
     /// </remarks>
     [DebuggerDisplay("{AccountName}")]
-    public class LdapGroup {
+    public class LdapGroup : IEquatable<LdapGroup> {
 
+        #region Public properties
         /// <summary>
         /// Gets the unique name of the group.
         /// </summary>
@@ -79,5 +81,52 @@ namespace Visus.Ldap {
         /// </summary>
         [PrimaryGroupFlag]
         public bool IsPrimary { get; set; }
+        #endregion
+
+        #region Public methods
+        /// <inheritdoc />
+        public bool Equals(LdapGroup? other) {
+            if (other == null) {
+                return false;
+            }
+
+            if (this.Identity != null) {
+                return this.Identity.Equals(other.Identity);
+            }
+
+            if (this.DistinguishedName != null) {
+                return this.DistinguishedName.Equals(other.DistinguishedName);
+            }
+
+            if (this.AccountName != null) {
+                return this.AccountName.Equals(other.AccountName);
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
+            => this.Equals(obj as LdapGroup);
+
+        /// <inheritdoc />
+        public override int GetHashCode() {
+            var typeHash = this.GetType().GetHashCode();
+
+            if (this.Identity != null) {
+                return this.Identity.GetHashCode() ^ (typeHash >> 1);
+            }
+
+            if (this.DistinguishedName != null) {
+                return this.DistinguishedName.GetHashCode() ^ (typeHash >> 3);
+            }
+
+            if (this.AccountName != null) {
+                return this.AccountName.GetHashCode() ^ (typeHash >> 2);
+            }
+
+            return base.GetHashCode();
+        }
+        #endregion
     }
 }

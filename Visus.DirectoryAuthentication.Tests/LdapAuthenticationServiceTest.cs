@@ -41,7 +41,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(user);
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Any());
-                Assert.IsTrue(user.Groups.Count() > 1);
+                Assert.IsTrue(user.Groups.Count() >= 1);
                 Assert.IsFalse(user.Groups.Any(g => g == null));
             }
         }
