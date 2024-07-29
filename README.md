@@ -22,10 +22,11 @@ See [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/REA
 
 ## What's new in version 2?
 Version 2.0 is a major rewrite of both libraries, which removes previously deprecated functionality and unifies large parts of the implementation between LdapAuthentication and DirectoryAuthentication. The most important changes to the 1.x branch are:
-1. Besides the user object, which can be mapped to LDAP properties, a new group object allows for customising the mapping of group attributes as well.
-1. All APIs are now strongly typed with the user and/or the group object. The user interface has been removed.
-1. The mapping between LDAP entries and user/group objects is now performed by special mapper classes, which can be replaced by users of the library. The default implementation of the mappers use reflection and the attribute annotations from previous versions of the library to support arbitrary user/group classes.
-1. Similar to the interface for users, the interface for options has been removed.
+1. Besides the user object, which can be mapped to LDAP properties, a new group object allows for customising the mapping of group attributes as well. The indirection via the `ILdapUser` interface has been removed.
+1. The mapping between LDAP entries and user/group objects is now performed by a `LdapMapper` class, which can be replaced by users of the library. The default implementation of the mappers use reflection and the attribute annotations from previous versions of the library to support arbitrary user/group classes.
+1. Similarly, the mapping between the user/group properties and `Claim`s is now performed by a `ClaimsBuilder` class, which can be replaced by users of the library. The default implementation of the builders use reflection and the attribute annotations form previous versions of the library to support arbitrary user/group classes.
+1. In addition to creating `Claim`s from user/group object, the library now supports direct creation of `Claim`s from LDAP entries via the `ClaimsMapper`, which can be replaced by users of the library. The default implementation of the mappers use reflection and the attribute annotations from previous versions of the library to support arbitrary user/group classes.
+1. The `ILdapOptions` interface has been removed. All configuration is performed via the common options pattern and the `LdapOptions` class.
 1. The library now provides a validator for the `LdapOptions`, which is exectued on startup, thus preventing the application from starting if obvious configuration errors have been made.
 1. All services including the LDAP configuration are now injected by `AddLdapAuthentication`. Extension methods for adding subsets of the services have been removed.
 
