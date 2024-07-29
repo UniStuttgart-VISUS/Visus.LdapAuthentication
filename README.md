@@ -33,7 +33,7 @@ Version 2.0 is a major rewrite of both libraries, which removes previously depre
 1. Both libraries now use a `System.TimeSpan` for configuring timeouts. When configuring from JSON, use a string in the format "hh:mm:ss".
 1. Both libraries now support and require an array of search bases.
 1. Both libraries now support and require an array of servers.
-1. Both libraries now support `async/await`.
+1. Both libraries now support `async`/`await`.
 
 ## Differences between LdapAuthentication and DirectoryAuthentication
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Runtime.CompilerServices;
 using Visus.DirectoryAuthentication.Claims;
 using Visus.DirectoryAuthentication.Mapping;
 using Visus.DirectoryAuthentication.Services;
@@ -25,7 +26,7 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         public static IConfigurationRoot CreateConfiguration() {
             return new ConfigurationBuilder()
-                .AddTestSecrets()
+                .AddUserSecrets<TestSecrets>()
                 .Build();
         }
 
@@ -34,10 +35,6 @@ namespace Visus.DirectoryAuthentication.Tests {
             CreateConfiguration().Bind(retval);
             return retval;
         }
-
-        public static IConfigurationBuilder AddTestSecrets(
-                this IConfigurationBuilder builder)
-            => builder.AddUserSecrets<TestSecrets>();
 
         public static IServiceCollection AddMockLoggers(
                 this IServiceCollection services) {

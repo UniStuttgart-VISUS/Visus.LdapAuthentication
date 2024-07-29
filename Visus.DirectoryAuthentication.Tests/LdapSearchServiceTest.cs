@@ -41,6 +41,8 @@ namespace Visus.DirectoryAuthentication.Tests {
 
                 var user = service.GetUserByAccountName(this._testSecrets.ExistingUserAccount);
                 Assert.IsNotNull(user, "Search returned existing user account.");
+                Assert.IsNotNull(user.Groups);
+                Assert.IsTrue(user.Groups.Count() > 1);
             }
         }
 

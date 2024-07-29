@@ -84,7 +84,7 @@ namespace Visus.Ldap.Mapping {
             this._options = options
                 ?? throw new ArgumentNullException(nameof(options));
 
-            var flags = BindingFlags.Instance;
+            var flags = BindingFlags.Public | BindingFlags.Instance;
             this._properties = (from p in typeof(TObject).GetProperties(flags)
                                 let a = p.GetCustomAttributes<LdapAttributeAttribute>()
                                     .Where(a => a.Schema == this._options.Schema)

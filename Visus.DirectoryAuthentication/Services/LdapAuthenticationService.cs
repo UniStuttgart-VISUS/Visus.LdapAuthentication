@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
 using Visus.Ldap.Claims;
+using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
 
 
@@ -140,12 +141,17 @@ namespace Visus.DirectoryAuthentication.Services {
                 string searchBase,
                 SearchScope scope) {
             Debug.Assert(searchBase != null);
-            var filter = string.Format(this._options.Mapping!.UserFilter,
-                username);
+            Debug.Assert(this._options.Mapping != null);
+            var filter = string.Format(this._options.Mapping.UserFilter,
+                username.EscapeLdapFilterExpression());
+            var attributes = this._mapper.RequiredUserAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
             var retval = new SearchRequest(searchBase,
                 filter,
                 scope,
-                this._mapper.RequiredUserAttributes.ToArray());
+                attributes);
             this._logger.LogDebug("Requesting {filter} in search base {base} "
                     + "with search scope {scope}.",
                     filter, searchBase, scope);

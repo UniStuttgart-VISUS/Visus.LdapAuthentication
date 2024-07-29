@@ -11,11 +11,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
 using Visus.DirectoryAuthentication.Properties;
+using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
 
 
@@ -69,6 +69,12 @@ namespace Visus.DirectoryAuthentication.Services {
                 ?? throw new ArgumentNullException(nameof(mapper));
             this._userMap = userMap
                 ?? throw new ArgumentNullException(nameof(userMap));
+
+            Debug.Assert(this._options.Mapping != null);
+            this._userAttributes = this._mapper.RequiredUserAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
         }
         #endregion
 
@@ -128,39 +134,45 @@ namespace Visus.DirectoryAuthentication.Services {
 
         /// <inheritdoc />
         public TUser? GetUserByAccountName(string accountName) {
-            var filter = $"({this._userMap.AccountNameAttribute}={accountName})";
-            return this.GetUser0(filter);
+            var att = this._userMap.AccountNameAttribute?.Name;
+            var filter = accountName.EscapeLdapFilterExpression();
+            return this.GetUser0($"({att}={filter})");
         }
 
         /// <inheritdoc />
         public Task<TUser?> GetUserByAccountNameAsync(string accountName) {
-            var filter = $"({this._userMap.AccountNameAttribute}={accountName})";
-            return this.GetUserAsync0(filter);
+            var att = this._userMap.AccountNameAttribute?.Name;
+            var filter = accountName.EscapeLdapFilterExpression();
+            return this.GetUserAsync0($"({att}={filter})");
         }
 
         /// <inheritdoc />
         public TUser? GetUserByDistinguishedName(string distinguishedName) {
-            var filter = $"({this._userMap.DistinguishedNameAttribute}={distinguishedName})";
-            return this.GetUser0(filter);
+            var att = this._userMap.DistinguishedNameAttribute!.Name;
+            var filter = $"({att}={distinguishedName})";
+            return this.GetUser0($"({att}={filter})");
         }
 
         /// <inheritdoc />
         public Task<TUser?> GetUserByDistinguishedNameAsync(
                 string distinguishedName) {
-            var filter = $"({this._userMap.DistinguishedNameAttribute}={distinguishedName})";
-            return this.GetUserAsync0(filter);
+            var att = this._userMap.DistinguishedNameAttribute!.Name;
+            var filter = distinguishedName.EscapeLdapFilterExpression();
+            return this.GetUserAsync0($"({att}={filter})");
         }
 
         /// <inheritdoc />
         public TUser? GetUserByIdentity(string identity) {
-            var filter = $"({this._userMap.IdentityAttribute}={identity})";
-            return this.GetUser0(filter);
+            var att = this._userMap.IdentityAttribute!.Name;
+            var filter = identity.EscapeLdapFilterExpression();
+            return this.GetUser0($"({att}={filter})");
         }
 
         /// <inheritdoc />
         public Task<TUser?> GetUserByIdentityAsync(string identity) {
-            var filter = $"({this._userMap.IdentityAttribute}={identity})";
-            return this.GetUserAsync0(filter);
+            var att = this._userMap.IdentityAttribute!.Name;
+            var filter = identity.EscapeLdapFilterExpression();
+            return this.GetUserAsync0($"({att}={filter})");
         }
 
         /// <inheritdoc />
@@ -250,17 +262,21 @@ namespace Visus.DirectoryAuthentication.Services {
                 var req = new SearchRequest(b.Key,
                     filter,
                     b.Value,
-                    this._mapper.RequiredUserAttributes.ToArray());
+                    this._userAttributes);
                 var res = this.Connection.SendRequest(req, this._options);
 
                 if (res is SearchResponse s) {
-                    var entry = s.Entries.Cast<SearchResultEntry>().Single();
-                    this._mapper.MapUser(entry, retval);
-                    var groups = entry.GetGroups(this.Connection,
-                        this._mapper,
-                        this._options);
-                    this._mapper.SetGroups(retval, groups);
-                    return retval;
+                    var entry = s.Entries
+                        .Cast<SearchResultEntry>()
+                        .SingleOrDefault();
+                    if (entry != null) {
+                        this._mapper.MapUser(entry, retval);
+                        var groups = entry.GetGroups(this.Connection,
+                            this._mapper,
+                            this._options);
+                        this._mapper.SetGroups(retval, groups);
+                        return retval;
+                    }
                 }
             }
 
@@ -282,18 +298,22 @@ namespace Visus.DirectoryAuthentication.Services {
                 var req = new SearchRequest(b.Key,
                     filter,
                     b.Value,
-                    this._mapper.RequiredUserAttributes.ToArray());
+                    this._userAttributes);
                 var res = await this.Connection.SendRequestAsync(req, this._options)
                     .ConfigureAwait(false);
 
                 if (res is SearchResponse s) {
-                    var entry = s.Entries.Cast<SearchResultEntry>().Single();
-                    this._mapper.MapUser(entry, retval);
-                    var groups = entry.GetGroups(this.Connection,
-                        this._mapper,
-                        this._options);
-                    this._mapper.SetGroups(retval, groups);
-                    return retval;
+                    var entry = s.Entries
+                        .Cast<SearchResultEntry>()
+                        .SingleOrDefault();
+                    if (entry != null) {
+                        this._mapper.MapUser(entry, retval);
+                        var groups = entry.GetGroups(this.Connection,
+                            this._mapper,
+                            this._options);
+                        this._mapper.SetGroups(retval, groups);
+                        return retval;
+                    }
                 }
             }
 
@@ -314,6 +334,8 @@ namespace Visus.DirectoryAuthentication.Services {
                 IDictionary<string, SearchScope> searchBases) {
             Debug.Assert(filter != null);
             Debug.Assert(searchBases != null);
+            Debug.Assert(this._options != null);
+            Debug.Assert(this._options.Mapping != null);
             var user = new TUser();
 
             // Determine the property to sort the results, which is required
@@ -328,7 +350,7 @@ namespace Visus.DirectoryAuthentication.Services {
                     b.Key,
                     b.Value,
                     filter,
-                    this._mapper.RequiredUserAttributes.ToArray(),
+                    this._userAttributes,
                     this._options.PageSize,
                     sortAttribute.Name,
                     this._options.Timeout);
@@ -401,6 +423,7 @@ namespace Visus.DirectoryAuthentication.Services {
         private readonly ILogger _logger;
         private readonly ILdapMapper<SearchResultEntry, TUser, TGroup> _mapper;
         private readonly LdapOptions _options;
+        private readonly string[] _userAttributes;
         private readonly ILdapAttributeMap<TUser> _userMap;
         #endregion
     }

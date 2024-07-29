@@ -97,13 +97,16 @@ namespace Visus.DirectoryAuthentication.Extensions {
             ArgumentNullException.ThrowIfNull(connection, nameof(connection));
             var groups = that.GetGroups(options);
 
-            Debug.Assert(options != null);
-            Debug.Assert(options.Mapping != null);
-            groups = groups.Select(
-                g => $"({options.Mapping.DistinguishedNameAttribute}={g})");
-
-            return connection.Search($"(|{string.Join("", groups)})",
-                attributes, options);
+            if (groups.Any()) {
+                Debug.Assert(options != null);
+                Debug.Assert(options.Mapping != null);
+                groups = groups.Select(
+                    g => $"({options.Mapping.DistinguishedNameAttribute}={g})");
+                return connection.Search($"(|{string.Join("", groups)})",
+                    attributes, options);
+            } else {
+                return Enumerable.Empty<SearchResultEntry>();
+            }
         }
 
         /// <summary>
@@ -235,7 +238,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
             }
 
             var sid = that.GetAttribute(mapping.PrimaryGroupIdentityAttribute)
-                .GetValue(null)?.ToString();
+                .GetValue(SidConverter)?.ToString();
             var endOfDomain = sid?.LastIndexOf('-') ?? -1;
             if (endOfDomain > 0) {
                 // If we have an actual SID for the user, assume an AD and
@@ -325,6 +328,10 @@ namespace Visus.DirectoryAuthentication.Extensions {
 
             return retval.FirstOrDefault();
         }
+        #endregion
+
+        #region Private constants
+        private static readonly SidConverter SidConverter = new();
         #endregion
     }
 }

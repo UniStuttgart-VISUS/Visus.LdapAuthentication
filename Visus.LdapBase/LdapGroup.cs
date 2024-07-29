@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System.Diagnostics;
 using System.Security.Claims;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
@@ -32,6 +33,7 @@ namespace Visus.Ldap {
     /// <see cref="DefaultMapperBase{TEntry}.MapGroup(TEntry, LdapGroup)"/>.
     /// </para>
     /// </remarks>
+    [DebuggerDisplay("{AccountName}")]
     public class LdapGroup {
 
         /// <summary>

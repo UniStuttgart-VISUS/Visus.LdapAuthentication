@@ -7,6 +7,7 @@
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Visus.Ldap.Configuration;
@@ -92,6 +93,7 @@ namespace Visus.Ldap.Mapping {
         public virtual TUser SetGroups(TUser user, IEnumerable<TGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
+            // TODO: DISTINCT?
             this._userMap.GroupMembershipsProperty?.SetValue(user, groups);
             return user;
         }

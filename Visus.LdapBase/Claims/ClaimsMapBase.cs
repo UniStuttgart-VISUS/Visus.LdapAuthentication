@@ -61,7 +61,7 @@ namespace Visus.Ldap.Claims {
         /// <paramref name="options"/> is <c>null</c>.</exception>
         protected ClaimsMapBase(LdapOptionsBase options) {
             ArgumentNullException.ThrowIfNull(options, nameof(options));
-            var flags = BindingFlags.Instance;
+            var flags = BindingFlags.Public | BindingFlags.Instance;
             this._claims = (from p in typeof(TObject).GetProperties(flags)
                             let a = p.GetCustomAttributes<LdapAttribute>()
                                     .Where(a => a.Schema == options.Schema)

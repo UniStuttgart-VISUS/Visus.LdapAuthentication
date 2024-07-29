@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Claims;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
@@ -30,6 +31,7 @@ namespace Visus.Ldap {
     /// <see cref="DefaultMapperBase{TEntry}.MapUser(TEntry, LdapUser)"/>.
     /// </para>
     /// </remarks>
+    [DebuggerDisplay("{AccountName}")]
     public class LdapUser {
 
         #region Public properties
