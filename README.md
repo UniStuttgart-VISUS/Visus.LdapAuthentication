@@ -20,6 +20,15 @@ See [README for Visus.LdapAuthentication](Visus.LdapAuthentication/README.md).
 ## Visus.DirectoryAuthentication
 See [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/README.md)
 
+## What's new in version 2?
+Version 2.0 is a major rewrite of both libraries, which removes previously deprecated functionality and unifies large parts of the implementation between LdapAuthentication and DirectoryAuthentication. The most important changes to the 1.x branch are:
+1. Besides the user object, which can be mapped to LDAP properties, a new group object allows for customising the mapping of group attributes as well.
+1. All APIs are now strongly typed with the user and/or the group object. The user interface has been removed.
+1. The mapping between LDAP entries and user/group objects is now performed by special mapper classes, which can be replaced by users of the library. The default implementation of the mappers use reflection and the attribute annotations from previous versions of the library to support arbitrary user/group classes.
+1. Similar to the interface for users, the interface for options has been removed.
+1. The library now provides a validator for the `LdapOptions`, which is exectued on startup, thus preventing the application from starting if obvious configuration errors have been made.
+1. All services including the LDAP configuration are now injected by `AddLdapAuthentication`. Extension methods for adding subsets of the services have been removed.
+
 ## Differences between LdapAuthentication and DirectoryAuthentication
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
 1. Visus.DirectoryAuthentication requires .NET 8, which contains a series of bug fixes we rely on. We could not get it work on .NET 5 like Visus.LdapAuthentication.
