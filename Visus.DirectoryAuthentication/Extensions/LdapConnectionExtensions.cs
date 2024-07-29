@@ -8,12 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 
 
-namespace Visus.DirectoryAuthentication.Extensions
-{
+namespace Visus.DirectoryAuthentication.Extensions {
 
     /// <summary>
     /// Extension methods for <see cref="LdapConnection"/>.
@@ -32,7 +32,7 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <param name="that">The connection to get the default naming context
         /// of.</param>
         /// <returns>The default naming context or <c>null</c>.</returns>
-        public static string GetDefaultNamingContext(this LdapConnection that) {
+        public static string? GetDefaultNamingContext(this LdapConnection that) {
             var rootDse = that.GetRootDse("defaultNamingContext");
             return rootDse?.GetAttribute("defaultNamingContext")?.ToString();
         }
@@ -49,7 +49,7 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <param name="that">The connection to get the default naming context
         /// of.</param>
         /// <returns>The default naming context or <c>null</c>.</returns>
-        public static async Task<string> GetDefaultNamingContextAsync(
+        public static async Task<string?> GetDefaultNamingContextAsync(
                 this LdapConnection that) {
             var rootDse = await that.GetRootDseAsync("defaultNamingContext");
             return rootDse?.GetAttribute("defaultNamingContext")?.ToString();
@@ -65,7 +65,7 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <returns>The entry of the root DSE.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>.</exception>
-        public static SearchResultEntry GetRootDse(this LdapConnection that,
+        public static SearchResultEntry? GetRootDse(this LdapConnection that,
                 params string[] attributes) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
             // Cf. https://stackoverflow.com/questions/19696753/how-does-one-connect-to-the-rootdse-and-or-retrieve-highestcommittedusn-with-sys
@@ -92,7 +92,7 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <returns>The entry of the root DSE.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>.</exception>
-        public static async Task<SearchResultEntry> GetRootDseAsync(
+        public static async Task<SearchResultEntry?> GetRootDseAsync(
                 this LdapConnection that,
                 params string[] attributes) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
@@ -211,12 +211,88 @@ namespace Visus.DirectoryAuthentication.Extensions
                     retval = retval.Concat(s.Entries.Cast<SearchResultEntry>());
                 }
 
-                var control = (from c in results.Controls
-                               let p = c as PageResultResponseControl
-                               where p != null
-                               select p).Single();
-                reqControl.Cookie = control.Cookie;
-            } while (reqControl.Cookie.Length > 0);
+                if (reqControl != null) {
+                    var control = (from c in results.Controls
+                                   let p = c as PageResultResponseControl
+                                   where p != null
+                                   select p).Single();
+                    reqControl.Cookie = control.Cookie;
+                }
+            } while (reqControl?.Cookie?.Length > 0);
+
+            return retval;
+        }
+
+        /// <summary>
+        /// Performs the specified LDAP search on all search bases configured
+        /// in <paramref name="options"/>.
+        /// </summary>
+        /// <param name="that">The connection used to perform the search.
+        /// </param>
+        /// <param name="filter">The LDAP filter selecting the entries to return.
+        /// </param>
+        /// <param name="attributes">The attributes to load for each entry.
+        /// </param>
+        /// <param name="options">The LDAP options, which determine the search
+        /// bases and the search scope.</param>
+        /// <returns>The entries matching the specified
+        /// <paramref name="filter"/> in the scopes defined in
+        /// <paramref name="options"/>.</returns>
+        public static IEnumerable<SearchResultEntry> Search(
+                this LdapConnection that,
+                string filter,
+                string[] attributes,
+                LdapOptions options) {
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+            foreach (var b in options.SearchBases) {
+                var req = new SearchRequest(b.Key, filter, b.Value, attributes);
+                var res = that.SendRequest(req, options);
+
+                if (res is SearchResponse r) {
+                    var entries = r.Entries.OfType<SearchResultEntry>();
+                    foreach (var e in entries) {
+                        yield return e;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs the specified LDAP search on all search bases configured
+        /// in <paramref name="options"/>.
+        /// </summary>
+        /// <param name="that">The connection used to perform the search.
+        /// </param>
+        /// <param name="filter">The LDAP filter selecting the entries to return.
+        /// </param>
+        /// <param name="attributes">The attributes to load for each entry.
+        /// </param>
+        /// <param name="options">The LDAP options, which determine the search
+        /// bases and the search scope.</param>
+        /// <returns>The entries matching the specified
+        /// <paramref name="filter"/> in the scopes defined in
+        /// <paramref name="options"/>.</returns>
+        public static async Task<IEnumerable<SearchResultEntry>> SearchAsync(
+                this LdapConnection that,
+                string filter,
+                string[] attributes,
+                LdapOptions options) {
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+            var retval = new List<SearchResultEntry>();
+
+            foreach (var b in options.SearchBases) {
+                var req = new SearchRequest(b.Key, filter, b.Value, attributes);
+                var res = await that.SendRequestAsync(req, options);
+
+                if (res is SearchResponse r) {
+                    var entries = r.Entries.OfType<SearchResultEntry>();
+                    retval.AddRange(entries);
+                }
+            }
 
             return retval;
         }
@@ -233,6 +309,7 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <returns>The response from the server.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DirectoryResponse SendRequest(
                 this LdapConnection that,
                 DirectoryRequest request,
@@ -255,9 +332,11 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>.</exception>
         public static Task<DirectoryResponse> SendRequestAsync(
-                this LdapConnection that, DirectoryRequest request,
+                this LdapConnection that,
+                DirectoryRequest request,
                 TimeSpan timeout) {
-            _ = that ?? throw new ArgumentNullException(nameof(that));
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+
             return Task.Factory.FromAsync(
                (cb, ctx) => {
                    if (timeout > TimeSpan.Zero) {
@@ -283,8 +362,10 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <returns>The response from the server.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task<DirectoryResponse> SendRequestAsync(
-                this LdapConnection that, DirectoryRequest request,
+                this LdapConnection that,
+                DirectoryRequest request,
                 LdapOptions options) {
             return that.SendRequestAsync(request,
                 options?.Timeout ?? TimeSpan.Zero);
@@ -300,8 +381,10 @@ namespace Visus.DirectoryAuthentication.Extensions
         /// <returns>The response from the server.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task<DirectoryResponse> SendRequestAsync(
-                this LdapConnection that, DirectoryRequest request) {
+                this LdapConnection that,
+                DirectoryRequest request) {
             return that.SendRequestAsync(request, TimeSpan.Zero);
         }
     }

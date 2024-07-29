@@ -16,6 +16,19 @@ namespace Visus.Ldap.Mapping {
     public sealed class LdapMapping {
 
         /// <summary>
+        /// Gets or sets the name of the attribute holding the distinguished
+        /// name, which is used to obtain group objects.
+        /// </summary>
+        /// <remarks>
+        /// This property defaults to &quot;distinguishedName&quot; and there
+        /// should be little need to change this.
+        /// </remarks>
+        public string DistinguishedNameAttribute {
+            get;
+            set;
+        } = "distinguishedName";
+
+        /// <summary>
         /// Gets or sets the attribute where (non-primary) groups are stored.
         /// </summary>
         /// <remarks>
@@ -33,6 +46,20 @@ namespace Visus.Ldap.Mapping {
         /// &quot;primaryGroupID&quot;</para>.
         /// </remarks>
         public string PrimaryGroupAttribute { get; set; } = null!;
+
+        /// <summary>
+        /// Gets or sets the attribute where the identity of the primary group
+        /// is stored.
+        /// </summary>
+        /// <remarks>
+        /// This information is require to search for the directory entry of the
+        /// primary group given we only know its ID. For both, Active Directory
+        /// and OpenLDAP, primary groups are not stored using DNs, but by their
+        /// ID, so we need to be able to perform a search for the ID in order
+        /// the resolve the primary group. For Active Directory, this attribute
+        /// is typically &quot;objectSid&quot;.
+        /// </remarks>
+        public string PrimaryGroupIdentityAttribute { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the filter to identify a single user by the user name.

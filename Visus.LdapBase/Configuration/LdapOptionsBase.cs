@@ -106,6 +106,7 @@ namespace Visus.Ldap.Configuration {
                     new LdapMapping() {
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "primaryGroupID",
+                        PrimaryGroupIdentityAttribute = "objectSid",
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
                         UsersFilter = "(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))"
                     }
@@ -115,6 +116,7 @@ namespace Visus.Ldap.Configuration {
                     new LdapMapping() {
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "gidNumber",
+                        PrimaryGroupIdentityAttribute = "gidNumber",
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
                         UsersFilter = "(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))"
                     }
@@ -124,6 +126,7 @@ namespace Visus.Ldap.Configuration {
                     new LdapMapping() {
                         GroupsAttribute = "memberOf",
                         PrimaryGroupAttribute = "gidNumber",
+                        PrimaryGroupIdentityAttribute = "gidNumber",
                         UserFilter = "(&(objectClass=posixAccount)(entryDN={0}))",
                         UsersFilter = "(&(objectClass=posixAccount)(objectClass=person))"
                     }

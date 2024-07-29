@@ -37,7 +37,7 @@ namespace Visus.DirectoryAuthentication.Tests
                 var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
                 Assert.IsNotNull(service);
 
-                var user = service.Login(secrets.LdapOptions.User, secrets.LdapOptions.Password);
+                var user = service.LoginUser(secrets.LdapOptions.User, secrets.LdapOptions.Password);
                 Assert.IsNotNull(user);
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Any());

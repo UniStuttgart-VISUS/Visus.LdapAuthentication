@@ -12,6 +12,7 @@ using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Services;
 using Visus.Ldap.Claims;
+using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 
 
@@ -63,7 +64,8 @@ namespace Visus.DirectoryAuthentication {
             services.AddOptions<LdapOptions>()
                 .Configure(options)
                 .ValidateOnStart()
-                .Services.AddSingleton<IValidateOptions<LdapOptions>, ValidateLdapOptions>();
+                .Services.AddSingleton<IValidateOptions<LdapOptions>,
+                    FluentValidateOptions<LdapOptions, LdapOptionsValidator>>();
 
             return services
                 .AddSingleton<IClaimsBuilder<TUser, TGroup> , TClaimsBuilder>()

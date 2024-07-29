@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -114,19 +115,18 @@ namespace Visus.Ldap.Mapping {
 
         /// <inheritdoc />
         public override LdapUser SetGroups(LdapUser user,
-                LdapGroup? primaryGroup,
                 IEnumerable<LdapGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
-
-            if (primaryGroup != null) {
-                primaryGroup.IsPrimary = true;
-                groups = groups.Append(primaryGroup);
-            }
-
             user.Groups = groups;
-
             return user;
+        }
+
+        /// <inheritdoc />
+        public override LdapGroup SetPrimary(LdapGroup group, bool isPrimary) {
+            ArgumentNullException.ThrowIfNull(group, nameof(group));
+            group.IsPrimary = isPrimary;
+            return group;
         }
         #endregion
 
@@ -139,23 +139,24 @@ namespace Visus.Ldap.Mapping {
         /// <param name="groupMap"></param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected DefaultMapperBase(LdapOptionsBase options,
+        protected DefaultMapperBase(IOptions<LdapOptionsBase> options,
                 ILdapAttributeMap<LdapUser> userMap,
                 ILdapAttributeMap<LdapGroup> groupMap)
                 : base(options, userMap, groupMap) {
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            Debug.Assert(options != null);
+            Debug.Assert(options.Value != null);
 
             this._groupDisplayName = GetLdapAttribute<LdapGroup>(
-                nameof(LdapGroup.DisplayName), options);
+                nameof(LdapGroup.DisplayName), options.Value);
 
             this._userChristianName = GetLdapAttribute<LdapUser>(
-                nameof(LdapUser.ChristianName), options);
+                nameof(LdapUser.ChristianName), options.Value);
             this._userDisplayName = GetLdapAttribute<LdapUser>(
-                nameof(LdapUser.DisplayName), options);
+                nameof(LdapUser.DisplayName), options.Value);
             this._userEmailAddress = GetLdapAttribute<LdapUser>(
-                nameof(LdapUser.EmailAddress), options);
+                nameof(LdapUser.EmailAddress), options.Value);
             this._userSurname= GetLdapAttribute<LdapUser>(
-                nameof(LdapUser.Surname), options);
+                nameof(LdapUser.Surname), options.Value);
         }
         #endregion
 

@@ -36,7 +36,7 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="accountName"/> is <c>null</c>.</exception>
-        TUser GetUserByAccountName(string accountName);
+        TUser? GetUserByAccountName(string accountName);
 
         /// <summary>
         /// Asynchronously gets a user with the specified account name.
@@ -47,7 +47,7 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="accountName"/> is <c>null</c>.</exception>
-        Task<TUser> GetUserByAccountNameAsync(string accountName);
+        Task<TUser?> GetUserByAccountNameAsync(string accountName);
 
         /// <summary>
         /// Gets a user with the specified distinguished name.
@@ -58,7 +58,7 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="accountName"/> is <c>null</c>.</exception>
-        TUser GetUserByDistinguishedName(string distinguishedName);
+        TUser? GetUserByDistinguishedName(string distinguishedName);
 
         /// <summary>
         /// Asynchronously gets a user with the specified distinguished name.
@@ -69,7 +69,7 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="distinguishedName"/> is <c>null</c>.</exception>
-        Task<TUser> GetUserByDistinguishedNameAsync(string distinguishedName);
+        Task<TUser?> GetUserByDistinguishedNameAsync(string distinguishedName);
 
         /// <summary>
         /// Gets a user with the specified value for the identity attribute.
@@ -80,7 +80,7 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="identity"/> is <c>null</c>.</exception>
-        TUser GetUserByIdentity(string identity);
+        TUser? GetUserByIdentity(string identity);
 
         /// <summary>
         /// Asynchronously gets a user with the specified value for the identity
@@ -92,7 +92,7 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="identity"/> is <c>null</c>.</exception>
-        Task<TUser> GetUserByIdentityAsync(string identity);
+        Task<TUser?> GetUserByIdentityAsync(string identity);
 
         /// <summary>
         /// Gets all users from the directory that are in matching the search

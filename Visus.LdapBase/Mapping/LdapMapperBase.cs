@@ -7,7 +7,6 @@
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Visus.Ldap.Configuration;
@@ -90,25 +89,27 @@ namespace Visus.Ldap.Mapping {
         }
 
         /// <inheritdoc />
-        public virtual TUser SetGroups(TUser user,
-                TGroup? primaryGroup,
-                IEnumerable<TGroup> groups) {
+        public virtual TUser SetGroups(TUser user, IEnumerable<TGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
-
-            if (this._userMap.GroupMembershipsProperty != null) {
-                if (primaryGroup != null) {
-                    // If we have a primary group, mark it as necessary and add
-                    // it to the list of groups.
-                    this._groupMap.IsPrimaryGroupProperty?.SetValue(
-                        primaryGroup, true);
-                    groups = groups.Append(primaryGroup);
-                }
-
-                this._userMap.GroupMembershipsProperty.SetValue(user, groups);
-            }
-
+            this._userMap.GroupMembershipsProperty?.SetValue(user, groups);
             return user;
+        }
+
+        /// <inheritdoc />
+        public virtual TGroup SetGroups(TGroup group,
+                IEnumerable<TGroup> groups) {
+            ArgumentNullException.ThrowIfNull(group, nameof(group));
+            ArgumentNullException.ThrowIfNull(groups, nameof(groups));
+            this._groupMap.GroupMembershipsProperty?.SetValue(group, groups);
+            return group;
+        }
+
+        /// <inheritdoc />
+        public virtual TGroup SetPrimary(TGroup group, bool isPrimary) {
+            ArgumentNullException.ThrowIfNull(group, nameof(group));
+            this._groupMap.IsPrimaryGroupProperty?.SetValue(group, isPrimary);
+            return group;
         }
         #endregion
 

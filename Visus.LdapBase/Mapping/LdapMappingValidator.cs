@@ -5,7 +5,6 @@
 // <author>Christoph Müller</author>
 
 using FluentValidation;
-using FluentValidation.Results;
 
 
 namespace Visus.Ldap.Mapping {
@@ -15,19 +14,14 @@ namespace Visus.Ldap.Mapping {
     /// </summary>
     internal sealed class LdapMappingValidator : AbstractValidator<LdapMapping> {
 
-        /// <inheritdoc />
-        public override ValidationResult Validate(
-                ValidationContext<LdapMapping> context) {
-            this.RuleFor(context => context.GroupsAttribute)
-                .NotEmpty();
-            this.RuleFor(context => context.PrimaryGroupAttribute)
-                .NotEmpty();
-            this.RuleFor(context => context.UserFilter)
-                .NotEmpty();
-            this.RuleFor(context => context.UsersFilter)
-                .NotEmpty();
-
-            return base.Validate(context);
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        public LdapMappingValidator() {
+            this.RuleFor(m => m.GroupsAttribute).NotEmpty();
+            this.RuleFor(m => m.PrimaryGroupAttribute).NotEmpty();
+            this.RuleFor(m => m.UserFilter).NotEmpty();
+            this.RuleFor(m => m.UsersFilter).NotEmpty();
         }
     }
 }

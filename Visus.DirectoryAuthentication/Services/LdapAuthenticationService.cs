@@ -72,7 +72,7 @@ namespace Visus.DirectoryAuthentication.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public TUser Login(string username, string password) {
+        public TUser? LoginUser(string username, string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._connectionService.Connect(
@@ -82,13 +82,14 @@ namespace Visus.DirectoryAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
-                var req = this.GetRequest(username, b);
+                var req = this.GetRequest(username ?? string.Empty, b);
                 var res = connection.SendRequest(req, this._options);
                 if (res is SearchResponse s && s.Any()) {
                     this._mapper.MapUser(s.Entries[0], retval);
-
-                    this._mapper.Assign(s.Entries[0], connection, retval);
-                    this._claimsBuilder.AddClaims(retval);
+                    var groups = s.Entries[0].GetGroups(connection,
+                        this._mapper,
+                        this._options);
+                    this._mapper.SetGroups(retval, groups);
                     return retval;
                 }
             }
@@ -100,7 +101,7 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <inheritdoc />
-        public async Task<TUser> LoginAsync(string username,
+        public async Task<TUser?> LoginUserAsync(string username,
                 string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
@@ -111,15 +112,16 @@ namespace Visus.DirectoryAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
-                var req = this.GetRequest(username, b);
+                var req = this.GetRequest(username ?? string.Empty, b);
                 var res = await connection.SendRequestAsync(req, this._options)
                     .ConfigureAwait(false);
 
                 if (res is SearchResponse s && s.Any()) {
                     this._mapper.MapUser(s.Entries[0], retval);
-
-                    _mapper.Assign(s.Entries[0], connection, retval);
-                    _claimsBuilder.AddClaims(retval);
+                    var groups = s.Entries[0].GetGroups(connection,
+                        this._mapper,
+                        this._options);
+                    this._mapper.SetGroups(retval, groups);
                     return retval;
                 }
             }

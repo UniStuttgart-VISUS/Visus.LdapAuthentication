@@ -4,8 +4,8 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-
 using System.Collections.Generic;
+
 
 namespace Visus.Ldap.Mapping {
 
@@ -171,19 +171,52 @@ namespace Visus.Ldap.Mapping {
         /// Assigns the given <paramref name="groups"/> to the given
         /// <paramref name="user"/>.
         /// </summary>
+        /// <remarks>
+        /// Not to implementors: The method should do nothing if
+        /// <see cref="UserIsGroupMember"/> is <c>false</c>.
+        /// </remarks>
         /// <param name="user">The user to the the groups of.</param>
-        /// <param name="primaryGroup">If non-<c>null</c>, mark the given
-        /// group as the primary one and add it along with
-        /// <paramref name="groups"/>. If <c>null</c>, this parameter
-        /// will be ignored.</param>
         /// <param name="groups">The groups <paramref name="user"/> belongs
         /// to.</param>
         /// <returns><paramref name="user"/>.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="user"/> is <c>null</c>,
         /// or if <paramref name="groups"/> is <c>null</c>.</exception>
-        TUser SetGroups(TUser user, TGroup? primaryGroup,
-            IEnumerable<TGroup> groups);
+        TUser SetGroups(TUser user, IEnumerable<TGroup> groups);
+
+        /// <summary>
+        /// Assigns the given <paramref name="groups"/> as parent groups of the
+        /// given <paramref name="group"/>.
+        /// </summary>
+        /// <remarks>
+        /// Not to implementors: The method should do nothing if
+        /// <see cref="GroupIsGroupMember"/> is <c>false</c>.
+        /// </remarks>
+        /// <param name="group">The group to assign the groups to.</param>
+        /// <param name="groups">The groups <paramref name="group"/> is member
+        /// of.</param>
+        /// <returns><paramref name="group"/>.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="group"/> is <c>null</c>,
+        /// or if <paramref name="groups"/> is <c>null</c>.</exception>
+        TGroup SetGroups(TGroup group, IEnumerable<TGroup> groups);
+
+        /// <summary>
+        /// Sets the primary group flag on <paramref name="group"/> if
+        /// available.
+        /// </summary>
+        /// <remarks>
+        /// Not to implementors: The method should do nothing if
+        /// <paramref name="group"/> does not have a flag indicating whether it
+        /// is the primary group.
+        /// </remarks>
+        /// <param name="group">The group to set the primary group flag of.
+        /// </param>
+        /// <param name="isPrimary">The value of the primary group flag.</param>
+        /// <returns><paramref name="group"/>.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="group"/> is <c>null</c>.</exception>
+        TGroup SetPrimary(TGroup group, bool isPrimary);
         #endregion
     }
 }

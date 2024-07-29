@@ -27,7 +27,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
-        TUser Login(string username, string password);
+        TUser? LoginUser(string username, string password);
 
         /// <summary>
         /// Performs an LDAP bind using the specified credentials and retrieves
@@ -37,7 +37,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
-        Task<TUser> LoginAsync(string username, string password);
+        Task<TUser?> LoginUserAsync(string username, string password);
     }
 
 }

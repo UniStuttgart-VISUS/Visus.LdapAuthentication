@@ -11,9 +11,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
+using Visus.DirectoryAuthentication.Properties;
 using Visus.Ldap.Mapping;
 
 
@@ -73,7 +75,7 @@ namespace Visus.DirectoryAuthentication.Services {
         #region Public methods
         /// <inheritdoc />
         public void Dispose() {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -125,67 +127,40 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <inheritdoc />
-        public TUser GetUserByAccountName(string accountName) {
-            throw new NotImplementedException();
+        public TUser? GetUserByAccountName(string accountName) {
+            var filter = $"({this._userMap.AccountNameAttribute}={accountName})";
+            return this.GetUser0(filter);
         }
 
         /// <inheritdoc />
-        public Task<TUser> GetUserByAccountNameAsync(string accountName) {
-            throw new NotImplementedException();
+        public Task<TUser?> GetUserByAccountNameAsync(string accountName) {
+            var filter = $"({this._userMap.AccountNameAttribute}={accountName})";
+            return this.GetUserAsync0(filter);
         }
 
         /// <inheritdoc />
-        public TUser GetUserByDistinguishedName(string distinguishedName) {
-            throw new NotImplementedException();
+        public TUser? GetUserByDistinguishedName(string distinguishedName) {
+            var filter = $"({this._userMap.DistinguishedNameAttribute}={distinguishedName})";
+            return this.GetUser0(filter);
         }
 
         /// <inheritdoc />
-        public Task<TUser> GetUserByDistinguishedNameAsync(
+        public Task<TUser?> GetUserByDistinguishedNameAsync(
                 string distinguishedName) {
-            throw new NotImplementedException();
+            var filter = $"({this._userMap.DistinguishedNameAttribute}={distinguishedName})";
+            return this.GetUserAsync0(filter);
         }
 
         /// <inheritdoc />
-        public TUser GetUserByIdentity(string identity) {
-            var retval = new TUser();
-
-            foreach (var b in this._options.SearchBases) {
-                var req = GetUserByIdentitySearchRequest(retval, identity,
-                    b);
-                var res = this.Connection.SendRequest(req, this._options);
-
-                if (res is SearchResponse s && s.Any()) {
-                    this._mapper.MapUser(s.Entries[0], retval);
-                    _claimsBuilder.AddClaims(retval);
-                    return retval;
-                }
-            }
-
-            // Not found at this point.
-            LogEntryNotFound(identity);
-            return null;
+        public TUser? GetUserByIdentity(string identity) {
+            var filter = $"({this._userMap.IdentityAttribute}={identity})";
+            return this.GetUser0(filter);
         }
 
         /// <inheritdoc />
-        public async Task<TUser> GetUserByIdentityAsync(string identity) {
-            var retval = new TUser();
-
-            foreach (var b in this._options.SearchBases) {
-                var req = GetUserByIdentitySearchRequest(retval, identity,
-                    b);
-                var res = await this.Connection.SendRequestAsync(req,
-                    this._options).ConfigureAwait(false);
-
-                if (res is SearchResponse s && s.Any()) {
-                    _mapper.MapUser(s.Entries[0], retval);
-                    _claimsBuilder.AddClaims(retval);
-                    return retval;
-                }
-            }
-
-            // Not found at this point.
-            LogEntryNotFound(identity);
-            return null;
+        public Task<TUser?> GetUserByIdentityAsync(string identity) {
+            var filter = $"({this._userMap.IdentityAttribute}={identity})";
+            return this.GetUserAsync0(filter);
         }
 
         /// <inheritdoc />
@@ -263,26 +238,68 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <summary>
-        /// Gets the <see cref="SearchRequest"/> for retrieving the properties
-        /// of <paramref name="user"/> for the user with the given
-        /// <paramref name="identity"/>.
+        /// Gets ta single user matching the given <paramref name="filter"/>
+        /// expression.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="identity"></param>
-        /// <param name="searchBase"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        private SearchRequest GetUserByIdentitySearchRequest(TUser user,
-                string identity, KeyValuePair<string, SearchScope> searchBase) {
-            _ = identity ?? throw new ArgumentNullException(nameof(identity));
-            Debug.Assert(user != null);
+        private TUser? GetUser0(string filter) {
+            var retval = new TUser();
 
-            var idAttribute = this._userMap.IdentityAttribute;
-            Debug.Assert(idAttribute != null);
+            foreach (var b in this._options.SearchBases) {
+                var req = new SearchRequest(b.Key,
+                    filter,
+                    b.Value,
+                    this._mapper.RequiredUserAttributes.ToArray());
+                var res = this.Connection.SendRequest(req, this._options);
 
-            return new SearchRequest(searchBase.Key,
-                $"({idAttribute.Name}={identity})",
-                searchBase.Value,
-                _mapper.RequiredUserAttributes.ToArray());
+                if (res is SearchResponse s) {
+                    var entry = s.Entries.Cast<SearchResultEntry>().Single();
+                    this._mapper.MapUser(entry, retval);
+                    var groups = entry.GetGroups(this.Connection,
+                        this._mapper,
+                        this._options);
+                    this._mapper.SetGroups(retval, groups);
+                    return retval;
+                }
+            }
+
+            // Not found at this point.
+            this._logger.LogWarning(Resources.ErrorEntryNotFound, filter);
+            return null;
+        }
+
+        /// <summary>
+        /// Gets ta single user matching the given <paramref name="filter"/>
+        /// expression.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        private async Task<TUser?> GetUserAsync0(string filter) {
+            var retval = new TUser();
+
+            foreach (var b in this._options.SearchBases) {
+                var req = new SearchRequest(b.Key,
+                    filter,
+                    b.Value,
+                    this._mapper.RequiredUserAttributes.ToArray());
+                var res = await this.Connection.SendRequestAsync(req, this._options)
+                    .ConfigureAwait(false);
+
+                if (res is SearchResponse s) {
+                    var entry = s.Entries.Cast<SearchResultEntry>().Single();
+                    this._mapper.MapUser(entry, retval);
+                    var groups = entry.GetGroups(this.Connection,
+                        this._mapper,
+                        this._options);
+                    this._mapper.SetGroups(retval, groups);
+                    return retval;
+                }
+            }
+
+            // Not found at this point.
+            this._logger.LogWarning(Resources.ErrorEntryNotFound, filter);
+            return null;
         }
 
         /// <summary>
@@ -308,19 +325,21 @@ namespace Visus.DirectoryAuthentication.Services {
                 // Perform a paged search (there might be a lot of users, which
                 // cannot be retruned at once.
                 var entries = this.Connection.PagedSearch(
-                b.Key,
-                b.Value,
-                filter,
-                _mapper.RequiredUserAttributes.ToArray(),
-                this._options.PageSize,
-                sortAttribute.Name,
-                this._options.Timeout);
+                    b.Key,
+                    b.Value,
+                    filter,
+                    this._mapper.RequiredUserAttributes.ToArray(),
+                    this._options.PageSize,
+                    sortAttribute.Name,
+                    this._options.Timeout);
 
                 // Convert LDAP entries to user objects.
                 foreach (var e in entries) {
-                    _mapper.MapUser(e, user);
-                    // TODO: map groups as necessary
-
+                    this._mapper.MapUser(e, user);
+                    var groups = e.GetGroups(this.Connection,
+                        this._mapper,
+                        this._options);
+                    this._mapper.SetGroups(user, groups);
                     yield return user;
                     user = new TUser();
                 }
@@ -374,15 +393,6 @@ namespace Visus.DirectoryAuthentication.Services {
             //}
 
             //return retval;
-        }
-
-        /// <summary>
-        /// Logs that the entry with the specified user identity was not found.
-        /// </summary>
-        /// <param name="identity"></param>
-        private void LogEntryNotFound(string identity) {
-            _logger.LogError(Properties.Resources.ErrorEntryNotFound,
-                this._userMap.IdentityAttribute?.Name, identity);
         }
         #endregion
 

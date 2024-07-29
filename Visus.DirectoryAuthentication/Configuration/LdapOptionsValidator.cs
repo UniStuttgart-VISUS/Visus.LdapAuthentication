@@ -5,8 +5,8 @@
 // <author>Christoph Müller</author>
 
 using FluentValidation;
-using FluentValidation.Results;
 using Visus.DirectoryAuthentication.Properties;
+using Visus.Ldap.Configuration;
 
 
 namespace Visus.DirectoryAuthentication.Configuration {
@@ -15,32 +15,17 @@ namespace Visus.DirectoryAuthentication.Configuration {
     /// Validates the settings in <see cref="LdapOptions"/>.
     /// </summary>
     internal sealed class LdapOptionsValidator
-            : AbstractValidator<LdapOptions> {
+            : LdapOptionsValidatorBase<LdapOptions> {
 
-        /// <inheritdoc />
-        public override ValidationResult Validate(
-                ValidationContext<LdapOptions> context) {
-            RuleFor(context => context.Mapping)
-                .NotNull()
-                .SetValidator(new LdapMappingValidator());
-            RuleFor(context => context.Mappings).NotNull();
-            // Note: The content of Mapping*s* is optional, only the active
-            // *Mapping* is relevant for the library to function correctly.
-            RuleFor(context => context.Schema).NotEmpty();
-            RuleFor(context => context.SearchBases).NotEmpty();
-            RuleForEach(context => context.SearchBases)
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        public LdapOptionsValidator() {
+            this.RuleFor(o => o.SearchBases).NotEmpty();
+            this.RuleForEach(o => o.SearchBases)
                 .Must(b => !string.IsNullOrWhiteSpace(b.Key))
-                .When(context => context.SearchBases != null)
+                .When(o => o.SearchBases != null)
                 .WithMessage(Resources.ErrorEmptySearchBase);
-            RuleFor(context => context.Servers).NotEmpty();
-            RuleForEach(context => context.Servers)
-                .NotEmpty();
-            RuleFor(context => context.Password)
-                .NotNull()
-                .When(o => !string.IsNullOrWhiteSpace(o.User))
-                .WithMessage(Resources.ErrorEmptyPassword);
-
-            return base.Validate(context);
         }
     }
 }

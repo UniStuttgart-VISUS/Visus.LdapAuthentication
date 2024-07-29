@@ -104,7 +104,7 @@ namespace Visus.DirectoryAuthentication.Tests
                     Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
 
                 Assert.ThrowsException<LdapException>(() => {
-                    var user = service.Login(this._testSecrets.LdapOptions.User,
+                    var user = service.LoginUser(this._testSecrets.LdapOptions.User,
                         this._testSecrets.LdapOptions.Password + " is wrong");
                 });
             }

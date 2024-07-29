@@ -1,38 +1,40 @@
-﻿// <copyright file="ValidateLdapOptions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="FluentValidateOptions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+using FluentValidation;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
-using Visus.DirectoryAuthentication.Configuration;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.Ldap.Configuration {
 
     /// <summary>
-    /// Wraps the <see cref="LdapOptionsValidator"/> in a
-    /// <see cref="IValidateOptions{TOptions}"/>.
+    /// Wraps a <typeparamref name="TValidator"/> in a
+    /// <see cref="IValidateOptions{TOptions}"/> object.
     /// </summary>
-    internal sealed class ValidateLdapOptions : IValidateOptions<LdapOptions> {
+    public sealed class FluentValidateOptions<TOptions, TValidator>
+            : IValidateOptions<TOptions>
+            where TOptions : class
+            where TValidator : AbstractValidator<TOptions>, new() {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
         /// <param name="validator"></param>
-        public ValidateLdapOptions(LdapOptionsValidator validator = null) {
+        public FluentValidateOptions(TValidator validator) {
             this._validator = validator ?? new();
         }
         #endregion
 
         #region Public methods
         /// <inheritdoc />
-        public ValidateOptionsResult Validate(string name,
-                LdapOptions options) {
-            _ = options ?? throw new ArgumentNullException(nameof(options));
+        public ValidateOptionsResult Validate(string? name, TOptions options) {
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
 
             var result = this._validator.Validate(options);
 
@@ -43,7 +45,7 @@ namespace Visus.DirectoryAuthentication {
         #endregion
 
         #region Private fields
-        private readonly LdapOptionsValidator _validator;
+        private readonly TValidator _validator;
         #endregion
     }
 }

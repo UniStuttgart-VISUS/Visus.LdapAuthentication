@@ -15,8 +15,7 @@ using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Properties;
 
 
-namespace Visus.DirectoryAuthentication.Services
-{
+namespace Visus.DirectoryAuthentication.Services {
 
     /// <summary>
     /// Generic LDAP connection service using the server and credentials
@@ -37,53 +36,42 @@ namespace Visus.DirectoryAuthentication.Services
         /// <param name="logger"></param>
         public LdapConnectionService(IOptions<LdapOptions> options,
                 ILogger<LdapConnectionService> logger) {
-            _logger = logger
+            this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            Options = options?.Value
+            this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
         #endregion
 
-        #region Public properties
-        /// <inheritdoc />
-        public LdapOptions Options { get; }
-        #endregion
-
         #region Public methods
         /// <inheritdoc />
-        public LdapConnection Connect() {
-            // TODO: Add the option to connect with negotiate on Windows.
-            return Connect(Options.User, Options.Password);
-        }
-
-        /// <inheritdoc />
-        public LdapConnection Connect(string username, string password) {
-            var retval = Options.ToConnection(_logger);
+        public LdapConnection Connect(string? username, string? password) {
+            var retval = this._options.ToConnection(_logger);
             Debug.Assert(retval != null);
 
             var rxUpn = new Regex(@".+@.+");
             if (username != null
-                    && !string.IsNullOrWhiteSpace(Options.DefaultDomain)
+                    && !string.IsNullOrWhiteSpace(this._options.DefaultDomain)
                     && !rxUpn.IsMatch(username)) {
-                username = $"{username}@{Options.DefaultDomain}";
+                username = $"{username}@{this._options.DefaultDomain}";
             }
 
-            _logger.LogDebug("User name to bind (possibly expanded by the "
+            this._logger.LogDebug("User name to bind (possibly expanded by the "
                 + "default domain) is {username}.", username);
 
             if (username == null && password == null) {
-                _logger.LogInformation(Resources.InfoBindCurrent);
+                this._logger.LogInformation(Resources.InfoBindCurrent);
                 retval.Bind();
-                _logger.LogInformation(Resources.InfoBoundCurrent);
+                this._logger.LogInformation(Resources.InfoBoundCurrent);
 
             } else {
-                _logger.LogInformation(Resources.InfoBindingAsUser,
+                this._logger.LogInformation(Resources.InfoBindingAsUser,
                     username);
                 retval.Bind(new NetworkCredential(username, password));
-                _logger.LogInformation(Resources.InfoBoundAsUser, username);
+                this._logger.LogInformation(Resources.InfoBoundAsUser, username);
             }
 
-            _logger.LogDebug("Effectively connected to {server} after bind "
+            this._logger.LogDebug("Effectively connected to {server} after bind "
                 + "as {user} using authentication type {authType} and protocol "
                 + "version {version}. Automatic binding is {autoBind}.",
                 username,
@@ -98,6 +86,7 @@ namespace Visus.DirectoryAuthentication.Services
 
         #region Private fields
         private readonly ILogger _logger;
+        private readonly LdapOptions _options;
         #endregion
     }
 }

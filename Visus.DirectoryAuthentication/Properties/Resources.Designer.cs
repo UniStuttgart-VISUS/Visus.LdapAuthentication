@@ -124,7 +124,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An entry with a value of &quot;{1}&quot; for &quot;{0}&quot; does not exist in the directory..
+        ///   Looks up a localized string similar to An entry matching {0} does not exist in the directory in the specified search locations..
         /// </summary>
         internal static string ErrorEntryNotFound {
             get {
@@ -210,6 +210,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         internal static string ErrorPrimaryGroupClaim {
             get {
                 return ResourceManager.GetString("ErrorPrimaryGroupClaim", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The primary group of the given entry could not be retrieved..
+        /// </summary>
+        internal static string ErrorPrimaryGroupNotFound {
+            get {
+                return ResourceManager.GetString("ErrorPrimaryGroupNotFound", resourceCulture);
             }
         }
         
