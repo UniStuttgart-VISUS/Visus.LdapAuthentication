@@ -23,7 +23,11 @@ namespace Visus.Ldap.Mapping {
     /// <see cref="LdapOptionsBase.Schema"/>.
     /// </summary>
     /// <typeparam name="TObject">The object to be reflected.</typeparam>
-    public sealed class LdapAttributeMap<TObject> : ILdapAttributeMap<TObject> {
+    /// <typeparam name="TOptions">The actual type of the LDAP options used by
+    /// the library.</typeparam>
+    public sealed class LdapAttributeMap<TObject, TOptions>
+            : ILdapAttributeMap<TObject>
+            where TOptions : LdapOptionsBase {
 
         #region Public constructors
         /// <summary>
@@ -33,7 +37,7 @@ namespace Visus.Ldap.Mapping {
         /// LDAP schema to use.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAttributeMap(IOptions<LdapOptionsBase> options) {
+        public LdapAttributeMap(IOptions<TOptions> options) {
             this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
 
@@ -113,7 +117,7 @@ namespace Visus.Ldap.Mapping {
         #endregion
 
         #region Private fields
-        private readonly LdapOptionsBase _options;
+        private readonly TOptions _options;
         private readonly Dictionary<PropertyInfo,
             LdapAttributeAttribute> _properties;
         #endregion

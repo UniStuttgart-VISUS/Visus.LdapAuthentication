@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.DirectoryServices.Protocols;
-using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Services;
 using Visus.Ldap.Claims;
@@ -38,7 +37,8 @@ namespace Visus.DirectoryAuthentication {
         /// <typeparam name="TGroupMap"></typeparam>
         /// <typeparam name="TClaimsBuilder"></typeparam>
         /// <typeparam name="TClaimsMapper"></typeparam>
-        /// <typeparam name="TClaimsMap"></typeparam>
+        /// <typeparam name="TUserClaimsMap"></typeparam>
+        /// <typeparam name="TGroupClaimsMap"></typeparam>
         /// <param name="services">The service collection to add the service to.
         /// </param>
         /// <param name="options">A callback configuring the options.</param>
@@ -48,7 +48,7 @@ namespace Visus.DirectoryAuthentication {
         public static IServiceCollection AddLdapAuthentication<
                 TUser, TGroup,
                 TLdapMapper, TUserMap, TGroupMap,
-                TClaimsBuilder, TClaimsMapper, TClaimsMap>(
+                TClaimsBuilder, TClaimsMapper, TUserClaimsMap, TGroupClaimsMap>(
                 this IServiceCollection services,
                 Action<LdapOptions> options)
                 where TUser : class, new()
@@ -58,19 +58,24 @@ namespace Visus.DirectoryAuthentication {
                 where TGroupMap : class, ILdapAttributeMap<TGroup>
                 where TClaimsBuilder : class, IClaimsBuilder<TUser, TGroup>
                 where TClaimsMapper : class, IClaimsMapper<SearchResultEntry>
-                where TClaimsMap : class, IClaimsMap {
+                where TUserClaimsMap : class, IUserClaimsMap
+                where TGroupClaimsMap : class, IGroupClaimsMap {
             _ = services ?? throw new ArgumentNullException(nameof(services));
 
-            services.AddOptions<LdapOptions>()
-                .Configure(options)
-                .ValidateOnStart()
-                .Services.AddSingleton<IValidateOptions<LdapOptions>,
+            {
+                var b = services.AddOptions<LdapOptions>()
+                    .Configure(options)
+                    .ValidateOnStart();
+                b.Services.AddSingleton<LdapOptionsValidator>();
+                b.Services.AddSingleton<IValidateOptions<LdapOptions>,
                     FluentValidateOptions<LdapOptions, LdapOptionsValidator>>();
+            }
 
             return services
                 .AddSingleton<IClaimsBuilder<TUser, TGroup> , TClaimsBuilder>()
                 .AddSingleton<IClaimsMapper<SearchResultEntry>, TClaimsMapper>()
-                .AddSingleton<IClaimsMap, TClaimsMap>()
+                .AddSingleton<IGroupClaimsMap, TGroupClaimsMap>()
+                .AddSingleton<IUserClaimsMap, TUserClaimsMap>()
                 .AddSingleton<ILdapMapper<SearchResultEntry, TUser, TGroup>, TLdapMapper>()
                 .AddSingleton<ILdapAttributeMap<TUser>, TUserMap>()
                 .AddSingleton<ILdapAttributeMap<TGroup>, TGroupMap>()

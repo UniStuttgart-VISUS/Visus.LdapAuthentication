@@ -35,18 +35,20 @@ namespace Visus.Ldap.Claims {
     /// </typeparam>
     /// <typeparam name="TGroup">The type of the group to create the claims for.
     /// </typeparam>
-    public sealed class ClaimsBuilder<TUser, TGroup>
-            : IClaimsBuilder<TUser, TGroup> {
+    /// <typeparam name="TOptions"></typeparam>
+    public sealed class ClaimsBuilder<TUser, TGroup, TOptions>
+            : IClaimsBuilder<TUser, TGroup>
+            where TOptions : LdapOptionsBase {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        public ClaimsBuilder(IClaimsMap userClaims,
+        public ClaimsBuilder(IUserClaimsMap userClaims,
                 ILdapAttributeMap<TUser> userMap,
-                IClaimsMap groupClaims,
+                IGroupClaimsMap groupClaims,
                 ILdapAttributeMap<TGroup> groupMap,
-                IOptions<LdapOptionsBase> options) {
+                IOptions<TOptions> options) {
             this._groupClaims = groupClaims
                 ?? throw new ArgumentNullException(nameof(groupClaims));
             this._groupGroups = GroupMembershipsAttribute
@@ -181,11 +183,11 @@ namespace Visus.Ldap.Claims {
         #endregion
 
         #region Private fields
-        private readonly IClaimsMap _groupClaims;
+        private readonly IGroupClaimsMap _groupClaims;
         private readonly ILdapAttributeMap<TGroup> _groupMap;
         private readonly PropertyInfo? _groupGroups;
-        private readonly LdapOptionsBase _options;
-        private readonly IClaimsMap _userClaims;
+        private readonly TOptions _options;
+        private readonly IUserClaimsMap _userClaims;
         private readonly PropertyInfo? _userGroups;
         private readonly ILdapAttributeMap<TUser> _userMap;
         #endregion

@@ -1,4 +1,4 @@
-﻿// <copyright file="ServiceCollectionTests.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="ConnectionTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -8,22 +8,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Linq;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Extensions;
 using Visus.DirectoryAuthentication.Services;
 
 
-namespace Visus.DirectoryAuthentication.Tests
-{
+namespace Visus.DirectoryAuthentication.Tests {
 
     [TestClass]
-    public sealed class ConnectionTests {
+    public sealed class ConnectionTest {
 
         [TestMethod]
         public void GetDefaultNamingContext() {
             if (this._testSecrets?.LdapOptions != null) {
-                var service = new LdapConnectionService(
+                ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());
                 var connection = service.Connect();
@@ -36,7 +34,7 @@ namespace Visus.DirectoryAuthentication.Tests
         [TestMethod]
         public async Task GetDefaultNamingContextAsync() {
             if (this._testSecrets?.LdapOptions != null) {
-                var service = new LdapConnectionService(
+                ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());
                 var connection = service.Connect();
@@ -49,7 +47,7 @@ namespace Visus.DirectoryAuthentication.Tests
         [TestMethod]
         public void GetRootDse() {
             if (this._testSecrets?.LdapOptions != null) {
-                var service = new LdapConnectionService(
+                ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());
                 var connection = service.Connect();
@@ -62,7 +60,7 @@ namespace Visus.DirectoryAuthentication.Tests
         [TestMethod]
         public async Task GetRootDseAsync() {
             if (this._testSecrets?.LdapOptions != null) {
-                var service = new LdapConnectionService(
+                ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());
                 var connection = service.Connect();

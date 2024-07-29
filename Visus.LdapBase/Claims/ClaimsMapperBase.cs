@@ -74,7 +74,8 @@ namespace Visus.Ldap.Claims {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="userMap"/> is <c>null</c>, or if
         /// <paramref name="groupMap"/> is <c>null</c>.</exception>
-        protected ClaimsMapperBase(IClaimsMap userMap, IClaimsMap groupMap) {
+        protected ClaimsMapperBase(IUserClaimsMap userMap,
+                IGroupClaimsMap groupMap) {
             this._groupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
             this._userMap = userMap
@@ -130,8 +131,8 @@ namespace Visus.Ldap.Claims {
         #endregion
 
         #region Private fields
-        private readonly IClaimsMap _groupMap;
-        private readonly IClaimsMap _userMap;
+        private readonly IGroupClaimsMap _groupMap;
+        private readonly IUserClaimsMap _userMap;
         #endregion
     }
 }

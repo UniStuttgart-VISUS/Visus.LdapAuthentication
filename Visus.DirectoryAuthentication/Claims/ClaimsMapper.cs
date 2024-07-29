@@ -29,9 +29,8 @@ namespace Visus.DirectoryAuthentication.Claims {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="userMap"/> is <c>null</c>, or if
         /// <paramref name="groupMap"/> is <c>null</c>.</exception>
-        public ClaimsMapper(IClaimsMap userMap, IClaimsMap groupMap)
+        public ClaimsMapper(IUserClaimsMap userMap, IGroupClaimsMap groupMap)
             : base(userMap, groupMap) { }
-
         #endregion
 
         #region Protected methods

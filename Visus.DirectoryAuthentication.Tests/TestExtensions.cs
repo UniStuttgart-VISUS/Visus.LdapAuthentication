@@ -8,11 +8,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
+using Visus.DirectoryAuthentication.Claims;
+using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Services;
+using Visus.Ldap;
+using Visus.Ldap.Claims;
+using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryAuthentication.Tests
-{
+namespace Visus.DirectoryAuthentication.Tests {
 
     /// <summary>
     /// Provides extension methods for injecting test-related stuff to the DI
@@ -38,12 +43,26 @@ namespace Visus.DirectoryAuthentication.Tests
 
         public static IServiceCollection AddMockLoggers(
                 this IServiceCollection services) {
-            services.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup, LdapOptions>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<ClaimsMapper>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapConnectionService>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
             return services;
+        }
+
+        public static IServiceCollection AddDefaultLdapAuthentication(
+                this IServiceCollection services, Action<LdapOptions> options) {
+            return services.AddLdapAuthentication<LdapUser,
+                LdapGroup,
+                LdapMapper<LdapUser, LdapGroup>,
+                LdapAttributeMap<LdapUser, LdapOptions>,
+                LdapAttributeMap<LdapGroup, LdapOptions>,
+                ClaimsBuilder<LdapUser, LdapGroup, LdapOptions>,
+                ClaimsMapper,
+                ClaimsMap<LdapUser, LdapOptions>,
+                ClaimsMap<LdapGroup, LdapOptions>>(options);
         }
     }
 }

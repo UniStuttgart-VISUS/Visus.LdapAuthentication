@@ -7,8 +7,7 @@
 
 using Visus.DirectoryAuthentication.Configuration;
 
-namespace Visus.DirectoryAuthentication.Tests
-{
+namespace Visus.DirectoryAuthentication.Tests {
 
     /// <summary>
     /// Container for secret test settings (LDAP credentials).
@@ -23,23 +22,23 @@ namespace Visus.DirectoryAuthentication.Tests
         /// Gets or sets the account name of a known user that can be searched
         /// in the directory.
         /// </summary>
-        public string ExistingUserAccount { get; set; }
+        internal string ExistingUserAccount { get; set; }
 
         /// <summary>
         /// Gets or sets the identity of a known user that can be searched in the
         /// directory.
         /// </summary>
-        public string ExistingUserIdentity { get; set; }
+        internal string ExistingUserIdentity { get; set; }
 
         /// <summary>
         /// Gets or sets the LDAP options for the test.
         /// </summary>
-        public LdapOptions LdapOptions { get; set; }
+        internal LdapOptions LdapOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the identity of a non-existing user.
         /// </summary>
-        public string NonExistingUserIdentity { get; set; }
+        internal string NonExistingUserIdentity { get; set; }
 
     }
 }

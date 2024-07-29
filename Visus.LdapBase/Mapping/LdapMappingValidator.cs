@@ -18,8 +18,10 @@ namespace Visus.Ldap.Mapping {
         /// Initialises a new instance.
         /// </summary>
         public LdapMappingValidator() {
+            this.RuleFor(m => m.DistinguishedNameAttribute).NotEmpty();
             this.RuleFor(m => m.GroupsAttribute).NotEmpty();
             this.RuleFor(m => m.PrimaryGroupAttribute).NotEmpty();
+            this.RuleFor(m => m.PrimaryGroupIdentityAttribute).NotEmpty();
             this.RuleFor(m => m.UserFilter).NotEmpty();
             this.RuleFor(m => m.UsersFilter).NotEmpty();
         }
