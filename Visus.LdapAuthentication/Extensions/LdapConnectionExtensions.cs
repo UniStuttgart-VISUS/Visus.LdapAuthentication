@@ -309,23 +309,30 @@ namespace Visus.LdapAuthentication.Extensions {
                 TimeSpan pollingInterval) {
             ArgumentNullException.ThrowIfNull(that, nameof(that));
 
-            var queue = (LdapSearchQueue) that.Search(@base, scope, filter,
-                attributes, typesOnly, constraints);
+            var pending = true;
+            var queue = that.Search(@base, (int) scope, filter,
+                attributes, typesOnly, null, constraints);
             var retval = new List<LdapEntry>();
 
-            while (true) {
+            while (pending) {
                 while (!queue.IsResponseReceived()) {
                     await Task.Delay(pollingInterval);
                 }
 
                 var msg = queue.GetResponse();
                 if (msg == null) {
-                    return retval;
+                    pending = false;
 
                 } else if (msg is LdapSearchResult r) {
                     retval.Add(r.Entry);
+                    pending = !queue.IsComplete(msg.MessageId);
+
+                } else {
+                    pending = !queue.IsComplete(msg.MessageId);
                 }
             }
+
+            return retval;
         }
 
         /// <summary>

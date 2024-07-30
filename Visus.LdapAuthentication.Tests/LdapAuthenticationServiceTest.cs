@@ -47,7 +47,6 @@ namespace Visus.LdapAuthentication.Tests {
             }
         }
 
-
         [TestMethod]
         public void TestLoginUserFailure() {
             if (this._testSecrets?.LdapOptions != null) {

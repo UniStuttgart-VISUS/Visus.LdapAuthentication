@@ -41,9 +41,14 @@ namespace Visus.LdapAuthentication.Extensions {
                 object? parameter = null,
                 CultureInfo? cultureInfo = null) {
             ArgumentNullException.ThrowIfNull(that, nameof(that));
-            var attribute = entry?.GetAttribute(that.Name);
-            return attribute.GetValue(that.GetConverter(), parameter,
-                cultureInfo);
+            try {
+                var attribute = entry?.GetAttribute(that.Name);
+                return attribute.GetValue(that.GetConverter(),
+                    parameter,
+                    cultureInfo);
+            } catch (KeyNotFoundException) {
+                return null;
+            }
         }
 
         /// <summary>
@@ -73,8 +78,11 @@ namespace Visus.LdapAuthentication.Extensions {
                 return null;
 
             } else if (converter != null) {
+                // Note: Novell provides a string conversion for byte arrays in
+                // their entry, which is not what we want for SIDs or pictures,
+                // so we force the byte value here.
                 return converter.Convert(
-                    (object?) that.StringValue ?? that.ByteValue,
+                    that.ByteValue,
                     typeof(string),
                     parameter,
                     cultureInfo ?? CultureInfo.CurrentCulture);
