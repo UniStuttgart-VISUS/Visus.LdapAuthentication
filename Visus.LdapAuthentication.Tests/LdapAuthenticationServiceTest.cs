@@ -7,6 +7,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Novell.Directory.Ldap;
 using System.Linq;
 using Visus.Ldap;
 
@@ -43,6 +44,21 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.IsTrue(user.Groups.Any());
                 Assert.IsTrue(user.Groups.Count() >= 1);
                 Assert.IsFalse(user.Groups.Any(g => g == null));
+            }
+        }
+
+
+        [TestMethod]
+        public void TestLoginUserFailure() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                Assert.ThrowsException<LdapException>(() => {
+                    service.LoginUser(
+                        this._testSecrets.LdapOptions.User,
+                        this._testSecrets.LdapOptions.Password + " is wrong");
+                });
             }
         }
 
