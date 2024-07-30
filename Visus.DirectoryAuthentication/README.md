@@ -7,9 +7,7 @@ Visus.DirectoryAuthentication implements LDAP authentication using [System.Direc
 1. [Add the authentication service](#add-the-authentication-service)
 1. [Configure the LDAP server](#configure-the-ldap-server)
 1. [Authenticate a user](#authenticate-a-user)
-1. [Customising the user object](#customising-the-user-object)
-1. [Customising the group object](#customising-the-group-object)
-1. [Customising claims](#customising-claims)
+1. [Customising LDAP mappings](#customising-ldap-mappings)
 1. [Searching users](#searching-users)
 1. [Differences between LdapAuthentication and DirectoryAuthentication](#differences-between-ldapauthentication-and-directoryauthentication)
 
@@ -145,8 +143,10 @@ public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [Fr
 }
 ```
 
-## Customising the user object
-The built-in [`LdapUser`](LdapUser.cs) object provides a reasonably mapping of attributes in an Active Directory to user claims. There are two ways you can customise this behaviour: the first is by inheriting from `LdapUser` and adding additional properties that are mapped to LDAP attributes (in contrast to version 1.x of the library, it is not possible to change existing mappings of `LdapUser`), or you can provide a completely new class where all attributes are mapped according to your needs.
+## Customising LDAP mappings
+
+### Customising the user object
+The built-in `LdapUser` object provides a reasonably mapping of attributes in an Active Directory to user claims. There are two ways you can customise this behaviour: the first is by inheriting from `LdapUser` and adding additional properties that are mapped to LDAP attributes (in contrast to version 1.x of the library, it is not possible to change existing mappings of `LdapUser`), or you can provide a completely new class where all attributes are mapped according to your needs.
 
 If you create a fully customised user, make sure to annotate properties with special meanings accordingly to allow the mapper to understand your class (alternatively, you could also provide your own `ILdapMapper`). These attributes are:
 
@@ -155,10 +155,14 @@ If you create a fully customised user, make sure to annotate properties with spe
 - **[Identity]:** Marks the identity (SID or UID/GID) and enables the `ILdapSearchService` to search users by their ID.
 - **[GroupMemberships]:** Marks an `IEnumerable<TGroup>` as the property that receives the groups a user belongs to.
 
-## Customising the group object
+### Customising the group object
 In a similar way you can provide your own replacement of `LdapUser`, you can also provide a replacement for `LdapGroup`, contains the information to create group-based claims. Like for the user, you can rely on `LdapMapper` and annotations via attributes or customise the assignment of LDAP attributes to properties in a custom mapper.
 
-## Customising claims
+Your own LDAP group object should be annotated with the same attribute like the user to allow the default mapper to reflect on them. Groups support an additional attribute:
+
+- **[PrimaryGroupFlag]:** Marks a `bool` property which will be set `true` by the mapper if the group was retrieved from the primary group attribute of a user rather than from the list of group memberships.
+
+### Customising claims
 If you do not need additional information from the directory than what is provided by `LdapUser` and `LdapGroup`, but you want to customise the `System.Security.Claims.Claim`s generated, you could consider providing a custom `IClaimsBuilder` to make these claims from the information provided by the user object. Have a look at the default `ClaimsBuilder` for inspiration on how to do this. The default builder uses the `Claim` attribute to translate properties to claims.
 
 ## Searching users
@@ -214,15 +218,18 @@ public MyLoginController(ILdapAuthenticationService<LdapUser> authService,
 public async Task<ActionResult> Login([FromForm] string username, [FromForm] string password) {
     try {
         // Retrieve the distinguished name for the user name in an RFC 2307
-        // schema. Please note that you should call .Single() on the result
-        // in order to prevent users hijacking other accounts in case your
-        // filter was poorly designed like here. For instance, the user could
-        // insert the wild card character "*" as his name and then the random
-        // first match would be returned, which is not what we want.
-        var dn = this._searchService.GetDistinguishedNames($"(&(objectClass=posixAccount)(uid={username}))").Single();
-        var retval = await this._authService.LoginPrincipalAsync(dn, password);
+        // schema. If no unique user was found, the caller is unauthorised.
+        var dn = await this._searchService.GetUserByAccountNameAsync(username);
+        if (dn == null) {
+            return this.Unauthorized();
+        }
+
+        // In this example, we directly retrieve a principal, because we do not
+        // need the user object.
+        var principal = await this._authService.LoginPrincipalAsync(dn, password);
         await this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, retval);
-        return this.Ok();
+
+        return this.Redirect("/someurl");
     } catch {
         return this.Unauthorized();
     }
