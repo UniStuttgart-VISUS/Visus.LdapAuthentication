@@ -124,7 +124,7 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An entry with a value of &quot;{1}&quot; for &quot;{0}&quot; does not exist in the directory..
+        ///   Looks up a localized string similar to An entry matching {0} does not exist in the directory in the specified search locations..
         /// </summary>
         internal static string ErrorEntryNotFound {
             get {
@@ -214,6 +214,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The primary group of the given entry could not be retrieved..
+        /// </summary>
+        internal static string ErrorPrimaryGroupNotFound {
+            get {
+                return ResourceManager.GetString("ErrorPrimaryGroupNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given property &quot;{0}&quot; was not found..
         /// </summary>
         internal static string ErrorPropertyNotFound {
@@ -241,11 +250,11 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bind using the current credentials..
+        ///   Looks up a localized string similar to Performing anonyomous bind..
         /// </summary>
-        internal static string InfoBindCurrent {
+        internal static string InfoBindAnonymous {
             get {
-                return ResourceManager.GetString("InfoBindCurrent", resourceCulture);
+                return ResourceManager.GetString("InfoBindAnonymous", resourceCulture);
             }
         }
         
@@ -259,20 +268,20 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Anonymous bind succeeded..
+        /// </summary>
+        internal static string InfoBoundAnonymous {
+            get {
+                return ResourceManager.GetString("InfoBoundAnonymous", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Authenticated successfully as user &quot;{0}&quot;..
         /// </summary>
         internal static string InfoBoundAsUser {
             get {
                 return ResourceManager.GetString("InfoBoundAsUser", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Bound using the current credentials..
-        /// </summary>
-        internal static string InfoBoundCurrent {
-            get {
-                return ResourceManager.GetString("InfoBoundCurrent", resourceCulture);
             }
         }
         

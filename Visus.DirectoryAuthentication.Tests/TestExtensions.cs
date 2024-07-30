@@ -8,6 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Visus.DirectoryAuthentication.Claims;
+using Visus.DirectoryAuthentication.Mapping;
+using Visus.DirectoryAuthentication.Services;
+using Visus.Ldap;
+using Visus.Ldap.Claims;
 
 
 namespace Visus.DirectoryAuthentication.Tests {
@@ -20,7 +25,7 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         public static IConfigurationRoot CreateConfiguration() {
             return new ConfigurationBuilder()
-                .AddTestSecrets()
+                .AddUserSecrets<TestSecrets>()
                 .Build();
         }
 
@@ -30,13 +35,10 @@ namespace Visus.DirectoryAuthentication.Tests {
             return retval;
         }
 
-        public static IConfigurationBuilder AddTestSecrets(
-                this IConfigurationBuilder builder)
-            => builder.AddUserSecrets<TestSecrets>();
-
         public static IServiceCollection AddMockLoggers(
                 this IServiceCollection services) {
-            services.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilder<LdapUser, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<ClaimsBuilderBase<LdapUser, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<ClaimsMapper>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapConnectionService>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapAuthenticationService<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapSearchService<LdapUser, LdapGroup>>>());

@@ -1,18 +1,16 @@
-﻿// <copyright file="LdapOptionsTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="LdapSearchServiceTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Novell.Directory.Ldap;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Visus.Ldap.Mapping;
+using Visus.Ldap;
 
 
 namespace Visus.LdapAuthentication.Tests {
@@ -23,115 +21,130 @@ namespace Visus.LdapAuthentication.Tests {
     [TestClass]
     public class LdapSearchServiceTest {
 
-        #region Nested class CustomMapper1
-        private sealed class CustomMapper1 : ILdapUserMapper<LdapUser> {
-
-            public CustomMapper1(LdapOptions options) {
-                this._base = new(options);
-                this._options = options;
-            }
-
-            public IEnumerable<string> RequiredAttributes => this._base.RequiredAttributes;
-
-            public void Assign(LdapUser user, LdapEntry entry, LdapConnection connection, ILogger logger)
-                => entry.AssignTo(user, this._options);
-
-            public string GetIdentity(LdapUser user) => this._base.GetIdentity(user);
-
-            public string GetIdentity(LdapEntry entry) => this._base.GetIdentity(entry);
-
-            private readonly LdapUserMapper<LdapUser> _base;
-            private readonly LdapOptions _options;
+        #region Public constructors
+        public LdapSearchServiceTest() {
+            var configuration = TestExtensions.CreateConfiguration();
+            var collection = new ServiceCollection().AddMockLoggers();
+            collection.AddLdapAuthentication(o => {
+                var section = configuration.GetSection("LdapOptions");
+                section.Bind(o);
+            });
+            this._services = collection.BuildServiceProvider();
         }
         #endregion
 
-        public LdapSearchServiceTest() {
-            try {
-                var configuration = new ConfigurationBuilder()
-                    .AddUserSecrets<TestSecrets>()
-                    .Build();
-                this._testSecrets = new TestSecrets();
-                configuration.Bind(this._testSecrets);
-            } catch {
-                this._testSecrets = null;
+        [TestMethod]
+        public void TestGetUserByAccountName() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var user = service.GetUserByAccountName(this._testSecrets.ExistingUserAccount);
+                Assert.IsNotNull(user, "Search returned existing user account.");
+                Assert.IsNotNull(user.Groups);
+                Assert.IsTrue(user.Groups.Count() > 1);
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetUserByAccountNameAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var user = await service.GetUserByAccountNameAsync(this._testSecrets.ExistingUserAccount);
+                Assert.IsNotNull(user, "Search returned existing user account.");
             }
         }
 
         [TestMethod]
         public void TestGetUserByIdentity() {
             if (this._testSecrets?.LdapOptions != null) {
-                var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
-                    options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
 
-                var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
-                Assert.IsNotNull(user, "Existing user was found.");
+                {
+                    var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
+                    Assert.IsNotNull(user, "Search returned existing user identity.");
+                }
+
+                {
+                    var user = service.GetUserByIdentity(this._testSecrets.NonExistingUserIdentity);
+                    Assert.IsNull(user, "Search returned no non-existing user identity.");
+                }
             }
         }
+
+        [TestMethod]
+        public async Task TestGetUserByIdentityAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                {
+                    var user = await service.GetUserByIdentityAsync(this._testSecrets.ExistingUserIdentity);
+                    Assert.IsNotNull(user, "Search returned existing user identity.");
+                }
+
+                {
+                    var user = await service.GetUserByIdentityAsync(this._testSecrets.NonExistingUserIdentity);
+                    Assert.IsNull(user, "Search returned no non-existing user identity.");
+                }
+            }
+        }
+
 
         [TestMethod]
         public void TestGetUsers() {
             if (this._testSecrets?.LdapOptions != null) {
-                var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
-                    options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
 
-                {
-                    var users = service.GetUsers();
-                    Assert.IsTrue(users.Any(), "Directory search returns any user.");
-                }
-
-                {
-                    var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
-                        nameof(LdapUser.AccountName),
-                        this._testSecrets.LdapOptions.Schema);
-                    var users = service.GetUsers($"({att.Name}={this._testSecrets.ExistingUserAccount})");
-                    Assert.IsNotNull(users.Any(), "Filtered user was found.");
-                }
+                var users = service.GetUsers();
+                Assert.IsTrue(users.Any(), "Directory search returns any user.");
             }
         }
 
         [TestMethod]
-        public void TestGetDistinguishedNames() {
+        public async Task TestGetUsersAsync() {
             if (this._testSecrets?.LdapOptions != null) {
-                var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
-                    options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
 
-                var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
-                    nameof(LdapUser.AccountName),
-                    this._testSecrets.LdapOptions.Schema);
-                var users = service.GetDistinguishedNames($"({att.Name}={this._testSecrets.ExistingUserAccount})");
-                Assert.IsTrue(users.Any(), "Search returned at least one DN.");
+                var users = await service.GetUsersAsync();
+                Assert.IsTrue(users.Any(), "Directory search returns any user.");
             }
         }
 
-
         [TestMethod]
-        public void TestCustomMapper1() {
+        public void TestGetUsersFiltered() {
             if (this._testSecrets?.LdapOptions != null) {
-                var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapSearchService<LdapUser>(
-                    new CustomMapper1(options.Value),
-                    options,
-                    Mock.Of<ILogger<LdapSearchService<LdapUser>>>());
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
 
-                var att = LdapAttributeAttribute.GetLdapAttribute<LdapUser>(
-                    nameof(LdapUser.AccountName),
-                    this._testSecrets.LdapOptions.Schema);
-                var users = service.GetUsers($"({att.Name}={this._testSecrets.ExistingUserAccount})");
+                var map = this._services.GetService<ILdapAttributeMap<LdapUser>>();
+                Assert.IsNotNull(map);
+
+                var users = service.GetUsers($"({map.AccountNameAttribute.Name}={this._testSecrets.ExistingUserAccount})");
                 Assert.IsNotNull(users.Any(), "Filtered user was found.");
-                Assert.IsNotNull(users.First().AccountName, "Have account");
-                Assert.IsFalse(users.First().Claims.Any(), "Custom mapper does not create claims.");
             }
         }
 
-        private readonly TestSecrets _testSecrets;
+        [TestMethod]
+        public async Task TestGetUsersFilteredAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var map = this._services.GetService<ILdapAttributeMap<LdapUser>>();
+                Assert.IsNotNull(map);
+
+                var users = await service.GetUsersAsync($"({map.AccountNameAttribute.Name}={this._testSecrets.ExistingUserAccount})");
+                Assert.IsNotNull(users.Any(), "Filtered user was found.");
+            }
+        }
+
+        private readonly ServiceProvider _services;
+        private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }
 }

@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Threading.Tasks;
@@ -17,13 +18,58 @@ namespace Visus.DirectoryAuthentication {
     /// <remarks>
     /// The search service allows an application to retrieve user information
     /// without binding as an end user. In order to perform the search, the
-    /// credentials specified in <see cref="LdapOptions"/> are used.
+    /// credentials specified in <see cref="Configuration.LdapOptions"/> are
+    /// used.
     /// </remarks>
     /// <typeparam name="TUser">The type of user that is to be retrieved from
     /// the directory.</typeparam>
     /// <typeparam name="TGroup">The type used to represent group memberships
     /// of <typeparamref name="TUser"/>.</typeparam>
-    public interface ILdapSearchService<TUser, TGroup> where TUser : class {
+    public interface ILdapSearchService<TUser, TGroup> : IDisposable {
+
+        /// <summary>
+        /// Gets a user with the specified account name.
+        /// </summary>
+        /// <param name="accountName">The account name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="accountName"/> is <c>null</c>.</exception>
+        TUser? GetUserByAccountName(string accountName);
+
+        /// <summary>
+        /// Asynchronously gets a user with the specified account name.
+        /// </summary>
+        /// <param name="accountName">The account name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="accountName"/> is <c>null</c>.</exception>
+        Task<TUser?> GetUserByAccountNameAsync(string accountName);
+
+        /// <summary>
+        /// Gets a user with the specified distinguished name.
+        /// </summary>
+        /// <param name="accountName">The distinguished name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="accountName"/> is <c>null</c>.</exception>
+        TUser? GetUserByDistinguishedName(string distinguishedName);
+
+        /// <summary>
+        /// Asynchronously gets a user with the specified distinguished name.
+        /// </summary>
+        /// <param name="distinguishedName">The distinguished name of the user
+        /// to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// exists.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="distinguishedName"/> is <c>null</c>.</exception>
+        Task<TUser?> GetUserByDistinguishedNameAsync(string distinguishedName);
 
         /// <summary>
         /// Gets a user with the specified value for the identity attribute.
@@ -34,7 +80,7 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="identity"/> is <c>null</c>.</exception>
-        TUser GetUserByIdentity(string identity);
+        TUser? GetUserByIdentity(string identity);
 
         /// <summary>
         /// Asynchronously gets a user with the specified value for the identity
@@ -46,18 +92,18 @@ namespace Visus.DirectoryAuthentication {
         /// exists.</returns>
         /// <exception cref="System.ArgumentNullException">If
         /// <paramref name="identity"/> is <c>null</c>.</exception>
-        Task<TUser> GetUserByIdentityAsync(string identity);
+        Task<TUser?> GetUserByIdentityAsync(string identity);
 
         /// <summary>
         /// Gets all users from the directory that are in matching the search
-        /// criteria configured in the <see cref="LdapOptions"/> used by the
-        /// application.
+        /// criteria configured in the <see cref="Configuration.LdapOptions"/>
+        /// used by the application.
         /// </summary>
         /// <remarks>
-        /// <para>This method creates <see cref="TUser"/> object for all
-        /// users matching the global search configuration, which might not only
-        /// be a large results set, but also trigger a lot of additional LDAP
-        /// searched in order to fill the group claims configured in the
+        /// <para>This method creates <typeparamref name="TUser" /> object for
+        /// all users matching the global search configuration, which might not
+        /// only be a large results set, but also trigger a lot of additional
+        /// LDAP searched in order to fill the group claims configured in the
         /// user object. Therefore, you should carefully design your LDAP user
         /// object in order to restrict the data that must be retrieved to the
         /// absolute minimum for the application case.</para>
@@ -69,13 +115,13 @@ namespace Visus.DirectoryAuthentication {
         /// <summary>
         /// Asynchronously gets all users from the directory that are in
         /// matching the search criteria configured in the
-        /// <see cref="LdapOptions"/> used by the application.
+        /// <see cref="Configuration.LdapOptions"/> used by the application.
         /// </summary>
         /// <remarks>
-        /// <para>This method creates <see cref="ILdapUser"/> object for all
-        /// users matching the global search configuration, which might not only
-        /// be a large results set, but also trigger a lot of additional LDAP
-        /// searched in order to fill the group claims configured in the
+        /// <para>This method creates <typeparamref name="TUser" /> object for
+        /// all users matching the global search configuration, which might not
+        /// only be a large results set, but also trigger a lot of additional
+        /// LDAP searched in order to fill the group claims configured in the
         /// user object. Therefore, you should carefully design your LDAP user
         /// object in order to restrict the data that must be retrieved to the
         /// absolute minimum for the application case.</para>
@@ -86,38 +132,46 @@ namespace Visus.DirectoryAuthentication {
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// criteria configured in the <see cref="LdapOptions"/> used by the
-        /// application <i>and</i> the specified LDAP <paramref name="filter"/>.
+        /// criteria configured in the <see cref="Configuration.LdapOptions"/>
+        /// used by the application <i>and</i> the specified LDAP
+        /// <paramref name="filter"/>.
         /// </summary>
         /// <param name="filter">An LDAP filter expression that is combined
-        /// with the global search criteria for users.</param>
+        /// with the global search criteria for users. It is safe to pass
+        /// <c>null</c>, in which case the additional filter criteria will
+        /// be ignored.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
         IEnumerable<TUser> GetUsers(string filter);
 
         /// <summary>
-        /// Asynchronously gets all users from the directory that are matching
-        /// the search criteria configured in the <see cref="ILdapOptions"/>
+        /// Gets all users from the directory that are matching the search
+        /// criteria configured in the <see cref="Configuration.LdapOptions"/>
         /// used by the application <i>and</i> the specified LDAP
-        /// <paramref name="filter"/>.</summary>
+        /// <paramref name="filter"/>.
+        /// </summary>
         /// <param name="filter">An LDAP filter expression that is combined
-        /// with the global search criteria for users.</param>
+        /// with the global search criteria for users. It is safe to pass
+        /// <c>null</c>, in which case the additional filter criteria will
+        /// be ignored.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
         Task<IEnumerable<TUser>> GetUsersAsync(string filter);
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
-        /// critiera configured in the <see cref="LdapOptions"/> used by the
-        /// application <i>and</i> the specified LDAP <paramref cref="filter"/>
-        /// while overriding the search base from the <see cref="LdapOptions"/>
-        /// with the given one.
+        /// critiera configured in the <see cref="Configuration.LdapOptions"/>
+        /// used by the application <i>and</i> the specified LDAP
+        /// <paramref cref="filter"/> while overriding the search bases from
+        /// the <see cref="Configuration.LdapOptions"/> with the given one.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="LdapOptions"/> will be used.</param>
+        /// <see cref="Configuration.LdapOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
-        /// with the global search criteria for users.</param>
+        /// with the global search criteria for users. It is safe to pass
+        /// <c>null</c>, in which case the additional filter criteria will
+        /// be ignored.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
         IEnumerable<TUser> GetUsers(
@@ -125,17 +179,19 @@ namespace Visus.DirectoryAuthentication {
             string filter);
 
         /// <summary>
-        /// Asynchronously gets all users from the directory that are matching
-        /// the search critiera configured in the <see cref="LdapOptions"/>
+        /// Gets all users from the directory that are matching the search
+        /// critiera configured in the <see cref="Configuration.LdapOptions"/>
         /// used by the application <i>and</i> the specified LDAP
-        /// <paramref cref="filter"/> while overriding the search base from the
-        /// <see cref="LdapOptions"/> with the given one.
+        /// <paramref cref="filter"/> while overriding the search bases from
+        /// the <see cref="Configuration.LdapOptions"/> with the given one.
         /// </summary>
         /// <param name="searchBases">The search bases to look in. It is safe
         /// to pass <c>null</c>, in which case the search bases from the
-        /// <see cref="LdapOptions"/> will be used.</param>
+        /// <see cref="Configuration.LdapOptions"/> will be used.</param>
         /// <param name="filter">An LDAP filter expression that is combined
-        /// with the global search criteria for users.</param>
+        /// with the global search criteria for users. It is safe to pass
+        /// <c>null</c>, in which case the additional filter criteria will
+        /// be ignored.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
         Task<IEnumerable<TUser>> GetUsersAsync(

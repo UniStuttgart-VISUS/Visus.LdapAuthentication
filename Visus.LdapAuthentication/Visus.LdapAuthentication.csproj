@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Christoph Müller</Authors>
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
@@ -19,16 +19,10 @@
     <PackageReleaseNotes>Adds the ability to customise the mapping of user objects by means of an external mapper rather than by modifying the user.
 Adds the ability to retrieve the default naming context from an LDAP connection.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="Novell.Directory.Ldap.NETStandard" Version="3.6.0" />
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
@@ -46,6 +40,10 @@ Adds the ability to retrieve the default naming context from an LDAP connection.
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Visus.Ldap.Core\Visus.Ldap.Core.csproj" />
   </ItemGroup>
 
 </Project>

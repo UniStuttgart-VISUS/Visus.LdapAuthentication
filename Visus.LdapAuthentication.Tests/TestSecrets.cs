@@ -5,7 +5,10 @@
 // <author>Christoph Müller</author>
 
 
-namespace Visus.LdapAuthentication.Tests {
+using Visus.LdapAuthentication.Configuration;
+
+namespace Visus.LdapAuthentication.Tests
+{
 
     /// <summary>
     /// Container for secret test settings (LDAP credentials).
@@ -32,6 +35,11 @@ namespace Visus.LdapAuthentication.Tests {
         /// Gets or sets the LDAP options for the test.
         /// </summary>
         public LdapOptions LdapOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of a non-existing user account.
+        /// </summary>
+        public string NonExistingUserAccount { get; set; }
 
         /// <summary>
         /// Gets or sets the identity of a non-existing user.

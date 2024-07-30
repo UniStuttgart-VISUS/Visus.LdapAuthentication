@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryAuthentication.Tests {
@@ -24,12 +26,15 @@ namespace Visus.DirectoryAuthentication.Tests {
             var validator = new LdapMappingValidator();
 
             {
-                var mapping = new LdapMapping();
+                var mapping = new LdapMapping() {
+                    DistinguishedNameAttribute = null
+                };
                 var result = validator.Validate(mapping);
                 Assert.IsNotNull(result);
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapMapping.DistinguishedNameAttribute)));
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapMapping.GroupsAttribute)));
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapMapping.PrimaryGroupAttribute)));
+                Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapMapping.PrimaryGroupIdentityAttribute)));
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapMapping.UserFilter)));
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapMapping.UsersFilter)));
             }
@@ -60,7 +65,9 @@ namespace Visus.DirectoryAuthentication.Tests {
 
             {
                 var options = new LdapOptions();
-                options.Mapping = new();
+                options.Mapping = new() {
+                    DistinguishedNameAttribute = null
+                };
                 options.Servers = Array.Empty<string>();
                 var result = validator.Validate(options);
                 Assert.IsNotNull(result);
@@ -75,12 +82,12 @@ namespace Visus.DirectoryAuthentication.Tests {
             }
 
             {
-                var options = new LdapOptions() {
-                    Schema = Schema.ActiveDirectory
-                };
-                options.Servers = new[] { "127.0.0.1" };
-                options.SearchBases = new Dictionary<string, SearchScope> {
-                    { "DC=visus,DC=uni-stuttgart,DC=de", SearchScope.Base }
+                var options = new LdapOptions {
+                    Schema = Schema.ActiveDirectory,
+                    Servers = ["127.0.0.1"],
+                    SearchBases = new Dictionary<string, SearchScope> {
+                        { "DC=visus,DC=uni-stuttgart,DC=de", SearchScope.Base }
+                    }
                 };
                 var result = validator.Validate(options);
                 Assert.IsNotNull(result);

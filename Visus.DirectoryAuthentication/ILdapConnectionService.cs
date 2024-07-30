@@ -15,26 +15,25 @@ namespace Visus.DirectoryAuthentication {
     public interface ILdapConnectionService {
 
         /// <summary>
-        /// Gets the <see cref="LdapOptions"/> used by the service.
-        /// </summary>
-        LdapOptions Options { get; }
-
-        /// <summary>
-        /// Connect to the preconfigured LDAP service with the preconfigured
-        /// credentials.
-        /// </summary>
-        /// <returns></returns>
-        LdapConnection Connect();
-
-        /// <summary>
         /// Connect to the preconfigured LDAP service with the specified
         /// credentials.
         /// </summary>
         /// <param name="username">The user name used to perform the LDAP bind.
+        /// If both, <paramref name="username"/> and <paramref name="password"/>
+        /// are <c>null</c>, the service shall perform an anonymous bind.
         /// </param>
         /// <param name="password">The password used to perfom the LDAP bind.
+        /// If both, <paramref name="username"/> and <paramref name="password"/>
+        /// are <c>null</c>, the service shall perform an anonymous bind.
         /// </param>
-        /// <returns></returns>
-        LdapConnection Connect(string username, string password);
+        /// <returns>A new LDAP connection</returns>
+        LdapConnection Connect(string? username, string? password);
+
+        /// <summary>
+        /// Connect to the preconfigured LDAP service with the preconfigured
+        /// credentials from <see cref="Configuration.LdapOptions"/>.
+        /// </summary>
+        /// <returns>A new LDAP connection.</returns>
+        LdapConnection Connect() => this.Connect(null, null);
     }
 }

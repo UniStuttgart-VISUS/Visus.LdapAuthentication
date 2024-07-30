@@ -5,6 +5,8 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Visus.Ldap.Mapping;
+using Visus.LdapAuthentication.Configuration;
 
 
 namespace Visus.LdapAuthentication.Tests {
@@ -18,14 +20,12 @@ namespace Visus.LdapAuthentication.Tests {
         [TestMethod]
         public void TestActiveDirectoryMapping() {
             var options = new LdapOptions();
-            var mapping = new LdapMapping();
 
-            Assert.IsTrue(options.Mappings.TryGetValue(Schema.ActiveDirectory, out mapping));
+            Assert.IsTrue(options.Mappings.TryGetValue(Schema.ActiveDirectory, out var mapping));
             Assert.AreEqual("distinguishedName", mapping.DistinguishedNameAttribute);
-            Assert.AreEqual("objectSid", mapping.GroupIdentityAttribute);
-            Assert.AreEqual(typeof(SidConverter).FullName, mapping.GroupIdentityConverter);
             Assert.AreEqual("memberOf", mapping.GroupsAttribute);
             Assert.AreEqual("primaryGroupID", mapping.PrimaryGroupAttribute);
+            Assert.AreEqual("objectSid", mapping.PrimaryGroupIdentityAttribute);
             Assert.AreEqual("(|(sAMAccountName={0})(userPrincipalName={0}))", mapping.UserFilter);
             Assert.AreEqual("(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))", mapping.UsersFilter);
         }
@@ -33,16 +33,27 @@ namespace Visus.LdapAuthentication.Tests {
         [TestMethod]
         public void TestIdmuMapping() {
             var options = new LdapOptions();
-            var mapping = new LdapMapping();
 
-            Assert.IsTrue(options.Mappings.TryGetValue(Schema.IdentityManagementForUnix, out mapping));
+            Assert.IsTrue(options.Mappings.TryGetValue(Schema.IdentityManagementForUnix, out var mapping));
             Assert.AreEqual("distinguishedName", mapping.DistinguishedNameAttribute);
-            Assert.AreEqual("gidNumber", mapping.GroupIdentityAttribute);
-            Assert.IsNull(mapping.GroupIdentityConverter);
             Assert.AreEqual("memberOf", mapping.GroupsAttribute);
             Assert.AreEqual("gidNumber", mapping.PrimaryGroupAttribute);
+            Assert.AreEqual("gidNumber", mapping.PrimaryGroupIdentityAttribute);
             Assert.AreEqual("(|(sAMAccountName={0})(userPrincipalName={0}))", mapping.UserFilter);
             Assert.AreEqual("(&(objectClass=user)(objectClass=person)(!(objectClass=computer)))", mapping.UsersFilter);
+        }
+
+        [TestMethod]
+        public void TestRfc2307Mapping() {
+            var options = new LdapOptions();
+
+            Assert.IsTrue(options.Mappings.TryGetValue(Schema.Rfc2307, out var mapping));
+            Assert.AreEqual("distinguishedName", mapping.DistinguishedNameAttribute);
+            Assert.AreEqual("memberOf", mapping.GroupsAttribute);
+            Assert.AreEqual("gidNumber", mapping.PrimaryGroupAttribute);
+            Assert.AreEqual("gidNumber", mapping.PrimaryGroupIdentityAttribute);
+            Assert.AreEqual("(&(objectClass=posixAccount)(entryDN={0}))", mapping.UserFilter);
+            Assert.AreEqual("(&(objectClass=posixAccount)(objectClass=person))", mapping.UsersFilter);
         }
     }
 }

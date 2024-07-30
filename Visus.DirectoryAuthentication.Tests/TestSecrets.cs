@@ -5,6 +5,8 @@
 // <author>Christoph Müller</author>
 
 
+using Visus.DirectoryAuthentication.Configuration;
+
 namespace Visus.DirectoryAuthentication.Tests {
 
     /// <summary>
@@ -32,6 +34,11 @@ namespace Visus.DirectoryAuthentication.Tests {
         /// Gets or sets the LDAP options for the test.
         /// </summary>
         public LdapOptions LdapOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of a non-existing user account.
+        /// </summary>
+        public string NonExistingUserAccount { get; set; }
 
         /// <summary>
         /// Gets or sets the identity of a non-existing user.

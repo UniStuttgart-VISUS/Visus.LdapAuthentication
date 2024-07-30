@@ -139,7 +139,7 @@
     <value>The search base must be a non-empty string.</value>
   </data>
   <data name="ErrorEntryNotFound" xml:space="preserve">
-    <value>An entry with a value of "{1}" for "{0}" does not exist in the directory.</value>
+    <value>An entry matching {0} does not exist in the directory in the specified search locations.</value>
   </data>
   <data name="ErrorGroupClaim" xml:space="preserve">
     <value>Could not retrieve group claim for "{0}".</value>
@@ -168,6 +168,9 @@
   <data name="ErrorPrimaryGroupClaim" xml:space="preserve">
     <value>Could not retrieve the primary group claim for "{0}".</value>
   </data>
+  <data name="ErrorPrimaryGroupNotFound" xml:space="preserve">
+    <value>The primary group of the given entry could not be retrieved.</value>
+  </data>
   <data name="ErrorPropertyNotFound" xml:space="preserve">
     <value>The given property "{0}" was not found.</value>
   </data>
@@ -177,17 +180,17 @@
   <data name="ErrorUserNotFound" xml:space="preserve">
     <value>Login succeeded, but user information for "{0}" could not be found.</value>
   </data>
-  <data name="InfoBindCurrent" xml:space="preserve">
-    <value>Bind using the current credentials.</value>
+  <data name="InfoBindAnonymous" xml:space="preserve">
+    <value>Performing anonyomous bind.</value>
   </data>
   <data name="InfoBindingAsUser" xml:space="preserve">
     <value>Performing LDAP bind as user "{0}".</value>
   </data>
+  <data name="InfoBoundAnonymous" xml:space="preserve">
+    <value>Anonymous bind succeeded.</value>
+  </data>
   <data name="InfoBoundAsUser" xml:space="preserve">
     <value>Authenticated successfully as user "{0}".</value>
-  </data>
-  <data name="InfoBoundCurrent" xml:space="preserve">
-    <value>Bound using the current credentials.</value>
   </data>
   <data name="InfoCheckCertIssuer" xml:space="preserve">
     <value>Checking for LDAP server certificate "{0}" being issued by "{1}".</value>

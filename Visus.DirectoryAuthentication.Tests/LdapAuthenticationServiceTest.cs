@@ -7,7 +7,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.DirectoryServices.Protocols;
 using System.Linq;
+using Visus.Ldap;
 
 
 namespace Visus.DirectoryAuthentication.Tests {
@@ -18,30 +20,48 @@ namespace Visus.DirectoryAuthentication.Tests {
     [TestClass]
     public sealed class LdapAuthenticationServiceTest {
 
-        [TestMethod]
-        public void TestLogin() {
+        public LdapAuthenticationServiceTest() {
             var configuration = TestExtensions.CreateConfiguration();
-            var secrets = TestExtensions.CreateSecrets();
-            var section = configuration.GetSection("LdapOptions");
+            var collection = new ServiceCollection().AddMockLoggers();
+            collection.AddLdapAuthentication(o => {
+                var section = configuration.GetSection("LdapOptions");
+                section.Bind(o);
+            });
+            this._services = collection.BuildServiceProvider();
+        }
 
-            if (section != null) {
-                var collection = new ServiceCollection().AddMockLoggers();
-                collection.AddLdapServices(o => {
-                    section.Bind(o);
-                });
-
-                var provider = collection.BuildServiceProvider();
-
-                var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
+        [TestMethod]
+        public void TestLoginUser() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
                 Assert.IsNotNull(service);
 
-                var user = service.Login(secrets.LdapOptions.User, secrets.LdapOptions.Password);
+                var user = service.LoginUser(
+                    this._testSecrets.LdapOptions.User,
+                    this._testSecrets.LdapOptions.Password);
                 Assert.IsNotNull(user);
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Any());
-                Assert.IsNotNull(user.Claims);
-                Assert.IsTrue(user.Claims.Any());
+                Assert.IsTrue(user.Groups.Count() >= 1);
+                Assert.IsFalse(user.Groups.Any(g => g == null));
             }
         }
+
+        [TestMethod]
+        public void TestLoginUserFailure() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                Assert.ThrowsException<LdapException>(() => {
+                    service.LoginUser(
+                        this._testSecrets.LdapOptions.User,
+                        this._testSecrets.LdapOptions.Password + " is wrong");
+                });
+            }
+        }
+
+        private readonly ServiceProvider _services;
+        private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }
 }
