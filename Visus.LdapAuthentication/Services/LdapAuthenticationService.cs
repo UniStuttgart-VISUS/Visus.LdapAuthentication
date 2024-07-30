@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
@@ -72,6 +73,50 @@ namespace Visus.LdapAuthentication.Services {
         #endregion
 
         #region Public methods
+        /// <inheritdoc />
+        public ClaimsPrincipal? LoginPrincipal(string username,
+                string password,
+                string? authenticationType,
+                string? nameType,
+                string? roleType,
+                ClaimFilter? filter) {
+            // Note: It is important to pass a non-null password to make sure
+            // that end users do not authenticate as the server process.
+            var user = this.LoginUser(username, password);
+
+            // TODO: use direct mapper instead.
+            if (user != null) {
+                var claims = this._claimsBuilder.GetClaims(user, filter);
+                var identity = new ClaimsIdentity(claims,
+                    authenticationType, nameType, roleType);
+                return new ClaimsPrincipal(identity);
+            } else {
+                return null;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<ClaimsPrincipal?> LoginPrincipalAsync(string username,
+                string password,
+                string? authenticationType,
+                string? nameType,
+                string? roleType,
+                ClaimFilter? filter) {
+            // Note: It is important to pass a non-null password to make sure
+            // that end users do not authenticate as the server process.
+            var user = await this.LoginUserAsync(username, password);
+
+            // TODO: use direct mapper instead.
+            if (user != null) {
+                var claims = this._claimsBuilder.GetClaims(user, filter);
+                var identity = new ClaimsIdentity(claims,
+                    authenticationType, nameType, roleType);
+                return new ClaimsPrincipal(identity);
+            } else {
+                return null;
+            }
+        }
+
         /// <inheritdoc />
         public TUser? LoginUser(string username, string password) {
             // Note: It is important to pass a non-null password to make sure

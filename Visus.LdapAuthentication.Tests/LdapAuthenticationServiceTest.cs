@@ -32,6 +32,34 @@ namespace Visus.LdapAuthentication.Tests {
         }
 
         [TestMethod]
+        public void TestLoginPrincipal() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                var principal = service.LoginPrincipal(
+                    this._testSecrets.LdapOptions.User,
+                    this._testSecrets.LdapOptions.Password);
+                Assert.IsNotNull(principal);
+                Assert.IsTrue(principal.Claims.Any());
+            }
+        }
+
+        [TestMethod]
+        public async Task TestLoginPrincipalAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                var principal = await service.LoginPrincipalAsync(
+                    this._testSecrets.LdapOptions.User,
+                    this._testSecrets.LdapOptions.Password);
+                Assert.IsNotNull(principal);
+                Assert.IsTrue(principal.Claims.Any());
+            }
+        }
+
+        [TestMethod]
         public void TestLoginUser() {
             if (this._testSecrets?.LdapOptions != null) {
                 var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();

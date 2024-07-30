@@ -47,7 +47,9 @@ namespace Visus.Ldap.Claims {
         #region Public indexers
         /// <inheritdoc />
         public IEnumerable<ClaimAttribute> this[LdapAttribute attribute] {
-            get => this._claims[attribute];
+            get => this._claims.TryGetValue(attribute, out var retval)
+                ? retval
+                : Enumerable.Empty<ClaimAttribute>();
         }
         #endregion
 
