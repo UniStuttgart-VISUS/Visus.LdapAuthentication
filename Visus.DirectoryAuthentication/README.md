@@ -156,14 +156,16 @@ If you create a fully customised user, make sure to annotate properties with spe
 - **[GroupMemberships]:** Marks an `IEnumerable<TGroup>` as the property that receives the groups a user belongs to.
 
 ### Customising the group object
-In a similar way you can provide your own replacement of `LdapUser`, you can also provide a replacement for `LdapGroup`, contains the information to create group-based claims. Like for the user, you can rely on `LdapMapper` and annotations via attributes or customise the assignment of LDAP attributes to properties in a custom mapper.
+In a similar way you can provide your own replacement of `LdapUser`, you can also provide a replacement for `LdapGroup`, which contains the information to create group-based claims. Like for the user, you can rely on `LdapMapper` and annotations via attributes or customise the assignment of LDAP attributes to properties in a custom mapper.
 
-Your own LDAP group object should be annotated with the same attribute like the user to allow the default mapper to reflect on them. Groups support an additional attribute:
+Your own LDAP group object should be annotated with the same attributes described above for the user to allow the default mapper to reflect on them. Groups support an additional attribute:
 
 - **[PrimaryGroupFlag]:** Marks a `bool` property which will be set `true` by the mapper if the group was retrieved from the primary group attribute of a user rather than from the list of group memberships.
 
 ### Customising claims
-If you do not need additional information from the directory than what is provided by `LdapUser` and `LdapGroup`, but you want to customise the `System.Security.Claims.Claim`s generated, you could consider providing a custom `IClaimsBuilder` to make these claims from the information provided by the user object. Have a look at the default `ClaimsBuilder` for inspiration on how to do this. The default builder uses the `Claim` attribute to translate properties to claims.
+If you do not need additional information from the directory than what is provided by `LdapUser` and `LdapGroup`, but you want to customise the `System.Security.Claims.Claim`s generated, you could consider providing a custom `IClaimsBuilder` to make these claims from the information provided by the user object. Have a look at the default `ClaimsBuilder` in `Visus.Ldap.Core` for inspiration on how to do this. The default builder uses the `Claim` attribute to translate properties to claims.
+
+Note that the `IClaimsBuilder` is only used for converting user and group objects to claims, but if you login a `System.Security.Claims.ClaimPrincipal`, the creation of user and group objects might be skipped altogether. The library uses `IClaimsMapper` in this case to map LDAP attributes directly to claims. As for the `IClaimsBuilder`, you can replace the default `ClaimsMapper` from `Visus.Ldap.Core` with your own one.
 
 ## Searching users
 In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `LdapOptions.User` with a password stored in `LdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](ILdapSearchService.cs) to implement such a behaviour.
