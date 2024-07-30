@@ -43,10 +43,6 @@ Adds the ability to retrieve the default naming context from an LDAP connection.
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Mapping\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Visus.Ldap.Core\Visus.Ldap.Core.csproj" />
   </ItemGroup>
 

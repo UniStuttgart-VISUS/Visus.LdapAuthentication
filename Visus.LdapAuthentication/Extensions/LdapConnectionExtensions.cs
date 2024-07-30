@@ -4,10 +4,12 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Logging;
 using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Visus.LdapAuthentication.Configuration;
 
 
@@ -99,10 +101,15 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <exception cref="ArgumentException">If <paramref name="pageSize"/>
         /// is less than 1.</exception>
         public static IEnumerable<LdapEntry> PagedSearch(
-                this LdapConnection that, string @base, SearchScope scope,
-                string filter, string[] attrs, int pageSize,
-                string sortingAttribute, int timeLimit = 0,
-                ILogger logger = null) {
+                this LdapConnection that,
+                string @base,
+                SearchScope scope,
+                string filter,
+                string[] attrs,
+                int pageSize,
+                string sortingAttribute,
+                TimeSpan timeLimit,
+                ILogger? logger = null) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             var cntRead = 0;        // Number of entries already read.
@@ -112,7 +119,7 @@ namespace Visus.LdapAuthentication.Extensions {
 
             do {
                 var constraints = new LdapSearchConstraints() {
-                    TimeLimit = timeLimit
+                    TimeLimit = (int) timeLimit.TotalMilliseconds
                 };
 
                 if (pageSize > 0) {
@@ -152,45 +159,24 @@ namespace Visus.LdapAuthentication.Extensions {
         /// </summary>
         /// <param name="that"></param>
         /// <param name="base"></param>
-        /// <param name="scope"></param>
         /// <param name="filter"></param>
         /// <param name="attributes"></param>
         /// <param name="typesOnly"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ILdapSearchResults Search(this LdapConnection that,
-                string @base,
-                SearchScope scope,
-                string filter,
-                string[] attributes,
-                bool typesOnly = false)
-            => that.Search(@base,
-                (int) scope,
-                filter,
-                attributes,
-                typesOnly);
-
-        /// <summary>
-        /// Performs an LDAP search while converting our strongly typed
-        /// <see cref="SearchScope"/> to <see cref="int"/>.
-        /// </summary>
-        /// <param name="that"></param>
-        /// <param name="base"></param>
-        /// <param name="filter"></param>
-        /// <param name="attributes"></param>
-        /// <param name="typesOnly"></param>
+        /// <param name="constraints"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ILdapSearchResults Search(this LdapConnection that,
                 KeyValuePair<string, SearchScope> @base,
                 string filter,
                 string[] attributes,
-                bool typesOnly = false)
+                bool typesOnly = false,
+                LdapSearchConstraints? constraints = null)
             => that.Search(@base.Key,
                 (int) @base.Value,
                 filter,
                 attributes,
-                typesOnly);
+                typesOnly,
+                constraints);
 
         /// <summary>
         /// Performs an LDAP search while converting our strongly typed
@@ -210,13 +196,171 @@ namespace Visus.LdapAuthentication.Extensions {
                 SearchScope scope,
                 string filter,
                 string[] attributes,
-                bool typesOnly,
-                LdapSearchConstraints constraints)
+                bool typesOnly = false,
+                LdapSearchConstraints? constraints = null)
             => that.Search(@base,
                 (int) scope,
                 filter,
                 attributes,
                 typesOnly,
                 constraints);
+
+        /// <summary>
+        /// Performs the specified LDAP search on all search bases configured
+        /// in <paramref name="options"/>.
+        /// </summary>
+        /// <param name="that">The connection used to perform the search.
+        /// </param>
+        /// <param name="filter">The LDAP filter selecting the entries to return.
+        /// </param>
+        /// <param name="attributes">The attributes to load for each entry.
+        /// </param>
+        /// <param name="options">The LDAP options, which determine the search
+        /// bases and the search scope.</param>
+        /// <returns>The entries matching the specified
+        /// <paramref name="filter"/> in the scopes defined in
+        /// <paramref name="options"/>.</returns>
+        public static IEnumerable<LdapEntry> Search(
+                this LdapConnection that,
+                string filter,
+                string[] attributes,
+                LdapOptions options) {
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+            foreach (var b in options.SearchBases) {
+                var res = that.Search(b, filter, attributes);
+
+                while (res.HasMore()) {
+                    var entry = res.NextEntry();
+                    if (entry != null) {
+                        yield return entry;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wraps the asynchronous search using <see cref="LdapSearchQueue"/>
+        /// into an async/await method.
+        /// </summary>
+        /// <param name="that">The connection to perform the search on.</param>
+        /// <param name="base">The base DN where the search starts.</param>
+        /// <param name="scope">The scope of the search.</param>
+        /// <param name="filter">The LDAP filter for the entries to retrieve.
+        /// </param>
+        /// <param name="attributes">The names of the attributes to load for
+        /// each entry.</param>
+        /// <param name="typesOnly">Load only the types.</param>
+        /// <param name="constraints">The search constraits.</param>
+        /// <param name="pollingInterval">The interval to wait when the queue is
+        /// empty.</param>
+        /// <returns>The matching directory entries.</returns>
+        public static async Task<IEnumerable<LdapEntry>> SearchAsync(
+                this LdapConnection that,
+                string @base,
+                SearchScope scope,
+                string filter,
+                string[] attributes,
+                bool typesOnly,
+                LdapSearchConstraints? constraints,
+                TimeSpan pollingInterval) {
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+
+            var queue = (LdapSearchQueue) that.Search(@base, scope, filter,
+                attributes, typesOnly, constraints);
+            var retval = new List<LdapEntry>();
+
+            while (true) {
+                while (!queue.IsResponseReceived()) {
+                    await Task.Delay(pollingInterval);
+                }
+
+                var msg = queue.GetResponse();
+                if (msg == null) {
+                    return retval;
+
+                } else if (msg is LdapSearchResult r) {
+                    retval.Add(r.Entry);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wraps the asynchronous search using <see cref="LdapSearchQueue"/>
+        /// into an async/await method.
+        /// </summary>
+        /// <param name="that"></param>
+        /// <param name="base"></param>
+        /// <param name="scope"></param>
+        /// <param name="filter"></param>
+        /// <param name="attributes"></param>
+        /// <param name="pollingInterval"></param>
+        /// <returns></returns>
+        public static Task<IEnumerable<LdapEntry>> SearchAsync(
+                this LdapConnection that,
+                string @base,
+                SearchScope scope,
+                string filter,
+                string[] attributes,
+                TimeSpan pollingInterval)
+            => that.SearchAsync(@base,
+                scope,
+                filter,
+                attributes,
+                false,
+                null,
+                pollingInterval);
+
+        /// <summary>
+        /// Wraps the asynchronous search using <see cref="LdapSearchQueue"/>
+        /// into an async/await method.
+        /// </summary>
+        /// <param name="that"></param>
+        /// <param name="base"></param>
+        /// <param name="filter"></param>
+        /// <param name="attributes"></param>
+        /// <param name="pollingInterval"></param>
+        /// <returns></returns>
+        public static Task<IEnumerable<LdapEntry>> SearchAsync(
+                this LdapConnection that,
+                KeyValuePair<string, SearchScope> @base,
+                string filter,
+                string[] attributes,
+                TimeSpan pollingInterval)
+            => that.SearchAsync(@base.Key,
+                @base.Value,
+                filter,
+                attributes,
+                false,
+                null,
+                pollingInterval);
+
+        /// <summary>
+        /// Performs an asynchronous search at all locations configured in
+        /// <paramref name="options"/>.
+        /// </summary>
+        /// <param name="that"></param>
+        /// <param name="filter"></param>
+        /// <param name="attributes"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<LdapEntry>> SearchAsync(
+                this LdapConnection that,
+                string filter,
+                string[] attributes,
+                LdapOptions options) {
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+            var retval = new List<LdapEntry>();
+
+            foreach (var b in options.SearchBases) {
+                retval.AddRange(await that.SearchAsync(b, filter, attributes,
+                    options.PollingInterval));
+            }
+
+            return retval;
+        }
+
     }
 }

@@ -5,13 +5,20 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Novell.Directory.Ldap;
 using System;
+using Visus.Ldap;
+using Visus.Ldap.Claims;
+using Visus.Ldap.Configuration;
+using Visus.Ldap.Mapping;
+using Visus.LdapAuthentication.Claims;
 using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Mapping;
 using Visus.LdapAuthentication.Services;
 
 
-namespace Visus.LdapAuthentication
-{
+namespace Visus.LdapAuthentication {
 
     /// <summary>
     /// Extension methods for <see cref="IServiceCollection"/>.
@@ -19,173 +26,106 @@ namespace Visus.LdapAuthentication
     public static class ServiceCollectionExtensions {
 
         /// <summary>
-        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
-        /// injection container and registers and configures the
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> to the dependency
+        /// injection container and configures <see cref="LdapOptions"/>.
+        /// </summary>
+        /// <typeparam name="TUser">The type of user to be created for LDAP
+        /// entries of users.</typeparam>
+        /// <typeparam name="TGroup">The type of group to created for LDAP
+        /// entries of groups.</typeparam>
+        /// <typeparam name="TLdapMapper"></typeparam>
+        /// <typeparam name="TUserMap"></typeparam>
+        /// <typeparam name="TGroupMap"></typeparam>
+        /// <typeparam name="TClaimsBuilder"></typeparam>
+        /// <typeparam name="TClaimsMapper"></typeparam>
+        /// <typeparam name="TUserClaimsMap"></typeparam>
+        /// <typeparam name="TGroupClaimsMap"></typeparam>
+        /// <param name="services">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">A callback configuring the options.</param>
+        /// <returns><paramref name="services"/> after injection.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="services"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddLdapAuthentication<
+                TUser, TGroup,
+                TLdapMapper, TUserMap, TGroupMap,
+                TClaimsBuilder, TClaimsMapper, TUserClaimsMap, TGroupClaimsMap>(
+                this IServiceCollection services,
+                Action<LdapOptions> options)
+                where TUser : class, new()
+                where TGroup : class, new()
+                where TLdapMapper : class, ILdapMapper<LdapEntry, TUser, TGroup>
+                where TUserMap : class, ILdapAttributeMap<TUser>
+                where TGroupMap : class, ILdapAttributeMap<TGroup>
+                where TClaimsBuilder : class, IClaimsBuilder<TUser, TGroup>
+                where TClaimsMapper : class, IClaimsMapper<LdapEntry>
+                where TUserClaimsMap : class, IUserClaimsMap
+                where TGroupClaimsMap : class, IGroupClaimsMap {
+            _ = services ?? throw new ArgumentNullException(nameof(services));
+
+            {
+                var b = services.AddOptions<LdapOptions>()
+                    .Configure(options)
+                    .ValidateOnStart();
+                b.Services.AddSingleton<LdapOptionsValidator>();
+                b.Services.AddSingleton<IValidateOptions<LdapOptions>,
+                    FluentValidateOptions<LdapOptions, LdapOptionsValidator>>();
+            }
+
+            return services
+                .AddSingleton<IClaimsBuilder<TUser, TGroup>, TClaimsBuilder>()
+                .AddSingleton<IClaimsMapper<LdapEntry>, TClaimsMapper>()
+                .AddSingleton<IGroupClaimsMap, TGroupClaimsMap>()
+                .AddSingleton<IUserClaimsMap, TUserClaimsMap>()
+                .AddSingleton<ILdapMapper<LdapEntry, TUser, TGroup>, TLdapMapper>()
+                .AddSingleton<ILdapAttributeMap<TUser>, TUserMap>()
+                .AddSingleton<ILdapAttributeMap<TGroup>, TGroupMap>()
+                .AddSingleton<ILdapConnectionService, LdapConnectionService>()
+                .AddScoped<ILdapAuthenticationService<TUser>, LdapAuthenticationService<TUser, TGroup>>()
+                .AddScoped<ILdapSearchService<TUser, TGroup>, LdapSearchService<TUser, TGroup>>();
+        }
+
+        /// <summary>
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> to the dependency
+        /// injection container and configures <see cref="LdapOptions"/>.
+        /// </summary>
+        /// <typeparam name="TUser"></typeparam>
+        /// <typeparam name="TGroup"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddLdapAuthentication<TUser, TGroup>(
+                this IServiceCollection services, Action<LdapOptions> options)
+                where TUser : class, new()
+                where TGroup : class, new()
+            => services.AddLdapAuthentication<TUser,
+                TGroup,
+                LdapMapper<TUser, TGroup>,
+                LdapAttributeMap<TUser>,
+                LdapAttributeMap<TGroup>,
+                ClaimsBuilder<TUser, TGroup>,
+                ClaimsMapper,
+                ClaimsMap<TUser>,
+                ClaimsMap<TGroup>>(options);
+
+        /// <summary>
+        /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
+        /// <see cref="ILdapConnectionService"/> and
+        /// <see cref="ILdapSearchService{TUser, TGroup}"/> using the default
+        /// <see cref="LdapUser"/> and <see cref="LdapGroup"/> representations
+        /// to the dependency injection container and configures
         /// <see cref="LdapOptions"/>.
         /// </summary>
-        /// <typeparam name="TUser">The type of user to be created for the search
-        /// results, which also defines attributes like the unique identity in
-        /// combination with the global options from <see cref="ILdapOptions"/>.
-        /// </typeparam>
-        /// <typeparam name="TMapper">The type of the user mapper.</typeparam>
-        /// <param name="that">The service collection to add the service to.
-        /// </param>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapAuthenticationService<TUser, TMapper>(
-                this IServiceCollection services,
-                Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new()
-                where TMapper : class, ILdapUserMapper<TUser> {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            return services.Configure(options)
-                .AddSingleton<ILdapUserMapper<TUser>, TMapper>()
-                .AddScoped<ILdapAuthenticationService,
-                    LdapAuthenticationService<TUser>>()
-                .AddScoped<ILdapAuthenticationService<TUser>,
-                    LdapAuthenticationService<TUser>>();
-        }
+        /// <param name="services"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddLdapAuthentication(
+                this IServiceCollection services, Action<LdapOptions> options)
+            => services.AddLdapAuthentication<LdapUser, LdapGroup>(options);
 
-        /// <summary>
-        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
-        /// injection container and registers and configures the
-        /// <see cref="LdapOptions"/>.
-        /// </summary>
-        /// <typeparam name="TUser">The type of user to be created for the search
-        /// results, which also defines attributes like the unique identity in
-        /// combination with the global options from <see cref="ILdapOptions"/>.
-        /// </typeparam>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapAuthenticationService<TUser>(
-                this IServiceCollection services,
-                Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new() {
-            services.AddLdapAuthenticationService<TUser, LdapUserMapper<TUser>>(
-                options);
-            return services;
-        }
-
-        /// <summary>
-        /// Adds an <see cref="ILdapAuthenticationService"/> to the dependency
-        /// injection container and registers and configures the
-        /// <see cref="LdapOptions"/>.
-        /// </summary>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapAuthenticationService(
-                this IServiceCollection services,
-                Action<LdapOptions> options)
-            => services.AddLdapAuthenticationService<LdapUser>(options);
-
-        /// <summary>
-        /// Adds an <see cref="ILdapConnectionService"/> to the dependency
-        /// injection container.
-        /// </summary>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapConnectionService(
-                this IServiceCollection services,
-                Action<LdapOptions> options) {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            return services.Configure(options)
-                .AddScoped<ILdapConnectionService, LdapConnectionService>();
-        }
-
-
-        /// <summary>
-        /// Adds an <see cref="ILdapSearchService"/> with a custom user
-        /// mapper to the dependency injection container.
-        /// </summary>
-        /// <typeparam name="TMapper">The type of the user mapper.</typeparam>
-        /// <typeparam name="TUser">The type of user to be created for the search
-        /// results, which also defines attributes like the unique identity in
-        /// combination with the global options from <see cref="ILdapOptions"/>.
-        /// </typeparam>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapSearchService<TUser, TMapper>(
-                this IServiceCollection services,
-                Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new()
-            where TMapper : class, ILdapUserMapper<TUser> {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            return services.Configure(options)
-                .AddSingleton<ILdapUserMapper<TUser>, TMapper>()
-                .AddScoped<ILdapSearchService,
-                    LdapSearchService<TUser>>()
-                .AddScoped<ILdapSearchService<TUser>,
-                    LdapSearchService<TUser>>();
-        }
-
-        /// <summary>
-        /// Adds an <see cref="ILdapSearchService"/> to the dependency injection
-        /// container.
-        /// </summary>
-        /// <typeparam name="TUser">The type of user to be created for the search
-        /// results, which also defines attributes like the unique identity in
-        /// combination with the global options from <see cref="ILdapOptions"/>.
-        /// </typeparam>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddLdapSearchService<TUser>(
-                this IServiceCollection services,
-                Action<LdapOptions> options)
-                where TUser : class, ILdapUser, new() {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = options ?? throw new ArgumentNullException(nameof(options));
-            services.AddLdapSearchService<TUser, LdapUserMapper<TUser>>(options);
-            return services;
-        }
-
-        /// <summary>
-        /// Adds an <see cref="ILdapSearchService"/> to the dependency injection
-        /// container.
-        /// </summary>
-        /// <param name="services">The service collection to add the service to.
-        /// </param>
-        /// <param name="options">A callback configuring the options.</param>
-        /// <returns><paramref name="services"/> after injection.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="services"/> is <c>null</c>, or if
-        /// <paramref name="options"/> is <c>null</c>.
-        /// </exception>
-        public static IServiceCollection AddLdapSearchService(
-                this IServiceCollection services,
-                Action<LdapOptions> options)
-            => services.AddLdapSearchService<LdapUser>(options);
     }
 }

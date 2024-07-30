@@ -118,8 +118,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="base">The base DN to start the search at.</param>
         /// <param name="scope">The search scope.</param>
         /// <param name="filter">The search filter.</param>
-        /// <param name="attrs">The list of LDAP attributes to be loaded for
-        /// the search results.</param>
+        /// <param name="attributes">The list of LDAP attributes to be loaded
+        /// for the search results.</param>
         /// <param name="pageSize">The size of the result pages in number of
         /// entries.</param>
         /// <param name="sortingAttribute">The attribute used to sort the
@@ -136,12 +136,17 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <exception cref="ArgumentException">If <paramref name="pageSize"/>
         /// is less than 1.</exception>
         public static IEnumerable<SearchResultEntry> PagedSearch(
-                this LdapConnection that, string @base, SearchScope scope,
-                string filter, string[] attrs, int pageSize,
-                string sortingAttribute, TimeSpan timeLimit) {
+                this LdapConnection that,
+                string @base,
+                SearchScope scope,
+                string filter,
+                string[] attributes,
+                int pageSize,
+                string sortingAttribute,
+                TimeSpan timeLimit) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
-            var request = new SearchRequest(@base, filter, scope, attrs);
+            var request = new SearchRequest(@base, filter, scope, attributes);
             var reqControl = request.AddPaging(pageSize, sortingAttribute);
 
             do {
@@ -174,8 +179,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="base">The base DN to start the search at.</param>
         /// <param name="scope">The search scope.</param>
         /// <param name="filter">The search filter.</param>
-        /// <param name="attrs">The list of LDAP attributes to be loaded for
-        /// the search results.</param>
+        /// <param name="attributes">The list of LDAP attributes to be loaded
+        /// for the search results.</param>
         /// <param name="pageSize">The size of the result pages in number of
         /// entries.</param>
         /// <param name="sortingAttribute">The attribute used to sort the
@@ -192,12 +197,17 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <exception cref="ArgumentException">If <paramref name="pageSize"/>
         /// is less than 1.</exception>
         public static async Task<IEnumerable<SearchResultEntry>>
-        PagedSearchAsync(this LdapConnection that, string @base,
-                SearchScope scope, string filter, string[] attrs,
-                int pageSize, string sortingAttribute, TimeSpan timeLimit) {
+        PagedSearchAsync(this LdapConnection that,
+                string @base,
+                SearchScope scope,
+                string filter,
+                string[] attributes,
+                int pageSize,
+                string sortingAttribute,
+                TimeSpan timeLimit) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
-            var request = new SearchRequest(@base, filter, scope, attrs);
+            var request = new SearchRequest(@base, filter, scope, attributes);
             var reqControl = request.AddPaging(pageSize, sortingAttribute);
             var retval = Enumerable.Empty<SearchResultEntry>();
 

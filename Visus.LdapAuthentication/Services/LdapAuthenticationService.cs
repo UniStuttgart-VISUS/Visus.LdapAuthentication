@@ -8,11 +8,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Novell.Directory.Ldap;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
+using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Extensions;
 
 
 namespace Visus.LdapAuthentication.Services {
@@ -57,47 +62,88 @@ namespace Visus.LdapAuthentication.Services {
                 ?? throw new ArgumentNullException(nameof(options));
             this._mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
+
+            Debug.Assert(this._options.Mapping != null);
+            this._userAttributes = this._mapper.RequiredUserAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
         }
         #endregion
 
-        /// <summary>
-        /// Performs an LDAP bind using the specified credentials and retrieves
-        /// the LDAP entry with the account name <paramref name="username"/> in
-        /// case the bind succeeds.
-        /// </summary>
-        /// <param name="username">The user name to logon with.</param>
-        /// <param name="password">The password of the user.</param>
-        /// <returns>The user object in case of a successful login.</returns>
+        #region Public methods
+        /// <inheritdoc />
         public TUser? LoginUser(string username, string password) {
-            using var connection = _options.Connect(username, password,
-                _logger);
+            // Note: It is important to pass a non-null password to make sure
+            // that end users do not authenticate as the server process.
+            var connection = this._connectionService.Connect(
+                username ?? string.Empty,
+                password ?? string.Empty);
+
+            Debug.Assert(this._options.Mapping != null);
+            var filter = string.Format(this._options.Mapping.UserFilter,
+                username.EscapeLdapFilterExpression());
 
             var retval = new TUser();
-            var groupAttribs = _options.Mapping.RequiredGroupAttributes;
-            var filter = string.Format(_options.Mapping.UserFilter,
-                username);
 
-            foreach (var b in _options.SearchBases) {
-                var result = connection.Search(
-                    b,
-                    filter,
-                    retval.RequiredAttributes.Concat(groupAttribs).ToArray(),
-                    false);
-
-                if (result.HasMore()) {
-                    var entry = result.NextEntry(_logger);
-                    if (entry != null) {
-                        _mapper.Assign(retval, entry, connection,
-                            _logger);
-                        return retval;
-                    }
+            foreach (var b in this._options.SearchBases) {
+                var entry = connection.Search(b, filter, this._userAttributes)
+                    .FirstOrDefault();
+                if (entry != null) {
+                    this._mapper.MapUser(entry, retval);
+                    var groups = entry.GetGroups(connection,
+                        this._mapper,
+                        this._options);
+                    this._mapper.SetGroups(retval, groups);
+                    return retval;
                 }
             }
 
-            _logger.LogError(Properties.Resources.ErrorUserNotFound,
-                username);
-            return null;
+            // Not found at this point, although authentication succeeded.
+            {
+                var msg = Properties.Resources.ErrorUserNotFound;
+                msg = string.Format(msg, username);
+                throw new KeyNotFoundException(msg);
+            }
         }
+
+        /// <inheritdoc />
+        public async Task<TUser?> LoginUserAsync(string username,
+                string password) {
+            // Note: It is important to pass a non-null password to make sure
+            // that end users do not authenticate as the server process.
+            var connection = this._connectionService.Connect(
+                username ?? string.Empty,
+                password ?? string.Empty);
+
+            Debug.Assert(this._options.Mapping != null);
+            var filter = string.Format(this._options.Mapping.UserFilter,
+                username.EscapeLdapFilterExpression());
+
+            var retval = new TUser();
+
+            foreach (var b in this._options.SearchBases) {
+                var entry = (await connection.SearchAsync(b, filter,
+                    this._userAttributes, this._options.PollingInterval))
+                    .FirstOrDefault();
+                if (entry != null) {
+                    this._mapper.MapUser(entry, retval);
+                    var groups = entry.GetGroups(connection,
+                        this._mapper,
+                        this._options);
+                    this._mapper.SetGroups(retval, groups);
+                    return retval;
+                }
+            }
+
+            // Not found at this point, although authentication succeeded.
+            {
+                var msg = Properties.Resources.ErrorUserNotFound;
+                msg = string.Format(msg, username);
+                throw new KeyNotFoundException(msg);
+            }
+        }
+        #endregion
 
         #region Private fields
         private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
@@ -105,6 +151,7 @@ namespace Visus.LdapAuthentication.Services {
         private readonly ILogger _logger;
         private readonly LdapOptions _options;
         private readonly ILdapMapper<LdapEntry, TUser, TGroup> _mapper;
+        private readonly string[] _userAttributes;
         #endregion
     }
 }

@@ -37,6 +37,15 @@ namespace Visus.LdapAuthentication.Configuration {
         }
 
         /// <summary>
+        /// Gets or sets the polling interval for asynchronous directory
+        /// operations.
+        /// </summary>
+        public TimeSpan PollingInterval {
+            get;
+            set;
+        } = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>
         /// Gets the thumbprint of the trusted root CA for the LDAP server.
         /// </summary>
         /// <remarks>

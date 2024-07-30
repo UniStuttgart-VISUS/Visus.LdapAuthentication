@@ -10,7 +10,7 @@ using Visus.Ldap.Mapping;
 using Novell.Directory.Ldap;
 
 
-namespace Visus.DirectoryAuthentication.Claims {
+namespace Visus.LdapAuthentication.Claims {
 
     /// <summary>
     /// Implementation of the entry to claim mapper.

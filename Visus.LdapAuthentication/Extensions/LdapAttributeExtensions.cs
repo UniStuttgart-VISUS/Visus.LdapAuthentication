@@ -6,6 +6,7 @@
 
 using Novell.Directory.Ldap;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Visus.Ldap.Mapping;
 
@@ -87,6 +88,46 @@ namespace Visus.LdapAuthentication.Extensions {
             } else {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Gets all values of the specified <paramref name="type"/> that
+        /// <paramref name="that"/> has.
+        /// </summary>
+        /// <remarks>
+        /// This emulates an API that is supported in Microsoft's directory
+        /// services API, such we can easier copy code between both libraries.
+        /// </remarks>
+        /// <param name="that">The attribute to get the values of.</param>
+        /// <param name="type">The type to retrieve, which can be either a
+        /// <see cref="string"/> or a <see cref="byte"/> array.</param>
+        /// <returns>The values of the attribute.</returns>
+        public static IEnumerable<object> GetValues(this LdapAttribute that,
+                Type type) {
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+            ArgumentNullException.ThrowIfNull(type, nameof(type));
+
+            if (type == typeof(string)) {
+                if (that.StringValues != null) {
+                    while (that.StringValues.MoveNext()) {
+                        yield return that.StringValues.Current;
+                    }
+
+                } else if (that.StringValue != null) {
+                    yield return that.StringValue;
+                }
+
+            } else if (type == typeof(byte[])) {
+                if (that.ByteValueArray?.Length > 0) {
+                    foreach (var v in that.ByteValueArray) {
+                        yield return v;
+                    }
+
+                } else if (that.ByteValues != null) {
+                    yield return that.ByteValues;
+                }
+            }
+
         }
     }
 }

@@ -41,13 +41,16 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
+        /// <param name="options">The LDAP options specifying the server and
+        /// the credentials to use.</param>
         /// <param name="connectionService">The connection service providing the
         /// LDAP connections along with the options.</param>
-        /// <param name="mapper">A <see cref="ILdapMapper{TUser, TGroup}"/> that
-        /// provides a mapping between LDAP attributes and properties of
-        /// <typeparamref name="TUser"/>.</param>
-        /// <param name="claimsBuilder">A helper that creates
-        /// <see cref="Claim"/>s from a user object.</param>
+        /// <param name="mapper">An LDAP mapper that can fill
+        /// <typeparamref name="TUser"/> and <see cref="TGroup"/> from an
+        /// LDAP entry.</param>
+        /// <param name="userMap">An LDAP property map for
+        /// <typeparamref name="TUser"/> that allows the server to retrieve
+        /// infromation about the user object.</param>
         /// <param name="logger">A logger for persisting important messages like
         /// failed search requests.</param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
@@ -85,52 +88,52 @@ namespace Visus.DirectoryAuthentication.Services {
             GC.SuppressFinalize(this);
         }
 
-        /// <inheritdoc />
-        public IEnumerable<string> GetDistinguishedNames(string filter) {
-            ArgumentNullException.ThrowIfNull(filter, nameof(filter));
+        ///// <inheritdoc />
+        //public IEnumerable<string> GetDistinguishedNames(string filter) {
+        //    ArgumentNullException.ThrowIfNull(filter, nameof(filter));
 
-            foreach (var b in this._options.SearchBases) {
-                // Perform a paged search (there might be a lot of matching
-                // entries which cannot be returned at once).
-                var entries = this.Connection.PagedSearch(
-                    b.Key,
-                    b.Value,
-                    filter,
-                    Array.Empty<string>(),
-                    this._options.PageSize,
-                    "CN",
-                    this._options.Timeout);
+        //    foreach (var b in this._options.SearchBases) {
+        //        // Perform a paged search (there might be a lot of matching
+        //        // entries which cannot be returned at once).
+        //        var entries = this.Connection.PagedSearch(
+        //            b.Key,
+        //            b.Value,
+        //            filter,
+        //            Array.Empty<string>(),
+        //            this._options.PageSize,
+        //            "CN",
+        //            this._options.Timeout);
 
-                foreach (var e in entries) {
-                    yield return e.DistinguishedName;
-                }
-            }
-        }
+        //        foreach (var e in entries) {
+        //            yield return e.DistinguishedName;
+        //        }
+        //    }
+        //}
 
-        /// <inheritdoc />
-        public async Task<IEnumerable<string>> GetDistinguishedNamesAsync(
-                string filter) {
-            ArgumentNullException.ThrowIfNull(filter, nameof(filter));
-            var retval = Enumerable.Empty<string>();
+        ///// <inheritdoc />
+        //public async Task<IEnumerable<string>> GetDistinguishedNamesAsync(
+        //        string filter) {
+        //    ArgumentNullException.ThrowIfNull(filter, nameof(filter));
+        //    var retval = Enumerable.Empty<string>();
 
-            foreach (var b in this._options.SearchBases) {
-                // Perform a paged search (there might be a lot of matching
-                // entries which cannot be returned at once).
-                var entries = await this.Connection.PagedSearchAsync(
-                    b.Key,
-                    b.Value,
-                    filter,
-                    Array.Empty<string>(),
-                    this._options.PageSize,
-                    "CN",
-                    this._options.Timeout).ConfigureAwait(false);
+        //    foreach (var b in this._options.SearchBases) {
+        //        // Perform a paged search (there might be a lot of matching
+        //        // entries which cannot be returned at once).
+        //        var entries = await this.Connection.PagedSearchAsync(
+        //            b.Key,
+        //            b.Value,
+        //            filter,
+        //            Array.Empty<string>(),
+        //            this._options.PageSize,
+        //            "CN",
+        //            this._options.Timeout).ConfigureAwait(false);
 
-                retval = retval.Concat(
-                    entries.Select(e => e.DistinguishedName));
-            }
+        //        retval = retval.Concat(
+        //            entries.Select(e => e.DistinguishedName));
+        //    }
 
-            return retval;
-        }
+        //    return retval;
+        //}
 
         /// <inheritdoc />
         public TUser? GetUserByAccountName(string accountName) {
@@ -221,21 +224,6 @@ namespace Visus.DirectoryAuthentication.Services {
         #endregion
 
         #region Private methods
-        /// <summary>
-        /// Merges the given filter with the default filter in
-        /// <see cref="_options"/>.
-        /// </summary>
-        /// <param name="filter">The user-provided filter, which may be
-        /// <c>null</c>.</param>
-        /// <returns>The actual filter to be used in a query.</returns>
-        private string MergeFilter(string filter) {
-            if (string.IsNullOrWhiteSpace(filter)) {
-                return this._options.Mapping!.UsersFilter;
-            } else {
-                return $"(&{this._options.Mapping!.UsersFilter}{filter})";
-            }
-        }
-
         /// <summary>
         /// Disposes managed resources if <paramref name="isDisposing"/> is
         /// <c>true</c>.
@@ -415,6 +403,21 @@ namespace Visus.DirectoryAuthentication.Services {
             //}
 
             //return retval;
+        }
+
+        /// <summary>
+        /// Merges the given filter with the default filter in
+        /// <see cref="_options"/>.
+        /// </summary>
+        /// <param name="filter">The user-provided filter, which may be
+        /// <c>null</c>.</param>
+        /// <returns>The actual filter to be used in a query.</returns>
+        private string MergeFilter(string filter) {
+            if (string.IsNullOrWhiteSpace(filter)) {
+                return this._options.Mapping!.UsersFilter;
+            } else {
+                return $"(&{this._options.Mapping!.UsersFilter}{filter})";
+            }
         }
         #endregion
 
