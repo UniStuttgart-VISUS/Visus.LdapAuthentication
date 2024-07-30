@@ -100,7 +100,9 @@ namespace Visus.LdapAuthentication.Configuration {
                 options.UseSsl();
             }
 
-            return new LdapConnection(options);
+            return new LdapConnection(options) {
+                ConnectionTimeout = (int) this.Timeout.TotalMilliseconds
+            };
         }
 
         /// <summary>
