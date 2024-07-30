@@ -116,9 +116,9 @@ namespace Visus.LdapAuthentication.Extensions {
             ArgumentNullException.ThrowIfNull(type, nameof(type));
 
             if (type == typeof(string)) {
-                if (that.StringValues != null) {
-                    while (that.StringValues.MoveNext()) {
-                        yield return that.StringValues.Current;
+                if (that.StringValueArray?.Length > 0) {
+                    foreach (var v in that.StringValueArray) {
+                        yield return v;
                     }
 
                 } else if (that.StringValue != null) {

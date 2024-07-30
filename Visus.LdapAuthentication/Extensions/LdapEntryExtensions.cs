@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Configuration;
 
@@ -45,7 +46,7 @@ namespace Visus.LdapAuthentication.Extensions {
                 if (att != null) {
                     return att.GetValues(typeof(string))
                         .Cast<string>()
-                        .ToArray();
+                        .ToHashSet();
                 }
             } catch { /* Entry has no valid group memberships. */ }
 
@@ -79,6 +80,7 @@ namespace Visus.LdapAuthentication.Extensions {
             if (groups.Any()) {
                 Debug.Assert(options != null);
                 Debug.Assert(options.Mapping != null);
+                groups = groups.Select(g => g.EscapeLdapFilterExpression()!);
                 groups = groups.Select(
                     g => $"({options.Mapping.DistinguishedNameAttribute}={g})");
                 return connection.Search($"(|{string.Join("", groups)})",

@@ -118,7 +118,7 @@ namespace Visus.Ldap.Mapping {
                 IEnumerable<LdapGroup> groups) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
-            user.Groups = groups.Distinct();
+            user.Groups = groups.Distinct().ToList();
             return user;
         }
 

@@ -94,7 +94,7 @@ namespace Visus.Ldap.Mapping {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             ArgumentNullException.ThrowIfNull(groups, nameof(groups));
             this._userMap.GroupMembershipsProperty?.SetValue(user,
-                groups.Distinct());
+                groups.Distinct().ToList());
             return user;
         }
 
