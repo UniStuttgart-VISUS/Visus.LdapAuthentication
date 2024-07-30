@@ -16,7 +16,7 @@
     <NeutralLanguage>en</NeutralLanguage>
     <UserSecretsId>e07a7441-ba97-46b5-9ce1-391f2c978578</UserSecretsId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-pre</Version>
+    <Version>2.0.0-pre1</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
