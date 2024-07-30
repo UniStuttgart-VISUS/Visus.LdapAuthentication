@@ -201,8 +201,9 @@ namespace Visus.LdapAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
-                var entry = this.Connection.Search(b, filter, this._userAttributes)
-                    .FirstOrDefault();
+                var res = this.Connection.Search(b, filter,
+                    this._userAttributes);
+                var entry = res.NextEntry();
                 if (entry != null) {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(this.Connection,
