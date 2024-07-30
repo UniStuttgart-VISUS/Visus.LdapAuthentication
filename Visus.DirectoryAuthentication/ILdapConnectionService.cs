@@ -20,12 +20,12 @@ namespace Visus.DirectoryAuthentication {
         /// </summary>
         /// <param name="username">The user name used to perform the LDAP bind.
         /// If both, <paramref name="username"/> and <paramref name="password"/>
-        /// are <c>null</c>, the service shall use the credentials configured
-        /// in the <see cref="Configuration.LdapOptions"/>.</param>
+        /// are <c>null</c>, the service shall perform an anonymous bind.
+        /// </param>
         /// <param name="password">The password used to perfom the LDAP bind.
         /// If both, <paramref name="username"/> and <paramref name="password"/>
-        /// are <c>null</c>, the service shall use the credentials configured
-        /// in the <see cref="Configuration.LdapOptions"/>.</param>
+        /// are <c>null</c>, the service shall perform an anonymous bind.
+        /// </param>
         /// <returns>A new LDAP connection</returns>
         LdapConnection Connect(string? username, string? password);
 

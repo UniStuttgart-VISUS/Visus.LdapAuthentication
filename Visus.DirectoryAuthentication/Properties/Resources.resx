@@ -180,17 +180,17 @@
   <data name="ErrorUserNotFound" xml:space="preserve">
     <value>Login succeeded, but user information for "{0}" could not be found.</value>
   </data>
-  <data name="InfoBindCurrent" xml:space="preserve">
-    <value>Bind using the current credentials.</value>
+  <data name="InfoBindAnonymous" xml:space="preserve">
+    <value>Performing anonyomous bind.</value>
   </data>
   <data name="InfoBindingAsUser" xml:space="preserve">
     <value>Performing LDAP bind as user "{0}".</value>
   </data>
+  <data name="InfoBoundAnonymous" xml:space="preserve">
+    <value>Anonymous bind succeeded.</value>
+  </data>
   <data name="InfoBoundAsUser" xml:space="preserve">
     <value>Authenticated successfully as user "{0}".</value>
-  </data>
-  <data name="InfoBoundCurrent" xml:space="preserve">
-    <value>Bound using the current credentials.</value>
   </data>
   <data name="InfoCheckCertIssuer" xml:space="preserve">
     <value>Checking for LDAP server certificate "{0}" being issued by "{1}".</value>

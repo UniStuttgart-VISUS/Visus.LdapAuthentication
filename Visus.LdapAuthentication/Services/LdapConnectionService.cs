@@ -57,10 +57,10 @@ namespace Visus.LdapAuthentication.Services {
             this._logger.LogDebug("User name to bind (possibly expanded by the "
                 + "default domain) is {username}.", username);
 
-            if (username == null && password == null) {
-                this._logger.LogInformation(Resources.InfoBindCurrent);
-                retval.Bind(this._options.User, this._options.Password);
-                this._logger.LogInformation(Resources.InfoBoundCurrent);
+            if ((username == null) && (password == null)) {
+                this._logger.LogInformation(Resources.InfoBindAnonymous);
+                retval.Bind(null, null);
+                this._logger.LogInformation(Resources.InfoBoundAnonymous);
 
             } else {
                 this._logger.LogInformation(Resources.InfoBindingAsUser,

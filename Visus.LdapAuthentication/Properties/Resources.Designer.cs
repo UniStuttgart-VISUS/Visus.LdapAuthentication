@@ -196,11 +196,11 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bind using the current credentials..
+        ///   Looks up a localized string similar to Performing anonyomous bind..
         /// </summary>
-        public static string InfoBindCurrent {
+        public static string InfoBindAnonymous {
             get {
-                return ResourceManager.GetString("InfoBindCurrent", resourceCulture);
+                return ResourceManager.GetString("InfoBindAnonymous", resourceCulture);
             }
         }
         
@@ -214,20 +214,20 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Anonymous bind succeeded..
+        /// </summary>
+        public static string InfoBoundAnonymous {
+            get {
+                return ResourceManager.GetString("InfoBoundAnonymous", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Authenticated successfully as user &quot;{0}&quot;..
         /// </summary>
         public static string InfoBoundAsUser {
             get {
                 return ResourceManager.GetString("InfoBoundAsUser", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Bound using the current credentials..
-        /// </summary>
-        public static string InfoBoundCurrent {
-            get {
-                return ResourceManager.GetString("InfoBoundCurrent", resourceCulture);
             }
         }
         

@@ -60,7 +60,7 @@ namespace Visus.LdapAuthentication.Services {
                 ILogger<LdapSearchService<TUser, TGroup>> logger) {
             ArgumentNullException.ThrowIfNull(connectionService,
                 nameof(connectionService));
-            this._connection = connectionService.Connect();
+
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._options = options?.Value
@@ -69,6 +69,9 @@ namespace Visus.LdapAuthentication.Services {
                 ?? throw new ArgumentNullException(nameof(mapper));
             this._userMap = userMap
                 ?? throw new ArgumentNullException(nameof(userMap));
+
+            this._connection = connectionService.Connect(
+                this._options.User, this._options.Password);
 
             Debug.Assert(this._options.Mapping != null);
             this._userAttributes = this._mapper.RequiredUserAttributes

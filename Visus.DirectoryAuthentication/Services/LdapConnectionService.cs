@@ -58,10 +58,10 @@ namespace Visus.DirectoryAuthentication.Services {
             this._logger.LogDebug("User name to bind (possibly expanded by the "
                 + "default domain) is {username}.", username);
 
-            if (username == null && password == null) {
-                this._logger.LogInformation(Resources.InfoBindCurrent);
+            if ((username == null) && (password == null)) {
+                this._logger.LogInformation(Resources.InfoBindAnonymous);
                 retval.Bind();
-                this._logger.LogInformation(Resources.InfoBoundCurrent);
+                this._logger.LogInformation(Resources.InfoBoundAnonymous);
 
             } else {
                 this._logger.LogInformation(Resources.InfoBindingAsUser,
