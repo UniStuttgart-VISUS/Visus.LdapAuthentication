@@ -17,5 +17,6 @@ namespace Visus.LdapAuthentication.Tests {
         [LdapAttribute("Active Directory", "thumbnailPhoto",
             Converter = typeof(BinaryConverter))]
         public string? ProfilePicture { get; set; }
+
     }
 }
