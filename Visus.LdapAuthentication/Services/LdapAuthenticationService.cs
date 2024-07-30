@@ -11,12 +11,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
+using Visus.LdapAuthentication.Claims;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
 
@@ -52,9 +54,12 @@ namespace Visus.LdapAuthentication.Services {
                 ILdapConnectionService connectionService,
                 ILdapMapper<LdapEntry, TUser, TGroup> mapper,
                 IClaimsBuilder<TUser, TGroup> claimsBuilder,
+                IClaimsMapper<LdapEntry> claimsMapper,
                 ILogger<LdapAuthenticationService<TUser, TGroup>> logger) {
             this._claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));
+            this._claimsMapper = claimsMapper
+                ?? throw new ArgumentNullException(nameof(claimsMapper));
             this._connectionService = connectionService
                 ?? throw new ArgumentNullException(nameof(connectionService));
             this._logger = logger
@@ -65,7 +70,15 @@ namespace Visus.LdapAuthentication.Services {
                 ?? throw new ArgumentNullException(nameof(mapper));
 
             Debug.Assert(this._options.Mapping != null);
+            this._groupClaimAttributes = this._claimsMapper.RequiredGroupAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
             this._userAttributes = this._mapper.RequiredUserAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
+            this._userClaimAttributes = this._claimsMapper.RequiredUserAttributes
                 .Append(this._options.Mapping.PrimaryGroupAttribute)
                 .Append(this._options.Mapping.GroupsAttribute)
                 .ToArray();
@@ -82,17 +95,40 @@ namespace Visus.LdapAuthentication.Services {
                 ClaimFilter? filter) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
-            var user = this.LoginUser(username, password);
+            var connection = this._connectionService.Connect(
+                username ?? string.Empty,
+                password ?? string.Empty);
 
-            // TODO: use direct mapper instead.
-            if (user != null) {
-                var claims = this._claimsBuilder.GetClaims(user, filter);
-                var identity = new ClaimsIdentity(claims,
-                    authenticationType, nameType, roleType);
-                return new ClaimsPrincipal(identity);
-            } else {
-                return null;
+            foreach (var b in this._options.SearchBases) {
+                var res = connection.Search(b,
+                    this.GetUserFilter(username),
+                    this._userClaimAttributes);
+                var user = res.NextEntry();
+
+                if (user != null) {
+                    var primary = user.GetPrimaryGroup(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+                    var groups = user.GetGroups(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+
+                    var claims = this._claimsMapper.GetClaims(user,
+                        primary,
+                        groups,
+                        filter).Distinct(ClaimEqualityComparer.Instance);
+                    var identity = new ClaimsIdentity(claims,
+                        authenticationType,
+                        nameType,
+                        roleType);
+                    return new ClaimsPrincipal(identity);
+                }
             }
+
+            // Not found ad this point.
+            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+                username);
+            return null;
         }
 
         /// <inheritdoc />
@@ -125,10 +161,7 @@ namespace Visus.LdapAuthentication.Services {
                 username ?? string.Empty,
                 password ?? string.Empty);
 
-            Debug.Assert(this._options.Mapping != null);
-            var filter = string.Format(this._options.Mapping.UserFilter,
-                username.EscapeLdapFilterExpression());
-
+            var filter = this.GetUserFilter(username);
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
@@ -161,10 +194,7 @@ namespace Visus.LdapAuthentication.Services {
                 username ?? string.Empty,
                 password ?? string.Empty);
 
-            Debug.Assert(this._options.Mapping != null);
-            var filter = string.Format(this._options.Mapping.UserFilter,
-                username.EscapeLdapFilterExpression());
-
+            var filter = this.GetUserFilter(username);
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
@@ -190,13 +220,25 @@ namespace Visus.LdapAuthentication.Services {
         }
         #endregion
 
+        #region Private methods
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private string GetUserFilter(string? username) {
+            Debug.Assert(this._options.Mapping != null);
+            return string.Format(this._options.Mapping.UserFilter,
+                (username ?? string.Empty).EscapeLdapFilterExpression());
+        }
+        #endregion
+
         #region Private fields
         private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
+        private readonly IClaimsMapper<LdapEntry> _claimsMapper;
         private readonly ILdapConnectionService _connectionService;
+        private readonly string[] _groupClaimAttributes;
         private readonly ILogger _logger;
         private readonly LdapOptions _options;
         private readonly ILdapMapper<LdapEntry, TUser, TGroup> _mapper;
         private readonly string[] _userAttributes;
+        private readonly string[] _userClaimAttributes;
         #endregion
     }
 }

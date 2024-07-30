@@ -52,6 +52,9 @@ namespace Visus.Ldap.Claims {
                         filter)) {
                     yield return c;
                 }
+
+                // TODO: find out how we can get the SID here.
+                //if (filter?.Invoke(ClaimTypes.PrimaryGroupSid, ))
             }
 
             // Add claims for the remaining groups.

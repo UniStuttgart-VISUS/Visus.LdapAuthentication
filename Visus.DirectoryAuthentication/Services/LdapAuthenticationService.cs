@@ -11,15 +11,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
-using System.Security.AccessControl;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Visus.DirectoryAuthentication.Claims;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
+using static System.Formats.Asn1.AsnWriter;
 
 
 namespace Visus.DirectoryAuthentication.Services {
@@ -45,6 +47,7 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="connectionService"></param>
         /// <param name="mapper"></param>
         /// <param name="claimsBuilder"></param>
+        /// <param name="claimsMapper"></param>
         /// <param name="logger">A logger for presisting important messages like
         /// login failures.</param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
@@ -53,9 +56,12 @@ namespace Visus.DirectoryAuthentication.Services {
                 ILdapConnectionService connectionService,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
                 IClaimsBuilder<TUser, TGroup> claimsBuilder,
+                IClaimsMapper<SearchResultEntry> claimsMapper,
                 ILogger<LdapAuthenticationService<TUser, TGroup>> logger) {
             this._claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));
+            this._claimsMapper = claimsMapper
+                ?? throw new ArgumentNullException(nameof(claimsMapper));
             this._connectionService = connectionService
                 ?? throw new ArgumentNullException(nameof(connectionService));
             this._logger = logger
@@ -64,6 +70,20 @@ namespace Visus.DirectoryAuthentication.Services {
                 ?? throw new ArgumentNullException(nameof(options));
             this._mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
+
+            Debug.Assert(this._options.Mapping != null);
+            this._groupClaimAttributes = this._claimsMapper.RequiredGroupAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
+            this._userAttributes = this._mapper.RequiredUserAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
+            this._userClaimAttributes = this._claimsMapper.RequiredUserAttributes
+                .Append(this._options.Mapping.PrimaryGroupAttribute)
+                .Append(this._options.Mapping.GroupsAttribute)
+                .ToArray();
         }
         #endregion
 
@@ -77,17 +97,42 @@ namespace Visus.DirectoryAuthentication.Services {
                 ClaimFilter? filter) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
-            var user = this.LoginUser(username, password);
+            var connection = this._connectionService.Connect(
+                username ?? string.Empty,
+                password ?? string.Empty);
 
-            // TODO: use direct mapper instead.
-            if (user != null) {
-                var claims = this._claimsBuilder.GetClaims(user, filter);
-                var identity = new ClaimsIdentity(claims,
-                    authenticationType, nameType, roleType);
-                return new ClaimsPrincipal(identity);
-            } else {
-                return null;
+            foreach (var b in this._options.SearchBases) {
+                var req = new SearchRequest(b.Key,
+                    this.GetUserFilter(username),
+                    b.Value,
+                    this._userClaimAttributes);
+                var res = connection.SendRequest(req, this._options);
+
+                if (res is SearchResponse s && s.Any()) {
+                    var user = s.Entries[0];
+                    var primary = user.GetPrimaryGroup(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+                    var groups = user.GetGroups(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+
+                    var claims = this._claimsMapper.GetClaims(user,
+                        primary,
+                        groups,
+                        filter).Distinct(ClaimEqualityComparer.Instance);
+                    var identity = new ClaimsIdentity(claims,
+                        authenticationType,
+                        nameType,
+                        roleType);
+                    return new ClaimsPrincipal(identity);
+                }
             }
+
+            // Not found ad this point.
+            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+                username);
+            return null;
         }
 
         /// <inheritdoc />
@@ -99,17 +144,43 @@ namespace Visus.DirectoryAuthentication.Services {
                 ClaimFilter? filter) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
-            var user = await this.LoginUserAsync(username, password);
+            var connection = this._connectionService.Connect(
+                username ?? string.Empty,
+                password ?? string.Empty);
 
-            // TODO: use direct mapper instead.
-            if (user != null) {
-                var claims = this._claimsBuilder.GetClaims(user, filter);
-                var identity = new ClaimsIdentity(claims,
-                    authenticationType, nameType, roleType);
-                return new ClaimsPrincipal(identity);
-            } else {
-                return null;
+            foreach (var b in this._options.SearchBases) {
+                var req = new SearchRequest(b.Key,
+                    this.GetUserFilter(username),
+                    b.Value,
+                    this._userClaimAttributes);
+                var res = await connection.SendRequestAsync(req, this._options)
+                    .ConfigureAwait(false);
+
+                if (res is SearchResponse s && s.Any()) {
+                    var user = s.Entries[0];
+                    var primary = user.GetPrimaryGroup(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+                    var groups = user.GetGroups(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+
+                    var claims = this._claimsMapper.GetClaims(user,
+                        primary,
+                        groups,
+                        filter).Distinct(ClaimEqualityComparer.Instance);
+                    var identity = new ClaimsIdentity(claims,
+                        authenticationType,
+                        nameType,
+                        roleType);
+                    return new ClaimsPrincipal(identity);
+                }
             }
+
+            // Not found ad this point.
+            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+                username);
+            return null;
         }
 
         /// <inheritdoc />
@@ -123,7 +194,10 @@ namespace Visus.DirectoryAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
-                var req = this.GetRequest(username ?? string.Empty, b);
+                var req = new SearchRequest(b.Key,
+                    this.GetUserFilter(username),
+                    b.Value,
+                    this._userAttributes);
                 var res = connection.SendRequest(req, this._options);
                 if (res is SearchResponse s && s.Any()) {
                     this._mapper.MapUser(s.Entries[0], retval);
@@ -153,8 +227,12 @@ namespace Visus.DirectoryAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
-                var req = this.GetRequest(username ?? string.Empty, b);
-                var res = await connection.SendRequestAsync(req, this._options)
+                var req = new SearchRequest(b.Key,
+                    this.GetUserFilter(username),
+                    b.Value,
+                    this._userAttributes);
+                var res = await connection
+                    .SendRequestAsync(req, this._options)
                     .ConfigureAwait(false);
 
                 if (res is SearchResponse s && s.Any()) {
@@ -177,39 +255,24 @@ namespace Visus.DirectoryAuthentication.Services {
         #endregion
 
         #region Private methods
-        private SearchRequest GetRequest(string username,
-                string searchBase,
-                SearchScope scope) {
-            Debug.Assert(searchBase != null);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private string GetUserFilter(string? username) {
             Debug.Assert(this._options.Mapping != null);
-            var filter = string.Format(this._options.Mapping.UserFilter,
-                username.EscapeLdapFilterExpression());
-            var attributes = this._mapper.RequiredUserAttributes
-                .Append(this._options.Mapping.PrimaryGroupAttribute)
-                .Append(this._options.Mapping.GroupsAttribute)
-                .ToArray();
-            var retval = new SearchRequest(searchBase,
-                filter,
-                scope,
-                attributes);
-            this._logger.LogDebug("Requesting {filter} in search base {base} "
-                    + "with search scope {scope}.",
-                    filter, searchBase, scope);
-            return retval;
+            return string.Format(this._options.Mapping.UserFilter,
+                (username ?? string.Empty).EscapeLdapFilterExpression());
         }
-
-        private SearchRequest GetRequest(string username,
-                KeyValuePair<string, SearchScope> searchBase)
-            => this.GetRequest(username, searchBase.Key,
-                searchBase.Value);
         #endregion
 
         #region Private fields
         private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
+        private readonly IClaimsMapper<SearchResultEntry> _claimsMapper;
         private readonly ILdapConnectionService _connectionService;
+        private readonly string[] _groupClaimAttributes;
         private readonly ILogger _logger;
         private readonly LdapOptions _options;
         private readonly ILdapMapper<SearchResultEntry, TUser, TGroup> _mapper;
+        private readonly string[] _userAttributes;
+        private readonly string[] _userClaimAttributes;
         #endregion
     }
 }
