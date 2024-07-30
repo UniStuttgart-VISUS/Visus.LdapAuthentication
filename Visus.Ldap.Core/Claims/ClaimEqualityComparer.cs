@@ -10,7 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 
-namespace Visus.LdapAuthentication.Claims {
+namespace Visus.Ldap.Claims {
 
     /// <summary>
     /// Implements an <see cref="IEqualityComparer{T}"/> for claims, which

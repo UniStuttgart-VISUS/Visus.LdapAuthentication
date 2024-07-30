@@ -6,7 +6,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Security.Claims;
-using Visus.LdapAuthentication.Claims;
+using Visus.Ldap.Claims;
 
 
 namespace Visus.LdapAuthentication.Tests {
