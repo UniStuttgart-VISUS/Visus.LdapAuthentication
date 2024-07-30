@@ -169,6 +169,8 @@ Note that the `IClaimsBuilder` is only used for converting user and group object
 
 Please be aware that, depending on your group hierarchy, a user might be member of a group via multiple paths. The library can recursively enumerate the whole group hierarchy, but it will not eliminate duplicates when doing so. In order to remove duplicate claims, we provide the `Visus.Ldap.Claims.ClaimsEqualityComparer`, which can be used with the `Distinct` LINQ method to remove duplicate claims.
 
+Finally, if your users are member of many groups, the list of claims might get larger than it needs to be for your specific application. The claims builder and mapper therefore accept a `Visus.Ldap.Claims.ClaimFilter` callback, which allows you to select the claims you are interested in while they are collected.
+
 ## Searching users
 In some cases, you might want to search users objects without authenticating the user of your application. One of these cases might be restoring the user object from the claims stored in a cookie. A service account specified in `LdapOptions.User` with a password stored in `LdapOptions.Password` can be used in conjuction with a [`ILdapSearchService`](ILdapSearchService.cs) to implement such a behaviour.
 
