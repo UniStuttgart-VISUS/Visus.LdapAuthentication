@@ -12,9 +12,13 @@ using Moq;
 using Novell.Directory.Ldap;
 using System.Collections.Generic;
 using System.Linq;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Extensions;
+using Visus.LdapAuthentication.Services;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests
+{
 
     /// <summary>
     /// Tests the <see cref="LdapSearchService"/>.

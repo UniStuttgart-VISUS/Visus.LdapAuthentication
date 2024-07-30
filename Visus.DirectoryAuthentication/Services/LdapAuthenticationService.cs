@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
+using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
@@ -39,20 +39,14 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="connectionService">The connection service providing the
-        /// LDAP connections along with the options.</param>
-        /// <param name="mapper">The <see cref="ILdapMapper{TUser, TGroup}"/> to
-        /// provide mapping between LDAP attributes and properties of
-        /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>, 
-        /// respectively.</param>
-        /// <param name="claimsBuilder">A helper that creates
-        /// <see cref="Claim"/>s from a user object.</param>
+        /// <param name="options"></param>
+        /// <param name="connectionService"></param>
+        /// <param name="mapper"></param>
+        /// <param name="claimsBuilder"></param>
         /// <param name="logger">A logger for presisting important messages like
         /// login failures.</param>
-        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If any of the parameters is
+        /// <c>null</c>.</exception>
         public LdapAuthenticationService(IOptions<LdapOptions> options,
                 ILdapConnectionService connectionService,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,

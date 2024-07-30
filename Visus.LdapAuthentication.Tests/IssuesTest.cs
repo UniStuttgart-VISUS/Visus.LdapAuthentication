@@ -12,9 +12,12 @@ using Moq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Services;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests
+{
 
     /// <summary>
     /// Tests for GitHub issues.

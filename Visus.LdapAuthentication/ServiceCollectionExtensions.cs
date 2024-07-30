@@ -6,9 +6,12 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Services;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication
+{
 
     /// <summary>
     /// Extension methods for <see cref="IServiceCollection"/>.

@@ -12,9 +12,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Services;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests
+{
 
     /// <summary>
     /// Tests our extensions for <see cref="IServiceCollection"/>.

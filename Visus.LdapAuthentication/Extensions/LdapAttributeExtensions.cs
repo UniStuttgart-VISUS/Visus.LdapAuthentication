@@ -4,16 +4,16 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Novell.Directory.Ldap;
 using System;
-using System.DirectoryServices.Protocols;
 using System.Globalization;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryAuthentication.Extensions {
+namespace Visus.LdapAuthentication.Extensions {
 
     /// <summary>
-    /// Extension methods for <see cref="DirectoryAttribute"/> and the
+    /// Extension methods for <see cref="LdapAttribute"/> and the
     /// <see cref="LdapAttributeAttribute"/> annotation.
     /// </summary>
     public static class LdapAttributeExtensions {
@@ -36,7 +36,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="that"/> is <c>null</c>.</exception>
         public static object? GetValue(this LdapAttributeAttribute that,
-                SearchResultEntry entry,
+                LdapEntry entry,
                 object? parameter = null,
                 CultureInfo? cultureInfo = null) {
             ArgumentNullException.ThrowIfNull(that, nameof(that));
@@ -53,12 +53,6 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// will be used to generate a string value.</para>
         /// <para>If the attribute is array-valued, only the first element will
         /// be converted to a string value.</para>
-        /// <para>According to Microsoft's documentation at
-        /// https://learn.microsoft.com/de-de/dotnet/api/system.directoryservices.protocols.directoryattribute.item
-        /// the value is a string whenever possible and a byte array
-        /// otherwise. In the former case, the string will be returned as
-        /// is. In the latter case, the byte array will be converted to
-        /// a base64-encoded string.</para>
         /// </remarks>
         /// <param name="that">An LDAP attribute.</param>
         /// <param name="converter">An optional converter that is used to
@@ -70,24 +64,25 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// attribute value. This parameter can be <c>null</c>, in which case
         /// <see cref="CultureInfo.CurrentCulture" /> will be used.</param>
         /// <returns>The value of the attribute.</returns>
-        public static object? GetValue(this DirectoryAttribute? that,
+        public static object? GetValue(this LdapAttribute? that,
                 IValueConverter? converter,
                 object? parameter = null,
                 CultureInfo? cultureInfo = null) {
-            if ((that == null)  || (that.Count == 0)) {
+            if ((that == null) || (that.Size() == 0)) {
                 return null;
 
             } else if (converter != null) {
-                return converter.Convert(that[0],
+                return converter.Convert(
+                    (object?) that.StringValue ?? that.ByteValue,
                     typeof(string),
                     parameter,
                     cultureInfo ?? CultureInfo.CurrentCulture);
 
-            } else if (that[0] is string s) {
-                return s;
+            } else if (that.StringValue != null) {
+                return that.StringValue;
 
-            } else if (that[0] is byte[] b) {
-                return Convert.ToBase64String(b);
+            } else if (that.ByteValue != null) {
+                return Convert.ToBase64String(that.ByteValue);
 
             } else {
                 return null;

@@ -4,16 +4,14 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Logging;
 using Novell.Directory.Ldap;
 using Novell.Directory.Ldap.Controls;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication.Extensions {
 
     /// <summary>
     /// Extension methods for <see cref="LdapSearchConstraints"/> and
@@ -82,13 +80,13 @@ namespace Visus.LdapAuthentication {
         /// <paramref name="that"/>.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
         /// is <c>null</c>.</exception>
-        private static int? GetTotalCount(this ILdapSearchResults that) {
+        internal static int? GetTotalCount(this ILdapSearchResults that) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             if (that.ResponseControls != null) {
                 var r = (from c in that.ResponseControls
                          let d = c as LdapVirtualListResponse
-                         where (d != null)
+                         where d != null
                          select (LdapVirtualListResponse) c).SingleOrDefault();
                 if (r != null) {
                     Debug.WriteLine($"Paging result: {r.ResultCode}");
@@ -113,7 +111,7 @@ namespace Visus.LdapAuthentication {
         /// <paramref name="currentPage"/> is negative.</exception>
         /// <exception cref="ArgumentException">If <paramref name="pageSize"/>
         /// is less than 1.</exception>
-        public static LdapControl GetVirtualListControl(int currentPage,
+        internal static LdapControl GetVirtualListControl(int currentPage,
                 int pageSize) {
             if (currentPage < 0) {
                 throw new ArgumentException(Properties.Resources.ErrorLdapPage,
@@ -132,87 +130,5 @@ namespace Visus.LdapAuthentication {
                 + $"{after}, {count}) = {before}:{after}:{index}:{count}");
             return new LdapVirtualListControl(index, before, after, count);
         }
-
-        /// <summary>
-        /// Performs a paged LDAP search using <paramref name="that"/>.
-        /// </summary>
-        /// <remarks>
-        /// This method performs a &quot;normal&quot;, non-paged search if
-        /// <paramref name="pageSize"/> is zero or less. This allows users to
-        /// disable paging on servers that do not support this control.
-        /// </remarks>
-        /// <param name="that">The <see cref="LdapConnection"/> to be used
-        /// for the search.</param>
-        /// <param name="base">The base DN to start the search at.</param>
-        /// <param name="scope">The search scope.</param>
-        /// <param name="filter">The search filter.</param>
-        /// <param name="attrs">The list of LDAP attributes to be loaded for
-        /// the search results.</param>
-        /// <param name="pageSize">The size of the result pages in number of
-        /// entries.</param>
-        /// <param name="sortingAttribute">The attribute used to sort the
-        /// results. See
-        /// <see cref="AddPaging(LdapSearchConstraints, int, int, string)"/> for
-        /// more details on the sort key.</param>
-        /// <param name="timeLimit">A time limit for the search. This parameter
-        /// defaults to zero, which indicates an unlimited amount of search
-        /// time.</param>
-        /// <param name="logger">An optional logger for recording exception that
-        /// are encountered during the paged search. It is safe to pass
-        /// <c>null</c>, in which case errors will be silently ignored.</param>
-        /// <returns>The entries matching the specified search parameters.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">If <paramref name="pageSize"/>
-        /// is less than 1.</exception>
-        public static IEnumerable<LdapEntry> PagedSearch(
-                this LdapConnection that, string @base, SearchScope scope,
-                string filter, string[] attrs, int pageSize,
-                string sortingAttribute, int timeLimit = 0,
-                ILogger logger = null) {
-            _ = that ?? throw new ArgumentNullException(nameof(that));
-
-            var cntRead = 0;        // Number of entries already read.
-            int? cntTotal = null;   // Total number of entries to be read.
-            var curPage = 0;        // Current page.
-            LdapEntry entry;        // Current entry to be emitted.
-
-            do {
-                var constraints = new LdapSearchConstraints() {
-                    TimeLimit = timeLimit
-                };
-
-                if (pageSize > 0) {
-                    constraints.AddPaging(curPage, pageSize, sortingAttribute);
-                }
-
-                var results = that.Search(@base, scope, filter, attrs, false,
-                    constraints);
-
-                while (results.HasMore()
-                        && ((cntTotal == null) || (cntRead < cntTotal))) {
-                    ++cntRead;
-
-                    try {
-                        entry = results.Next();
-                    } catch (LdapReferralException) {
-                        continue;
-                    } catch (LdapException ex) {
-                        logger.LogWarning(ex.Message, ex);
-                        continue;
-                    }
-
-                    yield return entry;
-                }
-
-                ++curPage;
-                // 'cntTotal' should remain null if the response does not
-                // contain a paging control, in which case we will leave the
-                // loop immediately.
-                cntTotal = results.GetTotalCount();
-            } while ((cntTotal != null) && (cntRead < cntTotal));
-        }
-
     }
 }

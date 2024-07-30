@@ -6,9 +6,11 @@
 
 using System;
 using System.Collections.Generic;
+using Visus.LdapAuthentication.Configuration;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication
+{
 
     /// <summary>
     /// Interface for a service allowing applications to search for users.

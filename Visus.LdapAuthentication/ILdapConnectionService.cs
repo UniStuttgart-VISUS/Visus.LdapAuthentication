@@ -15,26 +15,25 @@ namespace Visus.LdapAuthentication {
     public interface ILdapConnectionService {
 
         /// <summary>
-        /// Gets the <see cref="IOptions"/> used by the service.
+        /// Connect to the preconfigured LDAP service with the specified
+        /// credentials.
         /// </summary>
-        IOptions Options { get; }
+        /// <param name="username">The user name used to perform the LDAP bind.
+        /// If both, <paramref name="username"/> and <paramref name="password"/>
+        /// are <c>null</c>, the service shall use the credentials configured
+        /// in the <see cref="Configuration.LdapOptions"/>.</param>
+        /// <param name="password">The password used to perfom the LDAP bind.
+        /// If both, <paramref name="username"/> and <paramref name="password"/>
+        /// are <c>null</c>, the service shall use the credentials configured
+        /// in the <see cref="Configuration.LdapOptions"/>.</param>
+        /// <returns>A new LDAP connection.</returns>
+        LdapConnection Connect(string? username, string? password);
 
         /// <summary>
         /// Connect to the preconfigured LDAP service with the preconfigured
         /// credentials.
         /// </summary>
-        /// <returns></returns>
-        LdapConnection Connect();
-
-        /// <summary>
-        /// Connect to the preconfigured LDAP service with the specified
-        /// credentials.
-        /// </summary>
-        /// <param name="username">The user name used to perform the LDAP bind.
-        /// </param>
-        /// <param name="password">The password used to perfom the LDAP bind.
-        /// </param>
-        /// <returns></returns>
-        LdapConnection Connect(string username, string password);
+        /// <returns>A new LDAP connection.</returns>
+        LdapConnection Connect() => this.Connect(null, null);
     }
 }

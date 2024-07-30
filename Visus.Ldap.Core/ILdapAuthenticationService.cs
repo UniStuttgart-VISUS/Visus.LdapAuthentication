@@ -7,7 +7,7 @@
 using System.Threading.Tasks;
 
 
-namespace Visus.DirectoryAuthentication {
+namespace Visus.Ldap {
 
     /// <summary>
     /// Interface for simple form-based authentication of users mapped to the
@@ -15,8 +15,6 @@ namespace Visus.DirectoryAuthentication {
     /// </summary>
     /// <typeparam name="TUser">The type of user that is to be retrieved on
     /// successful login.</typeparam>
-    /// <typeparam name="TGroup">The type of the groups associated with a
-    /// user.</typeparam>
     public interface ILdapAuthenticationService<TUser> where TUser : class {
 
         /// <summary>
@@ -39,5 +37,4 @@ namespace Visus.DirectoryAuthentication {
         /// <returns>The user object in case of a successful login.</returns>
         Task<TUser?> LoginUserAsync(string username, string password);
     }
-
 }

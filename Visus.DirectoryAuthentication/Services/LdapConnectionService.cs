@@ -26,7 +26,7 @@ namespace Visus.DirectoryAuthentication.Services {
     /// special claims that cannot be derived via the user classes provided by
     /// the library.
     /// </remarks>
-    public sealed class LdapConnectionService : ILdapConnectionService {
+    public sealed partial class LdapConnectionService : ILdapConnectionService {
 
         #region Public constructors
         /// <summary>
@@ -49,10 +49,9 @@ namespace Visus.DirectoryAuthentication.Services {
             var retval = this._options.ToConnection(_logger);
             Debug.Assert(retval != null);
 
-            var rxUpn = new Regex(@".+@.+");
-            if (username != null
+            if ((username != null)
                     && !string.IsNullOrWhiteSpace(this._options.DefaultDomain)
-                    && !rxUpn.IsMatch(username)) {
+                    && !GetUpnRegex().IsMatch(username)) {
                 username = $"{username}@{this._options.DefaultDomain}";
             }
 
@@ -82,6 +81,16 @@ namespace Visus.DirectoryAuthentication.Services {
 
             return retval;
         }
+        #endregion
+
+        #region Private class methods
+        /// <summary>
+        /// Gets a regular expression for detecting whether the user name is a
+        /// UPN.
+        /// </summary>
+        /// <returns></returns>
+        [GeneratedRegex(@".+@.+")]
+        private static partial Regex GetUpnRegex();
         #endregion
 
         #region Private fields

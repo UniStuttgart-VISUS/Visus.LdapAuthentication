@@ -5,9 +5,11 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Visus.LdapAuthentication.Configuration;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests
+{
 
     /// <summary>
     /// Tests for <see cref="LdapOptions"/>.

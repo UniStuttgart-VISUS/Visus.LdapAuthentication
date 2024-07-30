@@ -70,6 +70,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The search base must be a non-empty string..
+        /// </summary>
+        public static string ErrorEmptySearchBase {
+            get {
+                return ResourceManager.GetString("ErrorEmptySearchBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An entry with a value of &quot;{1}&quot; for &quot;{0}&quot; does not exist in the directory..
         /// </summary>
         public static string ErrorEntryNotFound {
@@ -133,6 +142,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Moving to next LDAP entry failed..
+        /// </summary>
+        public static string ErrorMoveNext {
+            get {
+                return ResourceManager.GetString("ErrorMoveNext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not retrieve the primary group claim for &quot;{0}&quot;..
         /// </summary>
         public static string ErrorPrimaryGroupClaim {
@@ -160,11 +178,29 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The specified server selection policy is not implemented..
+        /// </summary>
+        public static string ErrorUnknownServerSelectionPolicy {
+            get {
+                return ResourceManager.GetString("ErrorUnknownServerSelectionPolicy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Login succeeded, but user information for &quot;{0}&quot; could not be found..
         /// </summary>
         public static string ErrorUserNotFound {
             get {
                 return ResourceManager.GetString("ErrorUserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bind using the current credentials..
+        /// </summary>
+        public static string InfoBindCurrent {
+            get {
+                return ResourceManager.GetString("InfoBindCurrent", resourceCulture);
             }
         }
         
@@ -187,11 +223,56 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bound using the current credentials..
+        /// </summary>
+        public static string InfoBoundCurrent {
+            get {
+                return ResourceManager.GetString("InfoBoundCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connecting to LDAP server {0}:{1}..
         /// </summary>
         public static string InfoConnectingLdap {
             get {
                 return ResourceManager.GetString("InfoConnectingLdap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The LDAP server {0} has been selected for a new connection..
+        /// </summary>
+        public static string InfoServerSelected {
+            get {
+                return ResourceManager.GetString("InfoServerSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LDAP SSL certificate check has been disabled..
+        /// </summary>
+        public static string WarnCertCheckDisabled {
+            get {
+                return ResourceManager.GetString("WarnCertCheckDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no redundant LDAP server left to fall back to that has not been blacklisted..
+        /// </summary>
+        public static string WarnNoFallback {
+            get {
+                return ResourceManager.GetString("WarnNoFallback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The LDAP server {0} has been blacklisted until {1}..
+        /// </summary>
+        public static string WarnServerBlacklisted {
+            get {
+                return ResourceManager.GetString("WarnServerBlacklisted", resourceCulture);
             }
         }
     }

@@ -120,6 +120,9 @@
   <data name="ErrorAmbiguousSearchScope" xml:space="preserve">
     <value>You cannot set "SearchBases" and the legacy option "SearchBase" at the same time. Move all LDAP search bases to the new "SearchBases" property.</value>
   </data>
+  <data name="ErrorEmptySearchBase" xml:space="preserve">
+    <value>The search base must be a non-empty string.</value>
+  </data>
   <data name="ErrorEntryNotFound" xml:space="preserve">
     <value>An entry with a value of "{1}" for "{0}" does not exist in the directory.</value>
   </data>
@@ -141,6 +144,9 @@
   <data name="ErrorLdapPageSize" xml:space="preserve">
     <value>The size of a page of LDAP search results must be at least 1.</value>
   </data>
+  <data name="ErrorMoveNext" xml:space="preserve">
+    <value>Moving to next LDAP entry failed.</value>
+  </data>
   <data name="ErrorPrimaryGroupClaim" xml:space="preserve">
     <value>Could not retrieve the primary group claim for "{0}".</value>
   </data>
@@ -150,8 +156,14 @@
   <data name="ErrorPropertyNotMapped" xml:space="preserve">
     <value>The given property "{0}" has no LDAP attribute mapped for the current schema "{1}".</value>
   </data>
+  <data name="ErrorUnknownServerSelectionPolicy" xml:space="preserve">
+    <value>The specified server selection policy is not implemented.</value>
+  </data>
   <data name="ErrorUserNotFound" xml:space="preserve">
     <value>Login succeeded, but user information for "{0}" could not be found.</value>
+  </data>
+  <data name="InfoBindCurrent" xml:space="preserve">
+    <value>Bind using the current credentials.</value>
   </data>
   <data name="InfoBindingAsUser" xml:space="preserve">
     <value>Performing LDAP bind as user "{0}".</value>
@@ -159,7 +171,22 @@
   <data name="InfoBoundAsUser" xml:space="preserve">
     <value>Authenticated successfully as user "{0}".</value>
   </data>
+  <data name="InfoBoundCurrent" xml:space="preserve">
+    <value>Bound using the current credentials.</value>
+  </data>
   <data name="InfoConnectingLdap" xml:space="preserve">
     <value>Connecting to LDAP server {0}:{1}.</value>
+  </data>
+  <data name="InfoServerSelected" xml:space="preserve">
+    <value>The LDAP server {0} has been selected for a new connection.</value>
+  </data>
+  <data name="WarnCertCheckDisabled" xml:space="preserve">
+    <value>LDAP SSL certificate check has been disabled.</value>
+  </data>
+  <data name="WarnNoFallback" xml:space="preserve">
+    <value>There is no redundant LDAP server left to fall back to that has not been blacklisted.</value>
+  </data>
+  <data name="WarnServerBlacklisted" xml:space="preserve">
+    <value>The LDAP server {0} has been blacklisted until {1}.</value>
   </data>
 </root>

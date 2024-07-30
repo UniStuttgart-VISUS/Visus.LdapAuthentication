@@ -12,6 +12,7 @@
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <RootNamespace>Visus.Ldap</RootNamespace>
+    <Title>LDAP authentication base classes</Title>
   </PropertyGroup>
 
   <ItemGroup>

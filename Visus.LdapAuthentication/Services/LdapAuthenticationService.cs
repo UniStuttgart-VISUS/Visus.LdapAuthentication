@@ -6,11 +6,16 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Novell.Directory.Ldap;
 using System;
 using System.Linq;
+using Visus.Ldap;
+using Visus.Ldap.Claims;
+using Visus.Ldap.Mapping;
+using Visus.LdapAuthentication.Configuration;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication.Services {
 
     /// <summary>
     /// Implements an <see cref="IAuthenticationService"/> using Novell's LDAP
@@ -20,34 +25,38 @@ namespace Visus.LdapAuthentication {
     /// login. This is typically something derived from
     /// <see cref="LdapUserBase"/> rather than a custom implementation of
     /// <see cref="ILdapUser"/>.</typeparam>
-    public sealed class LdapAuthenticationService<TUser>
+    public sealed class LdapAuthenticationService<TUser, TGroup>
             : ILdapAuthenticationService<TUser>
-            where TUser : class, ILdapUser, new() {
+            where TUser : class, new ()
+            where TGroup : class, new () {
 
         #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="mapper">The <see cref="ILdapUserMapper{TUser}"/> to
-        /// provide mapping between LDAP attributes and properties of
-        /// <typeparamref name="TUser"/>.</param>
-        /// <param name="options">The LDAP options that specify how to connect
-        /// to the directory server.</param>
-        /// <param name="logger">A logger for writing important messages.
-        /// </param>
-        /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAuthenticationService(ILdapUserMapper<TUser> mapper,
-                IOptions<LdapOptions> options,
-                ILogger<LdapAuthenticationService<TUser>> logger) {
+        /// <param name="options"></param>
+        /// <param name="connectionService"></param>
+        /// <param name="mapper"></param>
+        /// <param name="claimsBuilder"></param>
+        /// <param name="logger">A logger for presisting important messages like
+        /// login failures.</param>
+        /// <exception cref="ArgumentNullException">If any of the parameters is
+        /// <c>null</c>.</exception>
+        public LdapAuthenticationService(IOptions<LdapOptions> options,
+                ILdapConnectionService connectionService,
+                ILdapMapper<LdapEntry, TUser, TGroup> mapper,
+                IClaimsBuilder<TUser, TGroup> claimsBuilder,
+                ILogger<LdapAuthenticationService<TUser, TGroup>> logger) {
+            this._claimsBuilder = claimsBuilder
+                ?? throw new ArgumentNullException(nameof(claimsBuilder));
+            this._connectionService = connectionService
+                ?? throw new ArgumentNullException(nameof(connectionService));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._mapper = mapper
-                ?? throw new ArgumentNullException(nameof(mapper));
             this._options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
+            this._mapper = mapper
+                ?? throw new ArgumentNullException(nameof(mapper));
         }
         #endregion
 
@@ -59,16 +68,16 @@ namespace Visus.LdapAuthentication {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
-        public TUser Login(string username, string password) {
-            using var connection = this._options.Connect(username, password,
-                this._logger);
+        public TUser? LoginUser(string username, string password) {
+            using var connection = _options.Connect(username, password,
+                _logger);
 
             var retval = new TUser();
-            var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
-            var filter = string.Format(this._options.Mapping.UserFilter,
+            var groupAttribs = _options.Mapping.RequiredGroupAttributes;
+            var filter = string.Format(_options.Mapping.UserFilter,
                 username);
 
-            foreach (var b in this._options.SearchBases) {
+            foreach (var b in _options.SearchBases) {
                 var result = connection.Search(
                     b,
                     filter,
@@ -76,29 +85,26 @@ namespace Visus.LdapAuthentication {
                     false);
 
                 if (result.HasMore()) {
-                    var entry = result.NextEntry(this._logger);
+                    var entry = result.NextEntry(_logger);
                     if (entry != null) {
-                        this._mapper.Assign(retval, entry, connection,
-                            this._logger);
+                        _mapper.Assign(retval, entry, connection,
+                            _logger);
                         return retval;
                     }
                 }
             }
 
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            _logger.LogError(Properties.Resources.ErrorUserNotFound,
                 username);
             return null;
         }
 
-        /// <inheritdoc />
-        ILdapUser ILdapAuthenticationService.Login(string username,
-                string password)
-            => this.Login(username, password);
-
         #region Private fields
+        private readonly IClaimsBuilder<TUser, TGroup> _claimsBuilder;
+        private readonly ILdapConnectionService _connectionService;
         private readonly ILogger _logger;
-        private readonly ILdapUserMapper<TUser> _mapper;
-        private readonly IOptions _options;
+        private readonly LdapOptions _options;
+        private readonly ILdapMapper<LdapEntry, TUser, TGroup> _mapper;
         #endregion
     }
 }

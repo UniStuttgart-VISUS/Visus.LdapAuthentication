@@ -11,9 +11,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Extensions;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication.Services
+{
 
     /// <summary>
     /// Implementation of <see cref="ILdapSearchService"/> using the search
@@ -45,11 +48,11 @@ namespace Visus.LdapAuthentication {
         public LdapSearchService(ILdapUserMapper<TUser> mapper,
                 IOptions<LdapOptions> options,
                 ILogger<LdapSearchService<TUser>> logger) {
-            this._logger = logger
+            _logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._mapper = mapper
+            _mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
-            this._options = options?.Value
+            _options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
         }
         #endregion
@@ -57,7 +60,7 @@ namespace Visus.LdapAuthentication {
         #region Public methods
         /// <inheritdoc />
         public void Dispose() {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -65,18 +68,18 @@ namespace Visus.LdapAuthentication {
         public IEnumerable<string> GetDistinguishedNames(string filter) {
             _ = filter ?? throw new ArgumentNullException(nameof(filter));
 
-            foreach (var b in this._options.SearchBases) {
+            foreach (var b in _options.SearchBases) {
                 // Perform a paged search (there might be a lot of matching
                 // entries which cannot be returned at once).
-                var entries = this.Connection.PagedSearch(
+                var entries = Connection.PagedSearch(
                     b.Key,
                     b.Value,
                     filter,
                     Array.Empty<string>(),
-                    this._options.PageSize,
+                    _options.PageSize,
                     "CN",
-                    this._options.Timeout,
-                    this._logger);
+                    _options.Timeout,
+                    _logger);
 
                 foreach (var e in entries) {
                     yield return e.Dn;
@@ -88,76 +91,76 @@ namespace Visus.LdapAuthentication {
         public TUser GetUserByIdentity(string identity) {
             _ = identity ?? throw new ArgumentNullException(nameof(identity));
 
-            var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
+            var groupAttribs = _options.Mapping.RequiredGroupAttributes;
             var retval = new TUser();
 
             // Determine the ID attribute.
             var idAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
-                nameof(LdapUser.Identity), this._options.Schema);
+                nameof(LdapUser.Identity), _options.Schema);
 
-            foreach (var b in this._options.SearchBases) {
-                var entries = this.Connection.Search(
+            foreach (var b in _options.SearchBases) {
+                var entries = Connection.Search(
                     b,
                     $"{idAttribute.Name}={identity}",
                     retval.RequiredAttributes.Concat(groupAttribs).ToArray(),
                     false);
 
                 if (entries.HasMore()) {
-                    var entry = entries.NextEntry(this._logger);
+                    var entry = entries.NextEntry(_logger);
                     if (entry != null) {
-                        this._mapper.Assign(retval, entry, this.Connection,
-                            this._logger);
+                        _mapper.Assign(retval, entry, Connection,
+                            _logger);
                         return retval;
                     }
                 }
             }
 
-            this._logger.LogError(Properties.Resources.ErrorEntryNotFound,
+            _logger.LogError(Properties.Resources.ErrorEntryNotFound,
                 idAttribute.Name, identity);
             return null;
         }
 
         /// <inheritdoc />
         ILdapUser ILdapSearchService.GetUserByIdentity(string identity)
-            => this.GetUserByIdentity(identity);
+            => GetUserByIdentity(identity);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers()
-            => this.GetUsers0(this._options.Mapping.UsersFilter,
-                this._options.SearchBases);
+            => this.GetUsers0(_options.Mapping.UsersFilter,
+                _options.SearchBases);
 
         /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers()
-            => this.GetUsers0(this._options.Mapping.UsersFilter,
-                this._options.SearchBases);
+            => this.GetUsers0(_options.Mapping.UsersFilter,
+                _options.SearchBases);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string filter)
-            => this.GetUsers(this._options.SearchBases, filter);
+            => this.GetUsers(_options.SearchBases, filter);
 
         /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers(string filter)
-            => this.GetUsers(this._options.SearchBases, filter);
+            => this.GetUsers(_options.SearchBases, filter);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(
                 IDictionary<string, SearchScope> searchBases,
                 string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
-                filter = this._options.Mapping.UsersFilter;
+                filter = _options.Mapping.UsersFilter;
             } else {
-                filter = $"(&{this._options.Mapping.UsersFilter}{filter})";
+                filter = $"(&{_options.Mapping.UsersFilter}{filter})";
             }
 
             return this.GetUsers0(filter,
-                searchBases ?? this._options.SearchBases);
+                searchBases ?? _options.SearchBases);
         }
 
         /// <inheritdoc />
         IEnumerable<ILdapUser> ILdapSearchService.GetUsers(
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
-            => this.GetUsers(searchBases, filter);
+            => GetUsers(searchBases, filter);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string searchBase,
@@ -165,7 +168,7 @@ namespace Visus.LdapAuthentication {
             var scopes = new Dictionary<string, SearchScope>() {
                 {searchBase, searchScope }
             };
-            return this.GetUsers(scopes, filter);
+            return GetUsers(scopes, filter);
         }
 
         /// <inheritdoc />
@@ -173,14 +176,14 @@ namespace Visus.LdapAuthentication {
                 string searchBase,
                 SearchScope searchScope,
                 string filter)
-            => this.GetUsers(searchBase, searchScope, filter);
+            => GetUsers(searchBase, searchScope, filter);
 
         /// <inheritdoc />
         public IEnumerable<ILdapUser> GetUsers(
                 string searchBase,
                 int searchScope,
                 string filter)
-            => this.GetUsers(searchBase, (SearchScope) searchScope, filter);
+            => GetUsers(searchBase, (SearchScope) searchScope, filter);
         #endregion
 
         #region Private Properties
@@ -189,11 +192,11 @@ namespace Visus.LdapAuthentication {
         /// </summary>
         private LdapConnection Connection {
             get {
-                if (this._connection == null) {
-                    this._connection = this._options.Connect(this._options.User,
-                        this._options.Password, this._logger);
+                if (_connection == null) {
+                    _connection = _options.Connect(_options.User,
+                        _options.Password, _logger);
                 }
-                return this._connection;
+                return _connection;
             }
         }
         #endregion
@@ -206,12 +209,12 @@ namespace Visus.LdapAuthentication {
         /// <param name="isDisposing"></param>
         private void Dispose(bool isDisposing) {
             if (isDisposing) {
-                if (this._connection != null) {
-                    this._connection.Dispose();
+                if (_connection != null) {
+                    _connection.Dispose();
                 }
             }
 
-            this._connection = null;
+            _connection = null;
         }
 
         /// <summary>
@@ -226,30 +229,30 @@ namespace Visus.LdapAuthentication {
                 IDictionary<string, SearchScope> searchBases) {
             Debug.Assert(filter != null);
             Debug.Assert(searchBases != null);
-            var groupAttribs = this._options.Mapping.RequiredGroupAttributes;
+            var groupAttribs = _options.Mapping.RequiredGroupAttributes;
             var user = new TUser();
 
             // Determine the property to sort the results, which is required
             // as paging LDAP results requires sorting.
             var sortAttribute = LdapAttributeAttribute.GetLdapAttribute<TUser>(
-                nameof(LdapUser.Identity), this._options.Schema);
+                nameof(LdapUser.Identity), _options.Schema);
 
             foreach (var b in searchBases) {
                 // Perform a paged search (there might be a lot of users, which
                 // cannot be retruned at once).
-                var entries = this.Connection.PagedSearch(
+                var entries = Connection.PagedSearch(
                     b.Key,
                     b.Value,
                     filter,
                     user.RequiredAttributes.Concat(groupAttribs).ToArray(),
-                    this._options.PageSize,
+                    _options.PageSize,
                     sortAttribute.Name,
-                    this._options.Timeout,
-                    this._logger);
+                    _options.Timeout,
+                    _logger);
 
                 // Convert LDAP entries to user objects.
                 foreach (var e in entries) {
-                    this._mapper.Assign(user, e, this.Connection, this._logger);
+                    _mapper.Assign(user, e, Connection, _logger);
                     yield return user;
                     user = new TUser();
                 }
@@ -262,7 +265,7 @@ namespace Visus.LdapAuthentication {
         private LdapConnection _connection;
         private readonly ILogger _logger;
         private readonly ILdapUserMapper<TUser> _mapper;
-        private readonly IOptions _options;
+        private readonly LdapOptions _options;
         #endregion
     }
 }

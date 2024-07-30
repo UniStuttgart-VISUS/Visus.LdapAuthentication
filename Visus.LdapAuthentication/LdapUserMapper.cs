@@ -13,9 +13,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Extensions;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication
+{
 
     /// <summary>
     /// Maps LDAP entries to user objects of type <typeparamref name="TUser"/>

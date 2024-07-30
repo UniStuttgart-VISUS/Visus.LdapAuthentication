@@ -7,12 +7,13 @@
 using Microsoft.Extensions.Logging;
 using Novell.Directory.Ldap;
 using System;
+using Visus.LdapAuthentication.Properties;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication.Extensions {
 
     /// <summary>
-    /// Extension methods
+    /// Extension methods for <see cref="ILdapSearchResults"/>.
     /// </summary>
     internal static class LdapSearchResultsExtensions {
 
@@ -29,12 +30,13 @@ namespace Visus.LdapAuthentication {
         /// </remarks>
         /// <param name="that"></param>
         /// <returns></returns>
-        internal static LdapEntry NextEntry(this ILdapSearchResults that,
-                ILogger logger = null) {
+        internal static LdapEntry? NextEntry(
+                this ILdapSearchResults that,
+                ILogger? logger = null) {
             try {
                 return that.Next();
             } catch (Exception ex) {
-                logger?.LogError(ex.Message);
+                logger?.LogError(ex, Resources.ErrorMoveNext);
                 return null;
             }
         }

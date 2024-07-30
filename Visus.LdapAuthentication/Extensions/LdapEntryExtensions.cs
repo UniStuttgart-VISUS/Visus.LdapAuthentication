@@ -10,10 +10,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Claims;
+using Visus.LdapAuthentication;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Extensions;
 using Visus.LdapAuthentication.Properties;
 
 
-namespace Visus.LdapAuthentication {
+namespace Visus.LdapAuthentication.Extensions {
 
     /// <summary>
     /// Extension methods for <see cref="LdapEntry"/>.
@@ -363,7 +366,7 @@ namespace Visus.LdapAuthentication {
             stack.Push(that);
 
             while (stack.Count > 0) {
-                foreach (var g in GetGroups(stack.Pop(), connection,
+                foreach (var g in stack.Pop().GetGroups(connection,
                         options)) {
                     stack.Push(g);
                     yield return g;

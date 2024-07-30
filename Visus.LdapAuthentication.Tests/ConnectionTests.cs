@@ -8,9 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Visus.LdapAuthentication.Extensions;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests
+{
 
     [TestClass]
     public sealed class ConnectionTests {

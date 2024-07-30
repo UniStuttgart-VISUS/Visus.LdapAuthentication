@@ -10,9 +10,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Novell.Directory.Ldap;
+using Visus.LdapAuthentication.Services;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests
+{
 
     /// <summary>
     /// Tests for the <see cref="LdapAuthenticationService"/>.
