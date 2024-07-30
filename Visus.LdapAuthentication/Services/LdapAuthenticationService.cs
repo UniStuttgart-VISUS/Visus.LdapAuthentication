@@ -103,7 +103,7 @@ namespace Visus.LdapAuthentication.Services {
                 var res = connection.Search(b,
                     this.GetUserFilter(username),
                     this._userClaimAttributes);
-                var user = res.NextEntry();
+                var user = res.NextEntry(this._logger);
 
                 if (user != null) {
                     var primary = user.GetPrimaryGroup(connection,
@@ -140,17 +140,42 @@ namespace Visus.LdapAuthentication.Services {
                 ClaimFilter? filter) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
-            var user = await this.LoginUserAsync(username, password);
+            var connection = this._connectionService.Connect(
+                username ?? string.Empty,
+                password ?? string.Empty);
 
-            // TODO: use direct mapper instead.
-            if (user != null) {
-                var claims = this._claimsBuilder.GetClaims(user, filter);
-                var identity = new ClaimsIdentity(claims,
-                    authenticationType, nameType, roleType);
-                return new ClaimsPrincipal(identity);
-            } else {
-                return null;
+            foreach (var b in this._options.SearchBases) {
+                var res = await connection.SearchAsync(b,
+                    this.GetUserFilter(username),
+                    this._userClaimAttributes,
+                    this._options.PollingInterval)
+                    .ConfigureAwait(false);
+
+                if (res.Any()) {
+                    var user = res.First();
+                    var primary = user.GetPrimaryGroup(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+                    var groups = user.GetGroups(connection,
+                        this._groupClaimAttributes,
+                        this._options);
+
+                    var claims = this._claimsMapper.GetClaims(user,
+                        primary,
+                        groups,
+                        filter).Distinct(ClaimEqualityComparer.Instance);
+                    var identity = new ClaimsIdentity(claims,
+                        authenticationType,
+                        nameType,
+                        roleType);
+                    return new ClaimsPrincipal(identity);
+                }
             }
+
+            // Not found ad this point.
+            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+                username);
+            return null;
         }
 
         /// <inheritdoc />
@@ -165,8 +190,8 @@ namespace Visus.LdapAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
-                var entry = connection.Search(b, filter, this._userAttributes)
-                    .FirstOrDefault();
+                var res = connection.Search(b, filter, this._userAttributes);
+                var entry = res.NextEntry(this._logger);
                 if (entry != null) {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
@@ -198,9 +223,10 @@ namespace Visus.LdapAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
-                var entry = (await connection.SearchAsync(b, filter,
-                    this._userAttributes, this._options.PollingInterval))
-                    .FirstOrDefault();
+                var res = await connection.SearchAsync(b, filter,
+                    this._userAttributes, this._options.PollingInterval)
+                    .ConfigureAwait(false);
+                var entry = res.FirstOrDefault();
                 if (entry != null) {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
