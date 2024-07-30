@@ -64,7 +64,7 @@ builder.Services.AddLdapAuthentication<MyUser, MyGroup>(o => {
 ```
 
 ## Configure the LDAP server
-The configuration section can have any name of your choice as long as it can be bound to [`LdapOptions`](LdapOptions.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
+The configuration section can have any name of your choice as long as it can be bound to [`LdapOptions`](Configuration/LdapOptions.cs). The following example illustrates a fairly minimal configuration for an Active Directory using SSL, but no certificate validation (this is what you would use for development purposes):
 ```JSON
 {
     "LdapConfiguration": {
@@ -79,7 +79,7 @@ The configuration section can have any name of your choice as long as it can be 
 }
 ```
 
-While you can fully customise the properties and claims the library loads for a user (see below), there are certain things that must be provided for the library to retrieve the group hierarchy. This is controlled via the `Schema` property in the JSON above. The schema selects the [`LdapMapping`](LdapMapping.cs) the library uses the select users and determine group membership. We provide several built-in schemas for frequently used LDAP servers in  [`LdapOptions`](LdapOptions.cs), namely "Active Directory" for Active Directory Domain Services, "IDMU" for Active Directory with Identity Management for Unix installed and "RFC 2307" for this RFC, which is the schema typically used be OpenLDAP servers.
+While you can fully customise the properties and claims the library loads for a user (see below), there are certain things that must be provided for the library to retrieve the group hierarchy. This is controlled via the `Schema` property in the JSON above. The schema selects the `LdapMapping` the library uses the select users and determine group membership. We provide several built-in schemas for frequently used LDAP servers in `LdapOptionsBase`, namely "Active Directory" for Active Directory Domain Services, "IDMU" for Active Directory with Identity Management for Unix installed and "RFC 2307" for this RFC, which is the schema typically used be OpenLDAP servers.
 
 The built-in schemas are hard-coded in the library like this:
 ```C#
