@@ -37,6 +37,11 @@ namespace Visus.LdapAuthentication.Tests
         public LdapOptions LdapOptions { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of a non-existing user account.
+        /// </summary>
+        public string NonExistingUserAccount { get; set; }
+
+        /// <summary>
         /// Gets or sets the identity of a non-existing user.
         /// </summary>
         public string NonExistingUserIdentity { get; set; }

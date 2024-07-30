@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Visus.LdapAuthentication.Configuration;
@@ -34,6 +35,24 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <returns>The default naming context or <c>null</c>.</returns>
         public static string? GetDefaultNamingContext(this LdapConnection that) {
             var rootDse = that.GetRootDse("defaultNamingContext");
+            return rootDse?.GetAttribute("defaultNamingContext")?.ToString();
+        }
+
+        /// <summary>
+        /// Gets the default naming context of the server which
+        /// <paramref name="that"/> is connected to.
+        /// </summary>
+        /// <remarks>
+        /// The default naming context is obtained from the root DSE of the
+        /// given connection. It can be used as the fallback for search bases
+        /// as it usually designates the root location of the directory.
+        /// </remarks>
+        /// <param name="that">The connection to get the default naming context
+        /// of.</param>
+        /// <returns>The default naming context or <c>null</c>.</returns>
+        public static async Task<string?> GetDefaultNamingContextAsync(
+                this LdapConnection that) {
+            var rootDse = await that.GetRootDseAsync("defaultNamingContext");
             return rootDse?.GetAttribute("defaultNamingContext")?.ToString();
         }
 
@@ -65,6 +84,29 @@ namespace Visus.LdapAuthentication.Extensions {
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the root DSE for the given connection.
+        /// </summary>
+        /// <param name="that">The connection from which to get the root DSE.
+        /// </param>
+        /// <param name="attributes">An optional list of attributes to load
+        /// for the root DSE.</param>
+        /// <returns>The entry of the root DSE.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>.</exception>
+        public static async Task<LdapEntry?> GetRootDseAsync(
+                this LdapConnection that,
+                params string[] attributes) {
+            _ = that ?? throw new ArgumentNullException(nameof(that));
+            // Cf. https://stackoverflow.com/questions/19696753/how-does-one-connect-to-the-rootdse-and-or-retrieve-highestcommittedusn-with-sys
+            var result = await that.SearchAsync(string.Empty,
+                SearchScope.Base,
+                "(objectClass=*)",
+                attributes,
+                new LdapOptions().PollingInterval);
+            return result.FirstOrDefault();
         }
 
         /// <summary>

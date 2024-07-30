@@ -8,14 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Visus.DirectoryAuthentication.Claims;
-using Visus.DirectoryAuthentication.Mapping;
-using Visus.DirectoryAuthentication.Services;
+using Visus.LdapAuthentication.Claims;
+using Visus.LdapAuthentication.Mapping;
+using Visus.LdapAuthentication.Services;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests {
 
     /// <summary>
     /// Provides extension methods for injecting test-related stuff to the DI

@@ -5,16 +5,13 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Novell.Directory.Ldap;
-using Visus.LdapAuthentication.Services;
+using System.Linq;
+using Visus.Ldap;
 
 
-namespace Visus.LdapAuthentication.Tests
-{
+namespace Visus.LdapAuthentication.Tests {
 
     /// <summary>
     /// Tests for the <see cref="LdapAuthenticationService"/>.
@@ -23,40 +20,33 @@ namespace Visus.LdapAuthentication.Tests
     public sealed class LdapAuthenticationServiceTest {
 
         public LdapAuthenticationServiceTest() {
-            try {
-                var configuration = new ConfigurationBuilder()
-                    .AddUserSecrets<TestSecrets>()
-                    .Build();
-                this._testSecrets = new TestSecrets();
-                configuration.Bind(this._testSecrets);
-
-            } catch {
-                this._testSecrets = null;
-            }
+            var configuration = TestExtensions.CreateConfiguration();
+            var collection = new ServiceCollection().AddMockLoggers();
+            collection.AddLdapAuthentication(o => {
+                var section = configuration.GetSection("LdapOptions");
+                section.Bind(o);
+            });
+            this._services = collection.BuildServiceProvider();
         }
 
         [TestMethod]
-        public void TestLogin() {
+        public void TestLoginUser() {
             if (this._testSecrets?.LdapOptions != null) {
-                var options = Options.Create(this._testSecrets.LdapOptions);
-                var service = new LdapAuthenticationService<LdapUser>(
-                    new LdapUserMapper<LdapUser>(options),
-                    options,
-                    Mock.Of<ILogger<LdapAuthenticationService<LdapUser>>>());
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
 
-                {
-                    var user = service.Login(this._testSecrets.LdapOptions.User,
-                        this._testSecrets.LdapOptions.Password);
-                    Assert.IsNotNull(user, "Login succeeded.");
-                }
-
-                Assert.ThrowsException<LdapException>(() => {
-                    var user = service.Login(this._testSecrets.LdapOptions.User,
-                        this._testSecrets.LdapOptions.Password + " is wrong");
-                });
+                var user = service.LoginUser(
+                    this._testSecrets.LdapOptions.User,
+                    this._testSecrets.LdapOptions.Password);
+                Assert.IsNotNull(user);
+                Assert.IsNotNull(user.Groups);
+                Assert.IsTrue(user.Groups.Any());
+                Assert.IsTrue(user.Groups.Count() >= 1);
+                Assert.IsFalse(user.Groups.Any(g => g == null));
             }
         }
 
-        private readonly TestSecrets _testSecrets;
+        private readonly ServiceProvider _services;
+        private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }
 }

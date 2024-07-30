@@ -6,6 +6,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Visus.Ldap.Mapping;
 
 
 namespace Visus.LdapAuthentication.Tests {

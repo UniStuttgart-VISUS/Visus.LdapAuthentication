@@ -1,4 +1,4 @@
-﻿// <copyright file="LdapOptionsTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="LdapSearchServiceTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
