@@ -39,5 +39,7 @@ Version 2.0 is a major rewrite of both libraries, which removes previously depre
 ## Differences between LdapAuthentication and DirectoryAuthentication
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
 1. `System.DirectorySerices.Protocols` requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must be installed.
-1. `LdapOptions.RootCaThumbprint` is not supported. You can, however, check the immediate issuer of the server's certificate using `ILdapOptions.ServerCertificateIssuer`.
-1. Visus.DirectoryAuthentication supports different authentication types, which are dependent on the underlying native implementation, though.
+1. We found Visus.DirectoryAuthentication to be significantly faster on Windows systems than [Visus.LdapAuthentication](Visus.LdapAuthentication). On Linux systems, however, we found that [Visus.LdapAuthentication](Visus.LdapAuthentication) is usually more reliable than [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) for `System.DirectorySerices.Protocols` not lacking several features on top of `libldap`.
+1. `LdapOptions.RootCaThumbprint` is not supported. You can, however, check the immediate issuer of the server's certificate using `LdapOptions.ServerCertificateIssuer`.
+1. [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) supports different authentication types, which are dependent on the underlying native implementation, though.
+1. While [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) relies on the underlying API to handle multiple servers, you can configure the behaviour of [Visus.LdapAuthentication](Visus.LdapAuthentication) in your application settings via the `LdapOptions.ServerSelectionPolicy`.
