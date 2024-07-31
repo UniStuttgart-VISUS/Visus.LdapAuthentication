@@ -39,7 +39,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
-                var user = service.GetUserByAccountName(this._testSecrets.ExistingUserAccount);
+                var user = service.GetUserByAccountName(this._testSecrets.ExistingUserAccount!);
                 Assert.IsNotNull(user, "Search returned existing user account.");
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Count() > 1);
@@ -52,7 +52,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
-                var user = await service.GetUserByAccountNameAsync(this._testSecrets.ExistingUserAccount);
+                var user = await service.GetUserByAccountNameAsync(this._testSecrets.ExistingUserAccount!);
                 Assert.IsNotNull(user, "Search returned existing user account.");
             }
         }
@@ -64,12 +64,12 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(service);
 
                 {
-                    var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity);
+                    var user = service.GetUserByIdentity(this._testSecrets.ExistingUserIdentity!);
                     Assert.IsNotNull(user, "Search returned existing user identity.");
                 }
 
                 {
-                    var user = service.GetUserByIdentity(this._testSecrets.NonExistingUserIdentity);
+                    var user = service.GetUserByIdentity(this._testSecrets.NonExistingUserIdentity!);
                     Assert.IsNull(user, "Search returned no non-existing user identity.");
                 }
             }
@@ -82,12 +82,12 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(service);
 
                 {
-                    var user = await service.GetUserByIdentityAsync(this._testSecrets.ExistingUserIdentity);
+                    var user = await service.GetUserByIdentityAsync(this._testSecrets.ExistingUserIdentity!);
                     Assert.IsNotNull(user, "Search returned existing user identity.");
                 }
 
                 {
-                    var user = await service.GetUserByIdentityAsync(this._testSecrets.NonExistingUserIdentity);
+                    var user = await service.GetUserByIdentityAsync(this._testSecrets.NonExistingUserIdentity!);
                     Assert.IsNull(user, "Search returned no non-existing user identity.");
                 }
             }
@@ -125,7 +125,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var map = this._services.GetService<ILdapAttributeMap<LdapUser>>();
                 Assert.IsNotNull(map);
 
-                var users = service.GetUsers($"({map.AccountNameAttribute.Name}={this._testSecrets.ExistingUserAccount})");
+                var users = service.GetUsers($"({map.AccountNameAttribute!.Name}={this._testSecrets.ExistingUserAccount})");
                 Assert.IsNotNull(users.Any(), "Filtered user was found.");
             }
         }
@@ -139,7 +139,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var map = this._services.GetService<ILdapAttributeMap<LdapUser>>();
                 Assert.IsNotNull(map);
 
-                var users = await service.GetUsersAsync($"({map.AccountNameAttribute.Name}={this._testSecrets.ExistingUserAccount})");
+                var users = await service.GetUsersAsync($"({map.AccountNameAttribute!.Name}={this._testSecrets.ExistingUserAccount})");
                 Assert.IsNotNull(users.Any(), "Filtered user was found.");
             }
         }

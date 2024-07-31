@@ -30,8 +30,8 @@ namespace Visus.DirectoryAuthentication.Tests {
         [TestMethod]
         public void TestErrorHandling() {
             {
-                var input = (byte[]) null;
-                var expected = (string) null;
+                var input = (byte[]?) null;
+                var expected = (string?) null;
                 var actual = SidConverter.Convert(input);
                 Assert.AreEqual(expected, actual);
             }

@@ -135,6 +135,12 @@
   <data name="ErrorGroupNotFound" xml:space="preserve">
     <value>The group with identity "{group}" was not found in the directory.</value>
   </data>
+  <data name="ErrorInvalidServerCert" xml:space="preserve">
+    <value>A non-existing LDAP server certificate was passed into verification.</value>
+  </data>
+  <data name="ErrorInvalidServerCertChain" xml:space="preserve">
+    <value>A non-existing certificate chain was passed into the LDAP server certificate verification.</value>
+  </data>
   <data name="ErrorInvalidSid" xml:space="preserve">
     <value>The given byte sequence "{0}" does not represent a valid security identifier.</value>
   </data>
@@ -158,6 +164,9 @@
   </data>
   <data name="ErrorPropertyNotMapped" xml:space="preserve">
     <value>The given property "{0}" has no LDAP attribute mapped for the current schema "{1}".</value>
+  </data>
+  <data name="ErrorSslPolicy" xml:space="preserve">
+    <value>The SSL policy errors {0} were encountered when validating the LDAP server certificate.</value>
   </data>
   <data name="ErrorUnknownServerSelectionPolicy" xml:space="preserve">
     <value>The specified server selection policy is not implemented.</value>

@@ -145,8 +145,8 @@ namespace Visus.LdapAuthentication.Configuration {
         /// otherwise.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="logger"/>
         /// is <c>null</c></exception>
-        internal bool VerifyServerCertificate(X509Certificate certificate,
-                X509Chain chain,
+        internal bool VerifyServerCertificate(X509Certificate? certificate,
+                X509Chain? chain,
                 SslPolicyErrors sslPolicyErrors,
                 ILogger logger) {
             // See https://stackoverflow.com/questions/386982/novell-ldap-c-sharp-novell-directory-ldap-has-anybody-made-it-work
@@ -157,8 +157,18 @@ namespace Visus.LdapAuthentication.Configuration {
                 return true;
             }
 
+            if (certificate == null) {
+                logger.LogError(Resources.ErrorInvalidServerCert);
+                return false;
+            }
+
+            if (chain == null) {
+                logger.LogError(Resources.ErrorInvalidServerCertChain);
+                return false;
+            }
+
             if (sslPolicyErrors != SslPolicyErrors.None) {
-                logger.LogInformation("LDAP SSL policy errors are: {0}",
+                logger.LogInformation(Resources.ErrorSslPolicy,
                     sslPolicyErrors);
                 return false;
             }

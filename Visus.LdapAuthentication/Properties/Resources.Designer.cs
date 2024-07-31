@@ -115,6 +115,24 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A non-existing LDAP server certificate was passed into verification..
+        /// </summary>
+        public static string ErrorInvalidServerCert {
+            get {
+                return ResourceManager.GetString("ErrorInvalidServerCert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A non-existing certificate chain was passed into the LDAP server certificate verification..
+        /// </summary>
+        public static string ErrorInvalidServerCertChain {
+            get {
+                return ResourceManager.GetString("ErrorInvalidServerCertChain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given byte sequence &quot;{0}&quot; does not represent a valid security identifier..
         /// </summary>
         public static string ErrorInvalidSid {
@@ -183,6 +201,15 @@ namespace Visus.LdapAuthentication.Properties {
         public static string ErrorPropertyNotMapped {
             get {
                 return ResourceManager.GetString("ErrorPropertyNotMapped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The SSL policy errors {0} were encountered when validating the LDAP server certificate..
+        /// </summary>
+        public static string ErrorSslPolicy {
+            get {
+                return ResourceManager.GetString("ErrorSslPolicy", resourceCulture);
             }
         }
         

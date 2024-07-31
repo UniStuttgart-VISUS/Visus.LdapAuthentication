@@ -7,12 +7,15 @@
     <Authors>Christoph Müller</Authors>
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
     <Product>ASP.NET Core LDAP Authentication Middleware</Product>
-    <Description>This library implements basic functionality used in both, Visus.DirectoryAuthentication and Visus.LdapAuthentication.</Description>
+    <Description>This library implements common functionality used in Visus.DirectoryAuthentication and Visus.LdapAuthentication. You should not install this package as standalone dependency of your projects, but rely on Visus.DirectoryAuthentication or Visus.LdapAuthentication installing it.</Description>
     <Copyright>Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart</Copyright>
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <RootNamespace>Visus.Ldap</RootNamespace>
     <Title>LDAP authentication base classes</Title>
+    <Version>2.0.0-pre2</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
