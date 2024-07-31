@@ -154,6 +154,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(claims);
                 Assert.IsTrue(claims.Any());
                 Assert.IsTrue(claims.Any(c => c.Type == ClaimTypes.Sid));
+                Assert.IsTrue(claims.Any(c => c.Type == ClaimTypes.GroupSid));
             }
         }
 
@@ -174,6 +175,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(claims);
                 Assert.IsTrue(claims.Any());
                 Assert.IsTrue(claims.Any(c => c.Type == ClaimTypes.Sid));
+                Assert.IsTrue(claims.Any(c => c.Type == ClaimTypes.GroupSid));
             }
         }
 

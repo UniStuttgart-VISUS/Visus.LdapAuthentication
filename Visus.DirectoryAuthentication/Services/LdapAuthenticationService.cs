@@ -12,10 +12,8 @@ using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Visus.DirectoryAuthentication.Claims;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
 using Visus.DirectoryAuthentication.Properties;
@@ -23,7 +21,6 @@ using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
-using static System.Formats.Asn1.AsnWriter;
 
 
 namespace Visus.DirectoryAuthentication.Services {

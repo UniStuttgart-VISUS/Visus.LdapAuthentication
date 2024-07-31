@@ -95,7 +95,7 @@ namespace Visus.Ldap.Claims {
 
             // Add the claims derived from groups the user is member of.
             foreach (var g in this.GetGroups(user)) {
-                foreach (var c in this.GetClaims(g)) {
+                foreach (var c in this.GetClaims(g, filter)) {
                     yield return c;
                 }
             }
