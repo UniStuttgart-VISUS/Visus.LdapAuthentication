@@ -28,7 +28,7 @@ namespace Visus.DirectoryAuthentication.Configuration {
         /// Initialises a new instance.
         /// </summary>
         public LdapOptions() {
-            AuthenticationType
+            this.AuthenticationType
                 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? AuthType.Negotiate
                 : AuthType.Basic;
@@ -61,7 +61,7 @@ namespace Visus.DirectoryAuthentication.Configuration {
         /// bound.</returns>
         internal LdapConnection ToConnection(ILogger logger) {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                    && IsNoCertificateCheck) {
+                    && this.IsNoCertificateCheck) {
                 // Note: On Linux, the verification callback does not work, so
                 // we need to tell OpenLDAP to skip the verification via setting
                 // an environment variable. This must be done using glibc
@@ -70,9 +70,10 @@ namespace Visus.DirectoryAuthentication.Configuration {
                 setenv("LDAPTLS_REQCERT", "never");
             }
 
-            var id = new LdapDirectoryIdentifier(Servers, Port, false, false);
+            var id = new LdapDirectoryIdentifier(this.Servers, this.Port, false,
+                false);
             var retval = new LdapConnection(id);
-            retval.AuthType = AuthenticationType;
+            retval.AuthType = this.AuthenticationType;
 
             try {
                 retval.SessionOptions.SecureSocketLayer
@@ -89,7 +90,7 @@ namespace Visus.DirectoryAuthentication.Configuration {
                     = (con, cert) => VerifyCertificate(cert, logger);
             }
 
-            retval.SessionOptions.ProtocolVersion = ProtocolVersion;
+            retval.SessionOptions.ProtocolVersion = this.ProtocolVersion;
             // Cf. https://stackoverflow.com/questions/10336553/system-directoryservices-protocols-paged-get-all-users-code-suddenly-stopped-get
             retval.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
 
@@ -123,7 +124,7 @@ namespace Visus.DirectoryAuthentication.Configuration {
                 ILogger logger) {
             _ = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            if (IsNoCertificateCheck) {
+            if (this.IsNoCertificateCheck) {
                 logger.LogWarning(Resources.WarnCertCheckDisabled);
                 return true;
             }
@@ -144,12 +145,12 @@ namespace Visus.DirectoryAuthentication.Configuration {
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(ServerCertificateIssuer)) {
-                var issuer = ServerCertificateIssuer;
+            if (!string.IsNullOrWhiteSpace(this.ServerCertificateIssuer)) {
                 logger.LogInformation(Resources.InfoCheckCertIssuer,
                     certificate.Subject,
-                    issuer);
-                if (!string.Equals(certificate.Issuer, issuer,
+                    this.ServerCertificateIssuer);
+                if (!string.Equals(certificate.Issuer,
+                        this.ServerCertificateIssuer,
                         StringComparison.InvariantCultureIgnoreCase)) {
                     logger.LogError(Resources.ErrorCertIssuerMismatch,
                         issuer,
@@ -158,12 +159,12 @@ namespace Visus.DirectoryAuthentication.Configuration {
                 }
             }
 
-            if (ServerThumbprint?.Any() == true) {
+            if (this.ServerThumbprint?.Any() == true) {
                 logger.LogInformation(Resources.InfoCheckCertThumbprint,
                     certificate.Subject,
                     string.Join(", ", ServerThumbprint));
 
-                var match = from t in ServerThumbprint
+                var match = from t in this.ServerThumbprint
                             where string.Equals(t, certificate.GetCertHashString(),
                                 StringComparison.InvariantCultureIgnoreCase)
                             select t;
