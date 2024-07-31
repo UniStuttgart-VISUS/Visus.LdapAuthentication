@@ -57,7 +57,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             }
 
             {
-                var service = provider.GetService<ILdapMapper<SearchResultEntry, LdapUser, LdapGroup>>();
+                var service = provider.GetService<ILdapMapper<LdapEntry, LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service, "Mapper resolved");
             }
 
@@ -77,7 +77,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             }
 
             {
-                var service = provider.GetService<IClaimsMapper<SearchResultEntry>>();
+                var service = provider.GetService<IClaimsMapper<LdapEntry>>();
                 Assert.IsNotNull(service, "Claims mapper resolved");
             }
         }
