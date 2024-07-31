@@ -18,9 +18,6 @@ using Visus.Ldap.Mapping;
 
 namespace Visus.DirectoryAuthentication.Tests {
 
-    /// <summary>
-    /// Tests our extensions for <see cref="IServiceCollection"/>.
-    /// </summary>
     [TestClass]
     public sealed class ServiceCollectionTest {
 
@@ -111,7 +108,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(service, "Authentication service resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service, "Search service resolved");
             }
@@ -130,5 +127,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var service = provider.GetService<ILdapConnectionService>();
             });
         }
+
+        private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }
 }

@@ -14,13 +14,12 @@ using Visus.Ldap;
 using Visus.LdapAuthentication.Configuration;
 using Novell.Directory.Ldap;
 using System.Collections.Generic;
+using Visus.LdapAuthentication.Tests;
+using Visus.LdapAuthentication;
 
 
-namespace Visus.LdapAuthentication.Tests {
+namespace Visus.DirectoryAuthentication.Tests {
 
-    /// <summary>
-    /// Tests our extensions for <see cref="IServiceCollection"/>.
-    /// </summary>
     [TestClass]
     public sealed class ServiceCollectionTest {
 
@@ -58,7 +57,7 @@ namespace Visus.LdapAuthentication.Tests {
             }
 
             {
-                var service = provider.GetService<ILdapMapper<LdapEntry, LdapUser, LdapGroup>>();
+                var service = provider.GetService<ILdapMapper<SearchResultEntry, LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service, "Mapper resolved");
             }
 
@@ -78,7 +77,7 @@ namespace Visus.LdapAuthentication.Tests {
             }
 
             {
-                var service = provider.GetService<IClaimsMapper<LdapEntry>>();
+                var service = provider.GetService<IClaimsMapper<SearchResultEntry>>();
                 Assert.IsNotNull(service, "Claims mapper resolved");
             }
         }
@@ -111,7 +110,7 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.IsNotNull(service, "Authentication service resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service, "Search service resolved");
             }
@@ -130,5 +129,8 @@ namespace Visus.LdapAuthentication.Tests {
                 var service = provider.GetService<ILdapConnectionService>();
             });
         }
+
+        private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }
 }
+
