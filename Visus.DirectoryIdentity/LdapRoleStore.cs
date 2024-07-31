@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication;
+using Visus.Ldap;
 
 
 namespace Visus.DirectoryIdentity {

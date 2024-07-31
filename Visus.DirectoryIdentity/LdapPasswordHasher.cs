@@ -9,6 +9,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using Visus.DirectoryAuthentication;
+using Visus.Ldap;
 
 
 namespace Visus.DirectoryIdentity {
@@ -55,19 +56,20 @@ namespace Visus.DirectoryIdentity {
         /// </param>
         /// <returns>A hash of the user</returns>
         public string HashPassword(TUser user, string password) {
-            _ = user ?? throw new ArgumentNullException(nameof(user));
-            var u = this._authService.Login(user.AccountName, password);
+            throw new NotImplementedException();
+            //_ = user ?? throw new ArgumentNullException(nameof(user));
+            //var u = this._authService.Login(user.AccountName, password);
 
-            if (u == null) {
-                // If we could not bind to the directory, return an invalid
-                // hash.
-                return null;
-            } else {
-                // If we successfully authenticated and found the user, we
-                // hash the user object we retrieved in order to later compre
-                // this hash with the one created by LdapUserStore.
-                return this.HashUser(u);
-            }
+            //if (u == null) {
+            //    // If we could not bind to the directory, return an invalid
+            //    // hash.
+            //    return null;
+            //} else {
+            //    // If we successfully authenticated and found the user, we
+            //    // hash the user object we retrieved in order to later compre
+            //    // this hash with the one created by LdapUserStore.
+            //    return this.HashUser(u);
+            //}
         }
 
         /// <summary>
@@ -82,10 +84,10 @@ namespace Visus.DirectoryIdentity {
             _ = user ?? throw new ArgumentNullException(nameof(user));
 
             var sb = new StringBuilder();
-            sb.AppendLine(user.Identity);
-            foreach (var c in user.Claims) {
-                sb.AppendLine(c.Type + c.Value);
-            }
+            //sb.AppendLine(user.Identity);
+            //foreach (var c in user.Claims) {
+            //    sb.AppendLine(c.Type + c.Value);
+            //}
 
             using (var sha = SHA256.Create()) {
                 var value = sb.ToString();

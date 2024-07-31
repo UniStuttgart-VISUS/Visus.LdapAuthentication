@@ -13,6 +13,9 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.Ldap;
+using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryIdentity {
@@ -49,38 +52,38 @@ namespace Visus.DirectoryIdentity {
 
             this._hasher = new LdapPasswordHasher<TUser>(this._authService);
 
-            {
-                var prop = typeof(TUser).GetProperty(
-                    nameof(LdapIdentityUser.AccountName));
-                var att = LdapAttributeAttribute.GetLdapAttribute(prop, schema);
+            //{
+            //    var prop = typeof(TUser).GetProperty(
+            //        nameof(LdapIdentityUser.AccountName));
+            //    var att = LdapAttributeAttribute.GetLdapAttribute(prop, schema);
 
-                if (att == null) {
-                    var msg = Properties.Resources.ErrorNoLdapAttribute;
-                    msg = string.Format(msg, prop.Name, schema);
-                    throw new ArgumentException(msg, nameof(ldapOptions));
-                }
+            //    if (att == null) {
+            //        var msg = Properties.Resources.ErrorNoLdapAttribute;
+            //        msg = string.Format(msg, prop.Name, schema);
+            //        throw new ArgumentException(msg, nameof(ldapOptions));
+            //    }
 
-                this._accountAttribute = att.Name;
-            }
+            //    this._accountAttribute = att.Name;
+            //}
 
-            {
-                var prop = typeof(TUser).GetProperty(
-                    nameof(ILdapIdentityUser.EmailAddress));
-                var att = LdapAttributeAttribute.GetLdapAttribute(prop, schema);
+            //{
+            //    var prop = typeof(TUser).GetProperty(
+            //        nameof(ILdapIdentityUser.EmailAddress));
+            //    var att = LdapAttributeAttribute.GetLdapAttribute(prop, schema);
 
-                if (att == null) {
-                    var msg = Properties.Resources.ErrorNoLdapAttribute;
-                    msg = string.Format(msg, prop.Name, schema);
-                    throw new ArgumentException(msg, nameof(ldapOptions));
-                }
+            //    if (att == null) {
+            //        var msg = Properties.Resources.ErrorNoLdapAttribute;
+            //        msg = string.Format(msg, prop.Name, schema);
+            //        throw new ArgumentException(msg, nameof(ldapOptions));
+            //    }
 
-                this._emailAttribute = att.Name;
-            }
+            //    this._emailAttribute = att.Name;
+            //}
         }
         #endregion
 
-            #region Public properties
-            /// <inheritdoc />
+        #region Public properties
+        /// <inheritdoc />
         public IQueryable<TUser> Users
             => this._searchService.GetUsers().AsQueryable();
         #endregion
@@ -185,12 +188,13 @@ namespace Visus.DirectoryIdentity {
             _ = normalisedUserName
                 ?? throw new ArgumentNullException(normalisedUserName);
             this.CheckNotDisposed();
+            throw new NotImplementedException();
 
-            cancellationToken.ThrowIfCancellationRequested();
-            return (await this._searchService.GetUsersAsync(
-                $"({this._accountAttribute}={normalisedUserName})")
-                .ConfigureAwait(false))
-                .SingleOrDefault();
+            //cancellationToken.ThrowIfCancellationRequested();
+            //return (await this._searchService.GetUsersAsync(
+            //    $"({this._accountAttribute}={normalisedUserName})")
+            //    .ConfigureAwait(false))
+            //    .SingleOrDefault();
         }
 
         /// <summary>
@@ -215,10 +219,11 @@ namespace Visus.DirectoryIdentity {
                 return user.AccessFailedCount;
 
             } else {
-                cancellationToken.ThrowIfCancellationRequested();
-                var u = await this._searchService.GetUserByIdentityAsync(
-                    user.Identity).ConfigureAwait(false);
-                return u.AccessFailedCount;
+                //cancellationToken.ThrowIfCancellationRequested();
+                //var u = await this._searchService.GetUserByIdentityAsync(
+                //    user.Identity).ConfigureAwait(false);
+                //return u.AccessFailedCount;
+                throw new NotImplementedException();
             }
         }
 
@@ -246,15 +251,16 @@ namespace Visus.DirectoryIdentity {
             _ = user ?? throw new ArgumentNullException(nameof(user));
             this.CheckNotDisposed();
 
-            if (!string.IsNullOrWhiteSpace(user.EmailAddress)) {
-                return user.EmailAddress;
+            //if (!string.IsNullOrWhiteSpace(user.EmailAddress)) {
+            //    return user.EmailAddress;
 
-            } else {
-                cancellationToken.ThrowIfCancellationRequested();
-                var u = await this._searchService.GetUserByIdentityAsync(
-                    user.Identity).ConfigureAwait(false);
-                return u.EmailAddress;
-            }
+            //} else {
+            //    cancellationToken.ThrowIfCancellationRequested();
+            //    var u = await this._searchService.GetUserByIdentityAsync(
+            //        user.Identity).ConfigureAwait(false);
+            //    return u.EmailAddress;
+            //}
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -280,9 +286,10 @@ namespace Visus.DirectoryIdentity {
             cancellationToken.ThrowIfCancellationRequested();
             // Note: we always query that, because it would be bad if we
             // returned a stale value from 'user' here.
-            var u = await this._searchService.GetUserByIdentityAsync(
-                user.Identity).ConfigureAwait(false);
-            return u.IsLockoutEnabled;
+            //var u = await this._searchService.GetUserByIdentityAsync(
+            //    user.Identity).ConfigureAwait(false);
+            //return u.IsLockoutEnabled;
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc />
@@ -293,9 +300,10 @@ namespace Visus.DirectoryIdentity {
             cancellationToken.ThrowIfCancellationRequested();
             // Note: we always query that, because it would be bad if we
             // returned a stale value from 'user' here.
-            var u = await this._searchService.GetUserByIdentityAsync(
-                user.Identity).ConfigureAwait(false);
-            return u.LockoutTime;
+            //var u = await this._searchService.GetUserByIdentityAsync(
+            //    user.Identity).ConfigureAwait(false);
+            //return u.LockoutTime;
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc />
@@ -352,9 +360,10 @@ namespace Visus.DirectoryIdentity {
 
             } else {
                 cancellationToken.ThrowIfCancellationRequested();
-                var u = await this._searchService.GetUserByIdentityAsync(
-                    user.Identity).ConfigureAwait(false);
-                return u.PhoneNumber;
+                //var u = await this._searchService.GetUserByIdentityAsync(
+                //    user.Identity).ConfigureAwait(false);
+                //return u.PhoneNumber;
+                throw new NotImplementedException();
             }
         }
 
@@ -368,7 +377,8 @@ namespace Visus.DirectoryIdentity {
         public Task<string> GetUserIdAsync(TUser user,
                 CancellationToken cancellationToken) {
             _ = user ?? throw new ArgumentNullException(nameof(user));
-            return Task.FromResult(user.Identity);
+            //return Task.FromResult(user.Identity);
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -389,15 +399,16 @@ namespace Visus.DirectoryIdentity {
             _ = user ?? throw new ArgumentNullException(nameof(user));
             this.CheckNotDisposed();
 
-            if (!string.IsNullOrWhiteSpace(user.AccountName)) {
-                return user.AccountName;
+            //if (!string.IsNullOrWhiteSpace(user.AccountName)) {
+            //    return user.AccountName;
 
-            } else {
-                cancellationToken.ThrowIfCancellationRequested();
-                var u = await this._searchService.GetUserByIdentityAsync(
-                    user.Identity).ConfigureAwait(false);
-                return u.AccountName;
-            }
+            //} else {
+            //    cancellationToken.ThrowIfCancellationRequested();
+            //    var u = await this._searchService.GetUserByIdentityAsync(
+            //        user.Identity).ConfigureAwait(false);
+            //    return u.AccountName;
+            //}
+            throw new NotImplementedException();
         }
 
         public Task<IList<TUser>> GetUsersForClaimAsync(Claim claim,

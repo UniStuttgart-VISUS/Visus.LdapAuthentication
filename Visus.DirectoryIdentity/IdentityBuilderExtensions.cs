@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Visus.DirectoryAuthentication;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.Ldap;
 
 
 namespace Visus.DirectoryIdentity {
@@ -41,8 +43,7 @@ namespace Visus.DirectoryIdentity {
                 Action<LdapOptions> ldapOptions)
                 where TUser : class, ILdapIdentityUser, new() {
             _ = that ?? throw new ArgumentNullException(nameof(that));
-            that.Services.AddLdapAuthenticationService<TUser>(ldapOptions);
-            that.Services.AddLdapSearchService<TUser>(ldapOptions);
+            that.Services.AddLdapAuthentication<TUser, LdapGroup>(ldapOptions);
             that.Services.AddScoped<IPasswordHasher<TUser>,
                 PasswordHasher<TUser>>();
             that.Services.AddScoped<IUserStore<TUser>, LdapUserStore<TUser>>();
@@ -70,7 +71,8 @@ namespace Visus.DirectoryIdentity {
         /// </exception>
         public static IdentityBuilder AddLdapStore(this IdentityBuilder that,
                 Action<LdapOptions> ldapOptions) {
-            return that.AddLdapStore<LdapIdentityUser>(ldapOptions);
+            //return that.AddLdapStore<LdapIdentityUser, LdapGroup>(ldapOptions);
+            throw new NotImplementedException();
         }
     }
 }

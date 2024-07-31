@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using Visus.DirectoryAuthentication;
+using Visus.Ldap.Claims;
+using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryIdentity {

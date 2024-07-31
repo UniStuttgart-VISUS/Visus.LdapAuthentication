@@ -6,6 +6,8 @@
 
 using System;
 using Visus.DirectoryAuthentication;
+using Visus.Ldap;
+using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryIdentity {
@@ -13,32 +15,31 @@ namespace Visus.DirectoryIdentity {
     /// <summary>
     /// Basic implementation of <see cref="ILdapIdentityUser"/>.
     /// </summary>
-    public abstract class LdapIdentityUserBase : LdapUserBase<LdapGroup>,
-            ILdapIdentityUser {
+    public abstract class LdapIdentityUserBase : LdapUser {
 
-        /// <inheritdoc />
-        [LdapAttribute("Active Directory", "badPwdCount",
-            Converter = typeof(IntConverter))]
-        [LdapAttribute("IDMU", "badPwdCount",
-            Converter = typeof(IntConverter))]
-        public virtual int AccessFailedCount { get; internal set; } = 0;
+        ///// <inheritdoc />
+        //[LdapAttribute("Active Directory", "badPwdCount",
+        //    Converter = typeof(IntConverter))]
+        //[LdapAttribute("IDMU", "badPwdCount",
+        //    Converter = typeof(IntConverter))]
+        //public virtual int AccessFailedCount { get; internal set; } = 0;
 
-        /// <inheritdoc />
-        public bool IsLockoutEnabled => (this.LockoutTime != null);
+        ///// <inheritdoc />
+        //public bool IsLockoutEnabled => (this.LockoutTime != null);
 
-        /// <inheritdoc />
-        [LdapAttribute("Active Directory", "lockoutTime",
-            Converter = typeof(DateConverter))]
-        [LdapAttribute("IDMU", "lockoutTime",
-            Converter = typeof(DateConverter))]
-        public virtual DateTimeOffset? LockoutTime { get; internal set; }
+        ///// <inheritdoc />
+        //[LdapAttribute("Active Directory", "lockoutTime",
+        //    Converter = typeof(DateConverter))]
+        //[LdapAttribute("IDMU", "lockoutTime",
+        //    Converter = typeof(DateConverter))]
+        //public virtual DateTimeOffset? LockoutTime { get; internal set; }
 
-        /// <inheritdoc />
-        [LdapAttribute("Active Directory", "badPasswordTime",
-            Converter = typeof(DateConverter))]
-        [LdapAttribute("IDMU", "badPasswordTime",
-            Converter = typeof(DateConverter))]
-        public virtual DateTimeOffset? LastAccessFailed { get; internal set; }
+        ///// <inheritdoc />
+        //[LdapAttribute("Active Directory", "badPasswordTime",
+        //    Converter = typeof(DateConverter))]
+        //[LdapAttribute("IDMU", "badPasswordTime",
+        //    Converter = typeof(DateConverter))]
+        //public virtual DateTimeOffset? LastAccessFailed { get; internal set; }
 
         /// <inheritdoc />
         [LdapAttribute("Active Directory", "telephoneNumber")]

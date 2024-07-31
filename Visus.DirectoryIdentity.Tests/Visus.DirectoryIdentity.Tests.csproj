@@ -6,6 +6,8 @@
     <IsPackable>false</IsPackable>
 
     <UserSecretsId>87cac4b3-a1da-4908-a724-2f0cf76b7272</UserSecretsId>
+
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +20,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Visus.DirectoryAuthentication\Visus.DirectoryAuthentication.csproj" />
   </ItemGroup>
 
 </Project>
