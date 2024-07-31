@@ -37,6 +37,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 o.SearchBases = new Dictionary<string, SearchScope> {
                     { "DC=domain", SearchScope.Base }
                 };
+                o.Schema = Schema.ActiveDirectory;
             });
 
             var provider = collection.BuildServiceProvider();
@@ -90,6 +91,11 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
+
+                o.Servers = ["127.0.0.1"];
+                o.SearchBases = new Dictionary<string, SearchScope> {
+                    { "DC=domain", SearchScope.Base }
+                };
                 o.Schema = Schema.ActiveDirectory;
             });
 

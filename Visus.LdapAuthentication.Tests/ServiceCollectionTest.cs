@@ -91,6 +91,11 @@ namespace Visus.LdapAuthentication.Tests {
             collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
+
+                o.Servers = ["127.0.0.1"];
+                o.SearchBases = new Dictionary<string, SearchScope> {
+                    { "DC=domain", SearchScope.Base }
+                };
                 o.Schema = Schema.ActiveDirectory;
             });
 
