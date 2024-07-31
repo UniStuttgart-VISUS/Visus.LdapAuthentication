@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 
+using System.Collections.Generic;
 using Visus.LdapAuthentication.Configuration;
 
 namespace Visus.LdapAuthentication.Tests
@@ -35,7 +36,10 @@ namespace Visus.LdapAuthentication.Tests
         /// Gets or sets the LDAP options for the test.
         /// </summary>
         public LdapOptions LdapOptions { get; set; } = new LdapOptions() {
-            Servers = ["127.0.0.1"]
+            Servers = ["127.0.0.1"],
+            SearchBases = new Dictionary<string, SearchScope>() {
+                { "DC=domain", SearchScope.Subtree }
+            },
         };
 
         /// <summary>

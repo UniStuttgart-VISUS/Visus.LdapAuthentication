@@ -4,8 +4,10 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-
+using System.Collections.Generic;
+using System.DirectoryServices.Protocols;
 using Visus.DirectoryAuthentication.Configuration;
+
 
 namespace Visus.DirectoryAuthentication.Tests {
 
@@ -33,7 +35,12 @@ namespace Visus.DirectoryAuthentication.Tests {
         /// <summary>
         /// Gets or sets the LDAP options for the test.
         /// </summary>
-        public LdapOptions? LdapOptions { get; set; }
+        public LdapOptions LdapOptions { get; set; } = new LdapOptions() {
+            Servers = ["127.0.0.1"],
+            SearchBases = new Dictionary<string, SearchScope>() {
+                { "DC=domain", SearchScope.Subtree }
+            },
+        };
 
         /// <summary>
         /// Gets or sets the name of a non-existing user account.

@@ -46,3 +46,9 @@ steps:
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
       **\*Tests.dll
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artefact'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: '$(Build.Repository.Name)-$(Build.SourceVersion)'
