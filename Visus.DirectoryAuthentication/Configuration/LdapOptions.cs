@@ -153,7 +153,7 @@ namespace Visus.DirectoryAuthentication.Configuration {
                         this.ServerCertificateIssuer,
                         StringComparison.InvariantCultureIgnoreCase)) {
                     logger.LogError(Resources.ErrorCertIssuerMismatch,
-                        issuer,
+                        this.ServerCertificateIssuer,
                         certificate.Issuer);
                     return false;
                 }
