@@ -45,7 +45,7 @@ steps:
   inputs:
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\*Tests.dll
+      **\(ref|refint)\*Tests.dll
 
 - task: CopyFiles@2
   inputs:
