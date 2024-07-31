@@ -47,8 +47,13 @@ steps:
     testAssemblyVer2: |
       **\*Tests.dll
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artefact'
-    inputs:
-      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: '$(Build.Repository.Name)-$(Build.SourceVersion)'
+- task: CopyFiles@2
+  inputs:
+    contents: '$(Build.SourcesDirectory)\**\bin\**\*.nupkg''
+    targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artefact'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: '$(Build.Repository.Name)-$(Build.SourceVersion)'
