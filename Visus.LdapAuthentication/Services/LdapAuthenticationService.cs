@@ -119,7 +119,7 @@ namespace Visus.LdapAuthentication.Services {
                         groups,
                         filter).Distinct(ClaimEqualityComparer.Instance);
                     var identity = new ClaimsIdentity(claims,
-                        authenticationType,
+                        authenticationType ?? this.GetType().Name,
                         nameType,
                         roleType);
                     return new ClaimsPrincipal(identity);
@@ -166,7 +166,7 @@ namespace Visus.LdapAuthentication.Services {
                         groups,
                         filter).Distinct(ClaimEqualityComparer.Instance);
                     var identity = new ClaimsIdentity(claims,
-                        authenticationType,
+                        authenticationType ?? this.GetType().Name,
                         nameType,
                         roleType);
                     return new ClaimsPrincipal(identity);

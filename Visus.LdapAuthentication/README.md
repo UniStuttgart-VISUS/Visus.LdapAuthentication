@@ -147,7 +147,7 @@ The built-in `LdapUser` object provides a reasonable mapping of attributes in an
 
 An example for addition additional information to the existing `LdapUser` might be the retrieval of the profile picture for display on the website:
 ```C#
-sealed class MyUser : LdapUser {
+public sealed class MyUser : LdapUser {
 
     /// <summary>
     /// Gets or sets the base64-encoded profile picture of the user.
