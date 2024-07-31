@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Visus.Ldap.Claims;
@@ -43,7 +44,7 @@ namespace Visus.Ldap {
         /// all claims before they are added to the principal and can decide
         /// which ones should be added and which ones should not.</param>
         /// <returns>A principal in case of a successful login.</returns>
-        ClaimsPrincipal? LoginPrincipal(string username,
+        ClaimsPrincipal LoginPrincipal(string username,
             string password,
             string? authenticationType = null,
             string? nameType = null,
@@ -68,7 +69,7 @@ namespace Visus.Ldap {
         /// all claims before they are added to the principal and can decide
         /// which ones should be added and which ones should not.</param>
         /// <returns>A principal in case of a successful login.</returns>
-        ClaimsPrincipal? LoginPrincipal(string username, string password,
+        ClaimsPrincipal LoginPrincipal(string username, string password,
                 ClaimFilter? filter)
             => this.LoginPrincipal(username, password, null, null, null, filter);
 
@@ -96,7 +97,7 @@ namespace Visus.Ldap {
         /// all claims before they are added to the principal and can decide
         /// which ones should be added and which ones should not.</param>
         /// <returns>A principal in case of a successful login.</returns>
-        Task<ClaimsPrincipal?> LoginPrincipalAsync(string username,
+        Task<ClaimsPrincipal> LoginPrincipalAsync(string username,
             string password,
             string? authenticationType = null,
             string? nameType = null,
@@ -121,7 +122,7 @@ namespace Visus.Ldap {
         /// all claims before they are added to the principal and can decide
         /// which ones should be added and which ones should not.</param>
         /// <returns>A principal in case of a successful login.</returns>
-        Task<ClaimsPrincipal?> LoginPrincipalAsync(string username,
+        Task<ClaimsPrincipal> LoginPrincipalAsync(string username,
                 string password, ClaimFilter? filter)
             => this.LoginPrincipalAsync(username, password, null, null, null,
                 filter);
@@ -134,7 +135,26 @@ namespace Visus.Ldap {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
-        TUser? LoginUser(string username, string password);
+        TUser LoginUser(string username, string password);
+
+        /// <summary>
+        /// Performs an asynchronous LDAP bind using the specified credentials,
+        /// retrieves the LDAP entry with the account name
+        /// <paramref name="username"/> in case the bind succeeds and returns
+        /// the claims derived from the user object returned.
+        /// </summary>
+        /// <param name="username">The user name to logon with.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <param name="claims">Recieves the claims obtained from the properties
+        /// of the returned user object.</param>
+        /// <param name="filter">An optional filter that allows callers to remove
+        /// claims they are not interested in from the ones returned to
+        /// <paramref name="claims"/>.</param>
+        /// <returns>The user object in case of a successful login.</returns>
+        TUser LoginUser(string username,
+            string password,
+            out IEnumerable<Claim> claims,
+            ClaimFilter? filter = null);
 
         /// <summary>
         /// Performs an LDAP bind using the specified credentials and retrieves
@@ -144,6 +164,7 @@ namespace Visus.Ldap {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <returns>The user object in case of a successful login.</returns>
-        Task<TUser?> LoginUserAsync(string username, string password);
+        Task<TUser> LoginUserAsync(string username, string password);
+
     }
 }

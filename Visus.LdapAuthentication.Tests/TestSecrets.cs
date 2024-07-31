@@ -23,28 +23,28 @@ namespace Visus.LdapAuthentication.Tests
         /// Gets or sets the account name of a known user that can be searched
         /// in the directory.
         /// </summary>
-        public string ExistingUserAccount { get; set; }
+        public string? ExistingUserAccount { get; set; }
 
         /// <summary>
         /// Gets or sets the identity of a known user that can be searched in the
         /// directory.
         /// </summary>
-        public string ExistingUserIdentity { get; set; }
+        public string? ExistingUserIdentity { get; set; }
 
         /// <summary>
         /// Gets or sets the LDAP options for the test.
         /// </summary>
-        public LdapOptions LdapOptions { get; set; }
+        public LdapOptions? LdapOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the name of a non-existing user account.
         /// </summary>
-        public string NonExistingUserAccount { get; set; }
+        public string? NonExistingUserAccount { get; set; }
 
         /// <summary>
         /// Gets or sets the identity of a non-existing user.
         /// </summary>
-        public string NonExistingUserIdentity { get; set; }
+        public string? NonExistingUserIdentity { get; set; }
 
     }
 }

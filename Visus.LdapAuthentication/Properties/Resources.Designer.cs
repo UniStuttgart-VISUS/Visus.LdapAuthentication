@@ -187,11 +187,20 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Login succeeded, but user information for &quot;{0}&quot; could not be found..
+        ///   Looks up a localized string similar to The login succeeded, but your user information could not be retrieved..
         /// </summary>
         public static string ErrorUserNotFound {
             get {
                 return ResourceManager.GetString("ErrorUserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The login of &quot;{0}&quot; succeeded, but the user information could not be retrieved. This usually indicates a misconfiguration of the search bases. Make sure that all user accounts that should be able to login are located in one of the configured search bases..
+        /// </summary>
+        public static string ErrorUserNotFoundDetailed {
+            get {
+                return ResourceManager.GetString("ErrorUserNotFoundDetailed", resourceCulture);
             }
         }
         

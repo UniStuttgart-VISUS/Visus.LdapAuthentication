@@ -21,6 +21,7 @@ using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Claims;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
+using Visus.LdapAuthentication.Properties;
 
 
 namespace Visus.LdapAuthentication.Services {
@@ -87,7 +88,7 @@ namespace Visus.LdapAuthentication.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public ClaimsPrincipal? LoginPrincipal(string username,
+        public ClaimsPrincipal LoginPrincipal(string username,
                 string password,
                 string? authenticationType,
                 string? nameType,
@@ -126,13 +127,13 @@ namespace Visus.LdapAuthentication.Services {
             }
 
             // Not found ad this point.
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
                 username);
-            return null;
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
 
         /// <inheritdoc />
-        public async Task<ClaimsPrincipal?> LoginPrincipalAsync(string username,
+        public async Task<ClaimsPrincipal> LoginPrincipalAsync(string username,
                 string password,
                 string? authenticationType,
                 string? nameType,
@@ -173,13 +174,13 @@ namespace Visus.LdapAuthentication.Services {
             }
 
             // Not found ad this point.
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
                 username);
-            return null;
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
 
         /// <inheritdoc />
-        public TUser? LoginUser(string username, string password) {
+        public TUser LoginUser(string username, string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._connectionService.Connect(
@@ -203,15 +204,22 @@ namespace Visus.LdapAuthentication.Services {
             }
 
             // Not found at this point, although authentication succeeded.
-            {
-                var msg = Properties.Resources.ErrorUserNotFound;
-                msg = string.Format(msg, username);
-                throw new KeyNotFoundException(msg);
-            }
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
+                username);
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
 
         /// <inheritdoc />
-        public async Task<TUser?> LoginUserAsync(string username,
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TUser LoginUser(string username, string password,
+                out IEnumerable<Claim> claims, ClaimFilter? filter) {
+            var retval = this.LoginUser(username, password);
+            claims = this._claimsBuilder.GetClaims(retval, filter);
+            return retval;
+        }
+
+        /// <inheritdoc />
+        public async Task<TUser> LoginUserAsync(string username,
                 string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
@@ -238,11 +246,9 @@ namespace Visus.LdapAuthentication.Services {
             }
 
             // Not found at this point, although authentication succeeded.
-            {
-                var msg = Properties.Resources.ErrorUserNotFound;
-                msg = string.Format(msg, username);
-                throw new KeyNotFoundException(msg);
-            }
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
+                username);
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
         #endregion
 

@@ -12,11 +12,13 @@ using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Claims;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
+using Visus.DirectoryAuthentication.Properties;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
@@ -89,7 +91,7 @@ namespace Visus.DirectoryAuthentication.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public ClaimsPrincipal? LoginPrincipal(string username,
+        public ClaimsPrincipal LoginPrincipal(string username,
                 string password,
                 string? authenticationType,
                 string? nameType,
@@ -130,13 +132,13 @@ namespace Visus.DirectoryAuthentication.Services {
             }
 
             // Not found ad this point.
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
                 username);
-            return null;
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
 
         /// <inheritdoc />
-        public async Task<ClaimsPrincipal?> LoginPrincipalAsync(string username,
+        public async Task<ClaimsPrincipal> LoginPrincipalAsync(string username,
                 string password,
                 string? authenticationType,
                 string? nameType,
@@ -178,13 +180,13 @@ namespace Visus.DirectoryAuthentication.Services {
             }
 
             // Not found ad this point.
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
                 username);
-            return null;
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
 
         /// <inheritdoc />
-        public TUser? LoginUser(string username, string password) {
+        public TUser LoginUser(string username, string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._connectionService.Connect(
@@ -210,13 +212,22 @@ namespace Visus.DirectoryAuthentication.Services {
             }
 
             // Not found ad this point.
-            this._logger.LogError(Properties.Resources.ErrorUserNotFound,
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
                 username);
-            return null;
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
 
         /// <inheritdoc />
-        public async Task<TUser?> LoginUserAsync(string username,
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TUser LoginUser(string username, string password,
+                out IEnumerable<Claim> claims, ClaimFilter? filter) {
+            var retval = this.LoginUser(username, password);
+            claims = this._claimsBuilder.GetClaims(retval, filter);
+            return retval;
+        }
+
+        /// <inheritdoc />
+        public async Task<TUser> LoginUserAsync(string username,
                 string password) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
@@ -246,11 +257,9 @@ namespace Visus.DirectoryAuthentication.Services {
             }
 
             // Not found at this point, although authentication succeeded.
-            {
-                var msg = Properties.Resources.ErrorUserNotFound;
-                msg = string.Format(msg, username);
-                throw new KeyNotFoundException(msg);
-            }
+            this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
+                username);
+            throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
         #endregion
 

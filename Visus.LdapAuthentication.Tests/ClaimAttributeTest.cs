@@ -20,14 +20,14 @@ namespace Visus.LdapAuthentication.Tests {
         #region Nested class TestClass1
         private sealed class TestClass1 {
 
-            public string Property1 { get; set; }
+            public string? Property1 { get; set; }
 
             [Claim("claim1")]
-            public string Property2 { get; set; }
+            public string? Property2 { get; set; }
 
             [Claim("claim2")]
             [Claim("claim3")]
-            public string Property3 { get; set; }
+            public string? Property3 { get; set; }
         }
         #endregion
 
@@ -35,6 +35,7 @@ namespace Visus.LdapAuthentication.Tests {
         public void TestNoClaims() {
             {
                 var pi = typeof(TestClass1).GetProperty(nameof(TestClass1.Property1));
+                Assert.IsNotNull(pi);
                 var claims = ClaimAttribute.GetClaims(pi);
                 Assert.IsNotNull(claims);
                 Assert.IsFalse(claims.Any());
@@ -57,6 +58,7 @@ namespace Visus.LdapAuthentication.Tests {
         public void TestOneClaim() {
             {
                 var pi = typeof(TestClass1).GetProperty(nameof(TestClass1.Property2));
+                Assert.IsNotNull(pi);
                 var claims = ClaimAttribute.GetClaims(pi);
                 Assert.IsNotNull(claims);
                 Assert.AreEqual(1, claims.Count());
@@ -79,6 +81,7 @@ namespace Visus.LdapAuthentication.Tests {
         public void TestMultipleClaims() {
             {
                 var pi = typeof(TestClass1).GetProperty(nameof(TestClass1.Property3));
+                Assert.IsNotNull(pi);
                 var claims = ClaimAttribute.GetClaims(pi);
                 Assert.IsNotNull(claims);
                 Assert.AreEqual(2, claims.Count());

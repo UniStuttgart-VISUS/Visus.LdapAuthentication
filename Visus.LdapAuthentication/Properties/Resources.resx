@@ -160,7 +160,10 @@
     <value>The specified server selection policy is not implemented.</value>
   </data>
   <data name="ErrorUserNotFound" xml:space="preserve">
-    <value>Login succeeded, but user information for "{0}" could not be found.</value>
+    <value>The login succeeded, but your user information could not be retrieved.</value>
+  </data>
+  <data name="ErrorUserNotFoundDetailed" xml:space="preserve">
+    <value>The login of "{0}" succeeded, but the user information could not be retrieved. This usually indicates a misconfiguration of the search bases. Make sure that all user accounts that should be able to login are located in one of the configured search bases.</value>
   </data>
   <data name="InfoBindAnonymous" xml:space="preserve">
     <value>Performing anonyomous bind.</value>

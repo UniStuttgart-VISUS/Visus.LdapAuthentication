@@ -26,7 +26,7 @@ namespace Visus.LdapAuthentication.Tests {
 
             {
                 var mapping = new LdapMapping() {
-                    DistinguishedNameAttribute = null
+                    DistinguishedNameAttribute = null!
                 };
                 var result = validator.Validate(mapping);
                 Assert.IsNotNull(result);
@@ -52,7 +52,7 @@ namespace Visus.LdapAuthentication.Tests {
 
             {
                 var options = new LdapOptions();
-                options.Mappings = null;
+                options.Mappings = null!;
                 var result = validator.Validate(options);
                 Assert.IsNotNull(result);
                 Assert.IsTrue(result.Errors.Any(r => r.PropertyName == nameof(LdapOptions.Mapping)));
@@ -65,7 +65,7 @@ namespace Visus.LdapAuthentication.Tests {
             {
                 var options = new LdapOptions();
                 options.Mapping = new() {
-                    DistinguishedNameAttribute = null
+                    DistinguishedNameAttribute = null!
                 };
                 options.Servers = Array.Empty<string>();
                 var result = validator.Validate(options);

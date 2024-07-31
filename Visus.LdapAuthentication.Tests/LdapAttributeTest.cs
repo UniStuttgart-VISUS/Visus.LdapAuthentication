@@ -22,13 +22,13 @@ namespace Visus.LdapAuthentication.Tests {
         private sealed class TestClass1 {
 
             [LdapAttribute(Schema.ActiveDirectory, "attribute1")]
-            public string Property1 { get; set; }
+            public string? Property1 { get; set; }
 
             [LdapAttribute(Schema.ActiveDirectory, "attribute2a")]
             [LdapAttribute(Schema.Rfc2307, "attribute2b")]
-            public string Property2 { get; set; }
+            public string? Property2 { get; set; }
 
-            public string Property3 { get; set; }
+            public string? Property3 { get; set; }
         }
         #endregion
 
