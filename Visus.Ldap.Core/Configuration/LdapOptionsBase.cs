@@ -65,6 +65,12 @@ namespace Visus.Ldap.Configuration {
         public bool IsRecursiveGroupMembership { get; set; }
 
         /// <summary>
+        /// Gets whether <see cref="TransportSecurity"/> is
+        /// <see cref="TransportSecurity.Ssl"/>.
+        /// </summary>
+        public bool IsSsl => (this.TransportSecurity == TransportSecurity.Ssl);
+
+        /// <summary>
         /// Gets the global LDAP mapping for the selected schema.
         /// </summary>
         /// <remarks>
