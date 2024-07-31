@@ -13,6 +13,7 @@ using Visus.Ldap.Mapping;
 using Visus.Ldap;
 using Visus.LdapAuthentication.Configuration;
 using Novell.Directory.Ldap;
+using System.Collections.Generic;
 
 
 namespace Visus.LdapAuthentication.Tests {
@@ -31,6 +32,11 @@ namespace Visus.LdapAuthentication.Tests {
             collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
+
+                o.Servers = ["127.0.0.1"];
+                o.SearchBases = new Dictionary<string, SearchScope> {
+                    { "DC=domain", SearchScope.Base }
+                };
                 o.Schema = Schema.ActiveDirectory;
             });
 

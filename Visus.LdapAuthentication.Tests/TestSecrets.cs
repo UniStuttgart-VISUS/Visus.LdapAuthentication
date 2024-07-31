@@ -4,12 +4,11 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-
 using System.Collections.Generic;
 using Visus.LdapAuthentication.Configuration;
 
-namespace Visus.LdapAuthentication.Tests
-{
+
+namespace Visus.LdapAuthentication.Tests {
 
     /// <summary>
     /// Container for secret test settings (LDAP credentials).
@@ -19,6 +18,18 @@ namespace Visus.LdapAuthentication.Tests
     /// to run the tests against an actual LDAP directory.
     /// </remarks>
     internal sealed class TestSecrets {
+
+        /// <summary>
+        /// Answer whether tests requiring an actual server can run.
+        /// </summary>
+        public bool CanRun
+            => !string.IsNullOrWhiteSpace(this.ExistingUserAccount)
+            && !string.IsNullOrWhiteSpace(this.ExistingUserIdentity)
+            && (this.LdapOptions != null)
+            && !string.IsNullOrWhiteSpace(this.LdapOptions.User)
+            && !string.IsNullOrWhiteSpace(this.LdapOptions.Password)
+            && !string.IsNullOrWhiteSpace(this.NonExistingUserAccount)
+            && !string.IsNullOrWhiteSpace(this.NonExistingUserIdentity);
 
         /// <summary>
         /// Gets or sets the account name of a known user that can be searched
@@ -35,12 +46,7 @@ namespace Visus.LdapAuthentication.Tests
         /// <summary>
         /// Gets or sets the LDAP options for the test.
         /// </summary>
-        public LdapOptions LdapOptions { get; set; } = new LdapOptions() {
-            Servers = ["127.0.0.1"],
-            SearchBases = new Dictionary<string, SearchScope>() {
-                { "DC=domain", SearchScope.Subtree }
-            },
-        };
+        public LdapOptions? LdapOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the name of a non-existing user account.

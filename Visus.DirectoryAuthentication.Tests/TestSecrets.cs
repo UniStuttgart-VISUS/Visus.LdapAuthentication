@@ -21,6 +21,18 @@ namespace Visus.DirectoryAuthentication.Tests {
     internal sealed class TestSecrets {
 
         /// <summary>
+        /// Answer whether tests requiring an actual server can run.
+        /// </summary>
+        public bool CanRun
+            => !string.IsNullOrWhiteSpace(this.ExistingUserAccount)
+            && !string.IsNullOrWhiteSpace(this.ExistingUserIdentity)
+            && (this.LdapOptions != null)
+            && !string.IsNullOrWhiteSpace(this.LdapOptions.User)
+            && !string.IsNullOrWhiteSpace(this.LdapOptions.Password)
+            && !string.IsNullOrWhiteSpace(this.NonExistingUserAccount)
+            && !string.IsNullOrWhiteSpace(this.NonExistingUserIdentity);
+
+        /// <summary>
         /// Gets or sets the account name of a known user that can be searched
         /// in the directory.
         /// </summary>
@@ -35,12 +47,7 @@ namespace Visus.DirectoryAuthentication.Tests {
         /// <summary>
         /// Gets or sets the LDAP options for the test.
         /// </summary>
-        public LdapOptions LdapOptions { get; set; } = new LdapOptions() {
-            Servers = ["127.0.0.1"],
-            SearchBases = new Dictionary<string, SearchScope>() {
-                { "DC=domain", SearchScope.Subtree }
-            },
-        };
+        public LdapOptions? LdapOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the name of a non-existing user account.

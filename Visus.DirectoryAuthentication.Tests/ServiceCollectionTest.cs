@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.Ldap;
@@ -31,7 +32,11 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
-                o.Schema = Schema.ActiveDirectory;
+
+                o.Servers = ["127.0.0.1"];
+                o.SearchBases = new Dictionary<string, SearchScope> {
+                    { "DC=domain", SearchScope.Base }
+                };
             });
 
             var provider = collection.BuildServiceProvider();

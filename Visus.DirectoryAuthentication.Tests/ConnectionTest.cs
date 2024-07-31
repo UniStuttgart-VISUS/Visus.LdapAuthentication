@@ -20,7 +20,8 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void GetDefaultNamingContext() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());
@@ -33,7 +34,8 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public async Task GetDefaultNamingContextAsync() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());
@@ -46,7 +48,8 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void GetRootDse() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());
@@ -59,7 +62,8 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public async Task GetRootDseAsync() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 ILdapConnectionService service = new LdapConnectionService(
                     Options.Create(this._testSecrets.LdapOptions),
                     Mock.Of<ILogger<LdapConnectionService>>());

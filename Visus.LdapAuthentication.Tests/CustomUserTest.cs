@@ -19,23 +19,26 @@ namespace Visus.LdapAuthentication.Tests {
 
         #region Public constructors
         public CustomUserTest() {
-            var configuration = TestExtensions.CreateConfiguration();
-            var collection = new ServiceCollection().AddMockLoggers();
-            collection.AddLdapAuthentication<TestUser1, LdapGroup>(o => {
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(o);
-            });
-            collection.AddLdapAuthentication<TestUser2, LdapGroup>(o => {
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(o);
-            });
-            this._services = collection.BuildServiceProvider();
+            if (this._testSecrets?.CanRun == true) {
+                var configuration = TestExtensions.CreateConfiguration();
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication<TestUser1, LdapGroup>(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                });
+                collection.AddLdapAuthentication<TestUser2, LdapGroup>(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                });
+                this._services = collection.BuildServiceProvider();
+            }
         }
         #endregion
 
         [TestMethod]
         public void TestGetUser1ByAccountName() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser1, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -49,7 +52,8 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestGetUser2ByAccountName() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser2, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -60,7 +64,8 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public async Task TestGetUser1ByAccountNameAsync() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser1, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -72,7 +77,8 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public async Task TestGetUser2ByAccountNameAsync() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser2, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -83,7 +89,8 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestGetUser1ByIdentity() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser1, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -102,7 +109,8 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestGetUser2ByIdentity() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser2, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -120,7 +128,8 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public async Task TestGetUser1ByIdentityAsync() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser1, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -139,7 +148,8 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public async Task TestGetUser2ByIdentityAsync() {
-            if (this._testSecrets?.LdapOptions != null) {
+            if (this._testSecrets.CanRun == true) {
+                Assert.IsNotNull(this._services);
                 var service = this._services.GetService<ILdapSearchService<TestUser2, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -155,7 +165,7 @@ namespace Visus.LdapAuthentication.Tests {
             }
         }
 
-        private readonly ServiceProvider _services;
+        private readonly ServiceProvider? _services;
         private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }
 }
