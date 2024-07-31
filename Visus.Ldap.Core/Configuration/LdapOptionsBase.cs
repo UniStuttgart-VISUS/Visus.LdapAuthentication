@@ -23,7 +23,7 @@ namespace Visus.Ldap.Configuration {
         /// <summary>
         /// The suggested name of the LDAP configuration section.
         /// </summary>
-        public const string SectionName = "LdapOptions";
+        public const string Section = "LdapOptions";
         #endregion
 
         #region Public properties

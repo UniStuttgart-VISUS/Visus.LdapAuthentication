@@ -27,7 +27,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [LdapAttribute(Schema.ActiveDirectory, "objectSid",
             Converter = typeof(SidConverter))]
-        [Claim(ClaimTypes.NameIdentifier)]
+        [Claim(ClaimTypes.Sid)]
         [Identity]
         public string Identity { get; set; } = null!;
     }

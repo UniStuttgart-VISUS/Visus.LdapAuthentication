@@ -214,7 +214,8 @@ namespace Visus.LdapAuthentication.Services {
         public (TUser, IEnumerable<Claim>) LoginUser(string username,
                 string password, ClaimFilter? filter) {
             var user = this.LoginUser(username, password);
-            var claims = this._claimsBuilder.GetClaims(user, filter);
+            var claims = this._claimsBuilder.GetClaims(user, filter)
+                .Distinct(ClaimEqualityComparer.Instance);
             return (user, claims);
         }
 
@@ -258,7 +259,8 @@ namespace Visus.LdapAuthentication.Services {
                 string password,
                 ClaimFilter? filter) {
             var user = await this.LoginUserAsync(username, password);
-            var claims = this._claimsBuilder.GetClaims(user, filter);
+            var claims = this._claimsBuilder.GetClaims(user, filter)
+                .Distinct(ClaimEqualityComparer.Instance);
             return (user, claims);
         }
         #endregion
