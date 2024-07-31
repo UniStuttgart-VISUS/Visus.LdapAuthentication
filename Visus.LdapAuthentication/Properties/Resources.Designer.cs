@@ -70,6 +70,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The LDAP server certificate &quot;{0}&quot; is expected to be issued by &quot;{1}&quot;, but was actually issued by &quot;{2}&quot;..
+        /// </summary>
+        public static string ErrorCheckServerCertIssuer {
+            get {
+                return ResourceManager.GetString("ErrorCheckServerCertIssuer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The search base must be a non-empty string..
         /// </summary>
         public static string ErrorEmptySearchBase {
@@ -237,6 +246,15 @@ namespace Visus.LdapAuthentication.Properties {
         public static string InfoBoundAsUser {
             get {
                 return ResourceManager.GetString("InfoBoundAsUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checking that the LDAP server certificate &quot;{0}&quot; was issued by &quot;{1}&quot;..
+        /// </summary>
+        public static string InfoCheckServerCertIssuer {
+            get {
+                return ResourceManager.GetString("InfoCheckServerCertIssuer", resourceCulture);
             }
         }
         

@@ -199,7 +199,19 @@ namespace Visus.LdapAuthentication.Configuration {
                 }
             }
 
-            // TODO: this.ServerCertificateIssuer
+            if (!string.IsNullOrWhiteSpace(this.ServerCertificateIssuer)) {
+                logger.LogInformation(Resources.InfoCheckServerCertIssuer,
+                    certificate.Subject, this.ServerCertificateIssuer);
+
+                if (!string.Equals(certificate.Issuer,
+                        this.ServerCertificateIssuer,
+                        StringComparison.InvariantCultureIgnoreCase)) {
+                    logger.LogError(Resources.ErrorCheckServerCertIssuer,
+                        certificate.Subject, this.ServerCertificateIssuer,
+                        certificate.Issuer);
+                    return false;
+                }
+            }
 
             return true;
         }

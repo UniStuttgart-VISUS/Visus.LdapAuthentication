@@ -120,6 +120,9 @@
   <data name="ErrorAmbiguousSearchScope" xml:space="preserve">
     <value>You cannot set "SearchBases" and the legacy option "SearchBase" at the same time. Move all LDAP search bases to the new "SearchBases" property.</value>
   </data>
+  <data name="ErrorCheckServerCertIssuer" xml:space="preserve">
+    <value>The LDAP server certificate "{0}" is expected to be issued by "{1}", but was actually issued by "{2}".</value>
+  </data>
   <data name="ErrorEmptySearchBase" xml:space="preserve">
     <value>The search base must be a non-empty string.</value>
   </data>
@@ -176,6 +179,9 @@
   </data>
   <data name="InfoBoundAsUser" xml:space="preserve">
     <value>Authenticated successfully as user "{0}".</value>
+  </data>
+  <data name="InfoCheckServerCertIssuer" xml:space="preserve">
+    <value>Checking that the LDAP server certificate "{0}" was issued by "{1}".</value>
   </data>
   <data name="InfoConnectingLdap" xml:space="preserve">
     <value>Connecting to LDAP server {0}:{1}.</value>
