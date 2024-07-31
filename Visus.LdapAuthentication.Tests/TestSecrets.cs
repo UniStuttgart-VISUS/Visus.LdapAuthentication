@@ -34,7 +34,9 @@ namespace Visus.LdapAuthentication.Tests
         /// <summary>
         /// Gets or sets the LDAP options for the test.
         /// </summary>
-        public LdapOptions? LdapOptions { get; set; }
+        public LdapOptions LdapOptions { get; set; } = new LdapOptions() {
+            Servers = ["127.0.0.1"]
+        };
 
         /// <summary>
         /// Gets or sets the name of a non-existing user account.
