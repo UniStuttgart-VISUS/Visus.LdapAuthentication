@@ -36,6 +36,14 @@ Version 2.0 is a major rewrite of both libraries, which removes previously depre
 1. Both libraries now support `async`/`await`.
 1. Both libraries support creation of `ClaimsPrincipal`s instead of custom user objects to facilitate the implementation of login controllers.
 
+### Things to look at when upgrading
+1. In your LDAP options section in appsettings.json, make sure to change "Server" to "Servers" and provide an array of at least one server.
+1. In your LDAP options section in appsettings.json, make sure to change "SearchBase" to "SearchBases" and provide a map from the DN to the search scope.
+1. In your LDAP options section in appsettings.json, make sure to replace "IsSsl" with the equivalent "TransportSecurity". **"IsSsl" is not honoured anymore! Without "TransportSecurity", your connections will not be encrypted!**
+1. In your startup code, replace all previous dependency injection extension methods with a version of `AddLdapAuthentication`. The template parameters allow you to change the type of user and group that the LDAP entries are mapped to.
+1. In your code, change all services to include the user and/or group type you want to use.
+1. In your code, replace `ILdapAuthenticationService.Login` with `ILdapAuthenticationService.LoginUser` or `ILdapAuthenticationService.LoginPrincipal` depending on your needs.
+
 ## Differences between LdapAuthentication and DirectoryAuthentication
 [Visus.DirectoryAuthentication](Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](Visus.LdapAuthentication) can mostly be used interchangeably with a few exceptions:
 1. `System.DirectorySerices.Protocols` requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must be installed.
