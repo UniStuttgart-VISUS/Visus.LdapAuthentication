@@ -211,11 +211,11 @@ namespace Visus.LdapAuthentication.Services {
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TUser LoginUser(string username, string password,
-                out IEnumerable<Claim> claims, ClaimFilter? filter) {
-            var retval = this.LoginUser(username, password);
-            claims = this._claimsBuilder.GetClaims(retval, filter);
-            return retval;
+        public (TUser, IEnumerable<Claim>) LoginUser(string username,
+                string password, ClaimFilter? filter) {
+            var user = this.LoginUser(username, password);
+            var claims = this._claimsBuilder.GetClaims(user, filter);
+            return (user, claims);
         }
 
         /// <inheritdoc />
@@ -249,6 +249,17 @@ namespace Visus.LdapAuthentication.Services {
             this._logger.LogError(Resources.ErrorUserNotFoundDetailed,
                 username);
             throw new KeyNotFoundException(Resources.ErrorUserNotFound);
+        }
+
+
+        /// <inheritdoc />
+        public async Task<(TUser, IEnumerable<Claim>)> LoginUserAsync(
+                string username,
+                string password,
+                ClaimFilter? filter) {
+            var user = await this.LoginUserAsync(username, password);
+            var claims = this._claimsBuilder.GetClaims(user, filter);
+            return (user, claims);
         }
         #endregion
 

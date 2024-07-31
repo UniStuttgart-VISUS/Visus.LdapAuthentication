@@ -38,8 +38,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(service);
 
                 var principal = service.LoginPrincipal(
-                    this._testSecrets.LdapOptions.User,
-                    this._testSecrets.LdapOptions.Password);
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(principal);
                 Assert.IsTrue(principal.Claims.Any());
             }
@@ -52,8 +52,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(service);
 
                 var principal = await service.LoginPrincipalAsync(
-                    this._testSecrets.LdapOptions.User,
-                    this._testSecrets.LdapOptions.Password);
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(principal);
                 Assert.IsTrue(principal.Claims.Any());
             }
@@ -66,8 +66,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(service);
 
                 var user = service.LoginUser(
-                    this._testSecrets.LdapOptions.User,
-                    this._testSecrets.LdapOptions.Password);
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(user);
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Any());
@@ -83,8 +83,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.IsNotNull(service);
 
                 var user = await service.LoginUserAsync(
-                    this._testSecrets.LdapOptions.User,
-                    this._testSecrets.LdapOptions.Password);
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(user);
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Any());
@@ -101,9 +101,55 @@ namespace Visus.DirectoryAuthentication.Tests {
 
                 Assert.ThrowsException<LdapException>(() => {
                     service.LoginUser(
-                        this._testSecrets.LdapOptions.User,
-                        this._testSecrets.LdapOptions.Password + " is wrong");
+                        this._testSecrets.LdapOptions.User!,
+                        this._testSecrets.LdapOptions.Password! + " is wrong");
                 });
+            }
+        }
+
+        [TestMethod]
+        public void TestLoginUserFailureAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                Assert.ThrowsExceptionAsync<LdapException>(async () => {
+                    await service.LoginUserAsync(
+                        this._testSecrets.LdapOptions.User!,
+                        this._testSecrets.LdapOptions.Password! + " is wrong");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void TestLoginUserWithClaims() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                (var user, var claims) = service.LoginUser(
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!,
+                    null);
+                Assert.IsNotNull(user);
+                Assert.IsNotNull(claims);
+                Assert.IsTrue(claims.Any());
+            }
+        }
+
+        [TestMethod]
+        public async Task TestLoginUserWithClaimsAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                (var user, var claims) = await service.LoginUserAsync(
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!,
+                    null);
+                Assert.IsNotNull(user);
+                Assert.IsNotNull(claims);
+                Assert.IsTrue(claims.Any());
             }
         }
 

@@ -107,6 +107,53 @@ namespace Visus.LdapAuthentication.Tests {
             }
         }
 
+
+        [TestMethod]
+        public void TestLoginUserFailureAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                Assert.ThrowsExceptionAsync<LdapException>(async () => {
+                    await service.LoginUserAsync(
+                        this._testSecrets.LdapOptions.User!,
+                        this._testSecrets.LdapOptions.Password! + " is wrong");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void TestLoginUserWithClaims() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                (var user, var claims) = service.LoginUser(
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!,
+                    null);
+                Assert.IsNotNull(user);
+                Assert.IsNotNull(claims);
+                Assert.IsTrue(claims.Any());
+            }
+        }
+
+        [TestMethod]
+        public async Task TestLoginUserWithClaimsAsync() {
+            if (this._testSecrets?.LdapOptions != null) {
+                var service = this._services.GetService<ILdapAuthenticationService<LdapUser>>();
+                Assert.IsNotNull(service);
+
+                (var user, var claims) = await service.LoginUserAsync(
+                    this._testSecrets.LdapOptions.User!,
+                    this._testSecrets.LdapOptions.Password!,
+                    null);
+                Assert.IsNotNull(user);
+                Assert.IsNotNull(claims);
+                Assert.IsTrue(claims.Any());
+            }
+        }
+
         private readonly ServiceProvider _services;
         private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }

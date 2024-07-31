@@ -145,16 +145,12 @@ namespace Visus.Ldap {
         /// </summary>
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
-        /// <param name="claims">Recieves the claims obtained from the properties
-        /// of the returned user object.</param>
         /// <param name="filter">An optional filter that allows callers to remove
-        /// claims they are not interested in from the ones returned to
-        /// <paramref name="claims"/>.</param>
-        /// <returns>The user object in case of a successful login.</returns>
-        TUser LoginUser(string username,
-            string password,
-            out IEnumerable<Claim> claims,
-            ClaimFilter? filter = null);
+        /// claims they are not interested in from the retuned ones.</param>
+        /// <returns>The user object and the claims derived from it in case of
+        /// a successful login.</returns>
+        (TUser, IEnumerable<Claim>) LoginUser(string username,
+            string password, ClaimFilter? filter = null);
 
         /// <summary>
         /// Performs an LDAP bind using the specified credentials and retrieves
@@ -166,5 +162,20 @@ namespace Visus.Ldap {
         /// <returns>The user object in case of a successful login.</returns>
         Task<TUser> LoginUserAsync(string username, string password);
 
+        /// <summary>
+        /// Performs an asynchronous LDAP bind using the specified credentials,
+        /// retrieves the LDAP entry with the account name
+        /// <paramref name="username"/> in case the bind succeeds and returns
+        /// the claims derived from the user object returned.
+        /// </summary>
+        /// <param name="username">The user name to logon with.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <param name="filter">An optional filter that allows callers to remove
+        /// claims they are not interested in from the retuned ones.</param>
+        /// <returns>The user object and the claims derived from it in case of
+        /// a successful login.</returns>
+        Task<(TUser, IEnumerable<Claim>)> LoginUserAsync(string username,
+            string password, ClaimFilter? filter = null);
     }
+
 }
