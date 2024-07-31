@@ -45,11 +45,11 @@ steps:
   inputs:
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\!(ref|refint)\*Tests.dll
+      **/bin/**!(ref|refint)/*Tests.dll
 
 - task: CopyFiles@2
   inputs:
-    contents: '$(Build.SourcesDirectory)\**\bin\**\*.nupkg'
+    contents: '$(Build.SourcesDirectory)/**/bin/**/*.nupkg'
     targetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
