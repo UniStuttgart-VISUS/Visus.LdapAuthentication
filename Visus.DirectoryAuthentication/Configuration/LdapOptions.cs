@@ -76,8 +76,7 @@ namespace Visus.DirectoryAuthentication.Configuration {
             retval.AuthType = this.AuthenticationType;
 
             try {
-                retval.SessionOptions.SecureSocketLayer
-                    = (this.TransportSecurity == TransportSecurity.Ssl);
+                retval.SessionOptions.SecureSocketLayer = this.IsSsl;
             } catch (Exception ex) {
                 // Cf. https://github.com/dotnet/runtime/issues/43890
                 logger.LogWarning(ex, Resources.WarnNoSsl);
@@ -98,8 +97,8 @@ namespace Visus.DirectoryAuthentication.Configuration {
                 + "using port {port}, authentication type {authType} and "
                 + "protocol version {protocol}. Referral chasing is "
                 + "{referralChasing}.",
-                string.Join(", ", Servers),
-                Port,
+                string.Join(", ", this.Servers),
+                this.Port,
                 retval.AuthType,
                 retval.SessionOptions.ProtocolVersion,
                 retval.SessionOptions.ReferralChasing);
