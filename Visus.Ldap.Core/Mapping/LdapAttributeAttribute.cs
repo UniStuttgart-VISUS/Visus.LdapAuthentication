@@ -6,6 +6,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 
 namespace Visus.Ldap.Mapping {
@@ -24,7 +25,8 @@ namespace Visus.Ldap.Mapping {
     [AttributeUsage(AttributeTargets.Property,
         AllowMultiple = true,
         Inherited = false)]
-    public sealed class LdapAttributeAttribute : Attribute {
+    public sealed class LdapAttributeAttribute : Attribute,
+            IEquatable<LdapAttributeAttribute> {
 
         #region Public constructors
         /// <summary>
@@ -62,6 +64,31 @@ namespace Visus.Ldap.Mapping {
         #endregion
 
         #region Public methods
+        /// <inheritdoc />
+        public bool Equals(LdapAttributeAttribute? other) {
+            if (other == null) {
+                return false;
+            }
+
+            if (this.Name != other.Name) {
+                return false;
+            }
+
+            if (this.Schema != other.Schema) {
+                return false;
+            }
+
+            if (this.Converter != other.Converter) {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc />
+        public override bool Equals([NotNullWhen(true)] object? obj)
+            => this.Equals(obj as LdapAttributeAttribute);
+
         /// <summary>
         /// Instantiates the converter if any.
         /// </summary>
@@ -75,6 +102,13 @@ namespace Visus.Ldap.Mapping {
 
             return this._converter;
         }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+            => base.GetHashCode()
+            ^ this.Name.GetHashCode()
+            ^ this.Schema.GetHashCode()
+            ^ this.Converter?.GetHashCode() ?? 0;
         #endregion
 
         #region Private fields

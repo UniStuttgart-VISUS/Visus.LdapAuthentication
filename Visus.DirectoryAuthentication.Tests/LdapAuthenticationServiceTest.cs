@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Visus.Ldap;
 
@@ -43,6 +44,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                     this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(principal);
                 Assert.IsTrue(principal.Claims.Any());
+                Assert.IsTrue(principal.Claims.Any(c => c.Type == ClaimTypes.Sid));
             }
         }
 
@@ -59,6 +61,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                     this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(principal);
                 Assert.IsTrue(principal.Claims.Any());
+                Assert.IsTrue(principal.Claims.Any(c => c.Type == ClaimTypes.Sid));
             }
         }
 
@@ -74,6 +77,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                     this._testSecrets.LdapOptions.User!,
                     this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(user);
+                Assert.IsNotNull(user.Identity);
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Any());
                 Assert.IsTrue(user.Groups.Count() >= 1);
@@ -93,6 +97,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                     this._testSecrets.LdapOptions.User!,
                     this._testSecrets.LdapOptions.Password!);
                 Assert.IsNotNull(user);
+                Assert.IsNotNull(user.Identity);
                 Assert.IsNotNull(user.Groups);
                 Assert.IsTrue(user.Groups.Any());
                 Assert.IsTrue(user.Groups.Count() >= 1);
@@ -145,8 +150,10 @@ namespace Visus.DirectoryAuthentication.Tests {
                     this._testSecrets.LdapOptions.Password!,
                     null);
                 Assert.IsNotNull(user);
+                Assert.IsNotNull(user.Identity);
                 Assert.IsNotNull(claims);
                 Assert.IsTrue(claims.Any());
+                Assert.IsTrue(claims.Any(c => c.Type == ClaimTypes.Sid));
             }
         }
 
@@ -163,8 +170,10 @@ namespace Visus.DirectoryAuthentication.Tests {
                     this._testSecrets.LdapOptions.Password!,
                     null);
                 Assert.IsNotNull(user);
+                Assert.IsNotNull(user.Identity);
                 Assert.IsNotNull(claims);
                 Assert.IsTrue(claims.Any());
+                Assert.IsTrue(claims.Any(c => c.Type == ClaimTypes.Sid));
             }
         }
 
