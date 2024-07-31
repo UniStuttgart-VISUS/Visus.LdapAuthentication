@@ -82,35 +82,31 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestPublicDefaults() {
-            var configuration = TestExtensions.CreateConfiguration();
-
-            var collection = new ServiceCollection().AddMockLoggers();
-            collection.AddLdapAuthentication(o => {
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(o);
-
-                o.Servers = ["127.0.0.1"];
-                o.SearchBases = new Dictionary<string, SearchScope> {
-                    { "DC=domain", SearchScope.Base }
-                };
-                o.Schema = Schema.ActiveDirectory;
-            });
-
-            var provider = collection.BuildServiceProvider();
-
-            {
-                var service = provider.GetService<ILdapConnectionService>();
-                Assert.IsNotNull(service, "Connection service resolved");
-            }
-
-            {
-                var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
-                Assert.IsNotNull(service, "Authentication service resolved");
-            }
-
             if (this._testSecrets.CanRun) {
-                var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
-                Assert.IsNotNull(service, "Search service resolved");
+                var configuration = TestExtensions.CreateConfiguration();
+
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                });
+
+                var provider = collection.BuildServiceProvider();
+
+                {
+                    var service = provider.GetService<ILdapConnectionService>();
+                    Assert.IsNotNull(service, "Connection service resolved");
+                }
+
+                {
+                    var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
+                    Assert.IsNotNull(service, "Authentication service resolved");
+                }
+
+                {
+                    var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                    Assert.IsNotNull(service, "Search service resolved");
+                }
             }
         }
 

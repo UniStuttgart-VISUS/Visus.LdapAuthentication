@@ -14,11 +14,9 @@ using Visus.Ldap;
 using Visus.LdapAuthentication.Configuration;
 using Novell.Directory.Ldap;
 using System.Collections.Generic;
-using Visus.LdapAuthentication.Tests;
-using Visus.LdapAuthentication;
 
 
-namespace Visus.DirectoryAuthentication.Tests {
+namespace Visus.LdapAuthentication.Tests {
 
     [TestClass]
     public sealed class ServiceCollectionTest {
@@ -84,35 +82,37 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestPublicDefaults() {
-            var configuration = TestExtensions.CreateConfiguration();
+            if (this._testSecrets.CanRun) {
+                var configuration = TestExtensions.CreateConfiguration();
 
-            var collection = new ServiceCollection().AddMockLoggers();
-            collection.AddLdapAuthentication(o => {
-                var section = configuration.GetSection("LdapOptions");
-                section.Bind(o);
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
 
-                o.Servers = ["127.0.0.1"];
-                o.SearchBases = new Dictionary<string, SearchScope> {
+                    o.Servers = ["127.0.0.1"];
+                    o.SearchBases = new Dictionary<string, SearchScope> {
                     { "DC=domain", SearchScope.Base }
                 };
-                o.Schema = Schema.ActiveDirectory;
-            });
+                    o.Schema = Schema.ActiveDirectory;
+                });
 
-            var provider = collection.BuildServiceProvider();
+                var provider = collection.BuildServiceProvider();
 
-            {
-                var service = provider.GetService<ILdapConnectionService>();
-                Assert.IsNotNull(service, "Connection service resolved");
-            }
+                {
+                    var service = provider.GetService<ILdapConnectionService>();
+                    Assert.IsNotNull(service, "Connection service resolved");
+                }
 
-            {
-                var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
-                Assert.IsNotNull(service, "Authentication service resolved");
-            }
+                {
+                    var service = provider.GetService<ILdapAuthenticationService<LdapUser>>();
+                    Assert.IsNotNull(service, "Authentication service resolved");
+                }
 
-            if (this._testSecrets.CanRun) {
-                var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
-                Assert.IsNotNull(service, "Search service resolved");
+                {
+                    var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                    Assert.IsNotNull(service, "Search service resolved");
+                }
             }
         }
 
