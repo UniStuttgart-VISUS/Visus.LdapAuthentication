@@ -125,7 +125,7 @@ public MyLoginController(ILdapAuthenticationService<LdapUser> authService,
 public async Task<ActionResult<ILdapUser>> Login([FromForm] string username, [FromForm] string password) {
     try {
         (var retval, var claims) = await this._authService.LoginUserAsync(username, password, null);
-        var identity = new ClaimsIdentity(claims);
+        var identity = new ClaimsIdentity(claims, "LDAP");
         var principal = new ClaimsPrincipal(identity);
         await this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, princial);
         return this.Ok(retval);

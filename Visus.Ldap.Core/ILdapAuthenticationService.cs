@@ -35,7 +35,10 @@ namespace Visus.Ldap {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <param name="authenticationType">The authentication type used to
-        /// construct the <see cref="ClaimsIdentity"/>.</param>
+        /// construct the <see cref="ClaimsIdentity"/>. The authentication type
+        /// is required to create a valid <see cref="ClaimsPrincipal"/>. If this
+        /// parameter is <c>null</c>, implementations shall use their type name
+        /// as the authentication type.</param>
         /// <param name="nameType">The name type used to construct the
         /// <see cref="ClaimsIdentity"/>.</param>
         /// <param name="roleType">The role type used to construct the
@@ -88,7 +91,10 @@ namespace Visus.Ldap {
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
         /// <param name="authenticationType">The authentication type used to
-        /// construct the <see cref="ClaimsIdentity"/>.</param>
+        /// construct the <see cref="ClaimsIdentity"/>. The authentication type
+        /// is required to create a valid <see cref="ClaimsPrincipal"/>. If this
+        /// parameter is <c>null</c>, implementations shall use their type name
+        /// as the authentication type.</param>
         /// <param name="nameType">The name type used to construct the
         /// <see cref="ClaimsIdentity"/>.</param>
         /// <param name="roleType">The role type used to construct the
