@@ -10,6 +10,7 @@ using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Properties;
@@ -109,7 +110,7 @@ namespace Visus.LdapAuthentication.Services {
                         do {
                             ++this._currentServer;
                             this._currentServer %= this._options.Servers.Length;
-                        } while (this._blacklisted.ContainsKey(this._currentServer)
+                        } while (this.IsBlacklistedUnsafe(this._currentServer)
                             && (this._currentServer != server));
 
                         if (this._currentServer == server) {
@@ -121,30 +122,24 @@ namespace Visus.LdapAuthentication.Services {
         }
 
         /// <summary>
-        /// Try connecting to any of the configured servers.
+        /// Checks whether <paramref name="server"/> is on the black list, but
+        /// does not acquire the <see cref="_lock"/> before doing so. Therefore,
+        /// the caller <i>must</i> already hold the lock.
         /// </summary>
-        private LdapConnection TryConnect() {
-            Exception? error = null;
+        private bool IsBlacklistedUnsafe(int server) {
+            var retval = this._blacklisted.TryGetValue(server, out var timeout);
 
-            for (int i = 0; i < this._options.Servers.Length; ++i) {
-                var selection = this.Select();
-                var server = this._options.Servers[selection];
+            if (retval) {
+                // If on blacklist, check whether it might have expired in the
+                // meantime. If so, remove the server from the blacklist.
+                retval = (DateTimeOffset.UtcNow < timeout);
 
-                try {
-                    this._logger.LogInformation(Resources.InfoServerSelected,
-                        server);
-                    return this._options.ToConnection(server, this._logger);
-                } catch (Exception ex) {
-                    this.Blacklist(selection);
-                    error = ex;
+                if (!retval) {
+                    this._blacklisted.Remove(server);
                 }
             }
 
-            if (error != null) {
-                throw error;
-            } else {
-                throw new InvalidOperationException(Resources.WarnNoFallback);
-            }
+            return retval;
         }
 
         /// <summary>
@@ -178,10 +173,37 @@ namespace Visus.LdapAuthentication.Services {
                 do {
                     ++this._currentServer;
                     this._currentServer %= this._options.Servers.Length;
-                } while (this._blacklisted.ContainsKey(this._currentServer)
+                } while (this.IsBlacklistedUnsafe(this._currentServer)
                     && (this._currentServer != retval));
 
                 return retval;
+            }
+        }
+
+        /// <summary>
+        /// Try connecting to any of the configured servers.
+        /// </summary>
+        private LdapConnection TryConnect() {
+            Exception? error = null;
+
+            for (int i = 0; i < this._options.Servers.Length; ++i) {
+                var selection = this.Select();
+                var server = this._options.Servers[selection];
+
+                try {
+                    this._logger.LogInformation(Resources.InfoServerSelected,
+                        server);
+                    return this._options.ToConnection(server, this._logger);
+                } catch (Exception ex) {
+                    this.Blacklist(selection);
+                    error = ex;
+                }
+            }
+
+            if (error != null) {
+                throw error;
+            } else {
+                throw new InvalidOperationException(Resources.WarnNoFallback);
             }
         }
         #endregion

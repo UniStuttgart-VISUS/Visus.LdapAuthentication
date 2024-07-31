@@ -1,5 +1,5 @@
 ﻿// <copyright file="LdapAuthenticationServiceTest.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021  -2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -15,9 +15,6 @@ using Visus.Ldap;
 
 namespace Visus.LdapAuthentication.Tests {
 
-    /// <summary>
-    /// Tests for the <see cref="LdapAuthenticationService"/>.
-    /// </summary>
     [TestClass]
     public sealed class LdapAuthenticationServiceTest {
 
