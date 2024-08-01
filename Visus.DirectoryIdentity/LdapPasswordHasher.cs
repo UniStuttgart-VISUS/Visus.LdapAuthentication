@@ -14,6 +14,7 @@ using Visus.Ldap;
 
 namespace Visus.DirectoryIdentity {
 
+#if false
     /// <summary>
     /// A custom <see cref="IPasswordHasher{TUser}"/>, which accounts for the
     /// fact that we use LDAP bind to authenticate rather than reading the
@@ -110,4 +111,5 @@ namespace Visus.DirectoryIdentity {
         private readonly ILdapAuthenticationService<TUser> _authService;
         #endregion
     }
+#endif
 }

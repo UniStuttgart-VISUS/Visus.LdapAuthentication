@@ -19,7 +19,7 @@ using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryIdentity {
-
+#if false
     /// <summary>
     /// An ASP.NET Core Identity store that retrieves its information from LDAP.
     /// </summary>
@@ -31,7 +31,7 @@ namespace Visus.DirectoryIdentity {
             IUserLockoutStore<TUser>,
             IUserPasswordStore<TUser>,
             IUserPhoneNumberStore<TUser>
-            where TUser : class, ILdapIdentityUser {
+            where TUser : class {
 
         #region Public constructors
         /// <summary>
@@ -50,7 +50,7 @@ namespace Visus.DirectoryIdentity {
             var schema = ldapOptions?.Value?.Schema
                 ?? throw new ArgumentNullException(nameof(ldapOptions));
 
-            this._hasher = new LdapPasswordHasher<TUser>(this._authService);
+//            this._hasher = new LdapPasswordHasher<TUser>(this._authService);
 
             //{
             //    var prop = typeof(TUser).GetProperty(
@@ -678,8 +678,9 @@ namespace Visus.DirectoryIdentity {
         private readonly string _accountAttribute;
         private readonly ILdapAuthenticationService<TUser> _authService;
         private readonly string _emailAttribute;
-        private readonly LdapPasswordHasher<TUser> _hasher;
+        //private readonly LdapPasswordHasher<TUser> _hasher;
         private ILdapSearchService<TUser, LdapGroup> _searchService;
         #endregion
     }
+#endif
 }
