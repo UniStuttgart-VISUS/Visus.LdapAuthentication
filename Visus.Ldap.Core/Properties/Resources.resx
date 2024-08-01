@@ -171,13 +171,7 @@
   <data name="ErrorPropertyMissing" xml:space="preserve">
     <value>The given property {0} does not exist in type {1} or is not a public instance property.</value>
   </data>
-  <data name="ErrorSchemaAlreadySet" xml:space="preserve">
-    <value>A different LDAP schema has already been set. The builder cannot be used to create mappings for mixed schemas.</value>
-  </data>
   <data name="ErrorSchemaMismatch" xml:space="preserve">
     <value>The schema used by the attribute must match the schema used by the mapper.</value>
-  </data>
-  <data name="ErrorSchemaMissing" xml:space="preserve">
-    <value>The name of the LDAP schema must be set before properties can be mapped.</value>
   </data>
 </root>

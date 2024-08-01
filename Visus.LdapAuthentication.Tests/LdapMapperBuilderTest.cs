@@ -18,8 +18,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestActiveDirectoryMapping() {
-            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>()
-                .ForSchema(Schema.ActiveDirectory);
+            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>(Schema.ActiveDirectory);
 
             builder.MapGroupProperty(nameof(LdapGroup.AccountName))
                 .StoringAccountName()
@@ -102,24 +101,12 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestRequireSchema() {
-            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>();
-            Assert.ThrowsException<InvalidOperationException>(() => builder.MapGroupProperty(nameof(LdapGroup.AccountName)));
-            Assert.ThrowsException<InvalidOperationException>(() => builder.MapUserProperty(nameof(LdapUser.AccountName)));
-            Assert.ThrowsException<ArgumentNullException>(() => builder.ForSchema(null!));
-        }
-
-        [TestMethod]
-        public void TestPreventSchemaChange() {
-            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>()
-                .ForSchema(Schema.ActiveDirectory);
-            Assert.ThrowsException<InvalidOperationException>(() => builder.ForSchema(Schema.IdentityManagementForUnix));
-            Assert.IsNotNull(builder.ForSchema(Schema.ActiveDirectory));
+            Assert.ThrowsException<ArgumentNullException>(() => new LdapMapperBuilder<LdapUser, LdapGroup>(null!));
         }
 
         [TestMethod]
         public void TestPreventMappingChange() {
-            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>()
-                .ForSchema(Schema.ActiveDirectory);
+            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>(Schema.ActiveDirectory);
 
             {
                 var prop = builder.MapGroupProperty(nameof(LdapGroup.AccountName));
@@ -136,8 +123,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestPreventInvalidProperty() {
-            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>()
-                .ForSchema(Schema.ActiveDirectory);
+            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>(Schema.ActiveDirectory);
             Assert.ThrowsException<ArgumentNullException>(() => builder.MapGroupProperty(null!));
             Assert.ThrowsException<ArgumentNullException>(() => builder.MapUserProperty(null!));
             Assert.ThrowsException<ArgumentException>(() => builder.MapGroupProperty("hurz"));
@@ -146,8 +132,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestPreventInvalidAttribute() {
-            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>()
-                .ForSchema(Schema.ActiveDirectory);
+            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>(Schema.ActiveDirectory);
 
             {
                 var prop = builder.MapGroupProperty(nameof(LdapGroup.AccountName));
@@ -166,8 +151,7 @@ namespace Visus.LdapAuthentication.Tests {
 
         [TestMethod]
         public void TestPreventSchemaMismatch() {
-            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>()
-                .ForSchema(Schema.ActiveDirectory);
+            var builder = new LdapMapperBuilder<LdapUser, LdapGroup>(Schema.ActiveDirectory);
 
             {
                 var prop = builder.MapGroupProperty(nameof(LdapGroup.AccountName));

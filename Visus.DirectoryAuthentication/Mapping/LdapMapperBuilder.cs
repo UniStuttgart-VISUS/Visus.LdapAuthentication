@@ -15,11 +15,19 @@ namespace Visus.DirectoryAuthentication.Mapping {
     /// </summary>
     /// <typeparam name="TUser">The type used to represent a user.</typeparam>
     /// <typeparam name="TGroup">The type used to represent a group.</typeparam>
-    public sealed class LdapMapperBuilder<TUser, TGoup>
-            : LdapMapperBuilderBase<SearchResultEntry, TUser, TGoup> {
+    public sealed class LdapMapperBuilder<TUser, TGroup>
+            : LdapMapperBuilderBase<SearchResultEntry, TUser, TGroup> {
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="schema">The schema the mapping is intended for.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="schema"/>
+        /// is <c>null.</c></exception>
+        public LdapMapperBuilder(string schema) : base(schema) { }
 
         /// <inheritdoc />
-        public override ILdapMapper<SearchResultEntry, TUser, TGoup> Build()
-            => new LdapMapper<TUser, TGoup>(this.UserMap, this.GroupMap);
+        public override ILdapMapper<SearchResultEntry, TUser, TGroup> Build()
+            => new LdapMapper<TUser, TGroup>(this.UserMap, this.GroupMap);
     }
 }

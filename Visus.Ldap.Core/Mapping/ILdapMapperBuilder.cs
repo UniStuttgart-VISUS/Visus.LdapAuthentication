@@ -36,17 +36,6 @@ namespace Visus.Ldap.Mapping {
         ILdapMapper<TEntry, TUser, TGroup> Build();
 
         /// <summary>
-        /// Configures the LDAP schema the mapping is for.
-        /// </summary>
-        /// <param name="schema">The name of the schema.</param>
-        /// <returns><c>this</c></returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="schema"/>
-        /// is <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">If a different schema has
-        /// already been set before.</exception>
-        ILdapMapperBuilder<TEntry, TUser, TGroup> ForSchema(string schema);
-
-        /// <summary>
         /// Begins mapping the given property of <typeparamref name="TGroup"/>
         /// to an LDAP attribute.
         /// </summary>

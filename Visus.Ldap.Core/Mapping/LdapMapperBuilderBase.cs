@@ -5,8 +5,6 @@
 // <author>Christoph Müller</author>
 
 using System;
-using System.Threading;
-using Visus.Ldap.Properties;
 
 
 namespace Visus.Ldap.Mapping {
@@ -27,40 +25,25 @@ namespace Visus.Ldap.Mapping {
         public abstract ILdapMapper<TEntry, TUser, TGroup> Build();
 
         /// <inheritdoc />
-        public ILdapMapperBuilder<TEntry, TUser, TGroup> ForSchema(
-                string schema) {
-            ArgumentNullException.ThrowIfNull(schema, nameof(schema));
-
-            if (this._schema?.Equals(schema) == false) {
-                throw new InvalidOperationException(
-                    Resources.ErrorSchemaAlreadySet);
-            }
-
-            this._schema = schema;
-            return this;
-        }
-
-        /// <inheritdoc />
         public ILdapPropertyMappingBuilder MapGroupProperty(
-                string propertyName) {
-            if (this._schema == null) {
-                throw new InvalidOperationException(
-                    Resources.ErrorSchemaMissing);
-            }
-
-            return this._groupMap.MapProperty(propertyName, this._schema);
-        }
+                string propertyName)
+            => this._groupMap.MapProperty(propertyName, this._schema);
 
         /// <inheritdoc />
         public ILdapPropertyMappingBuilder MapUserProperty(
-                string propertyName) {
-            if (this._schema == null) {
-                throw new InvalidOperationException(
-                    Resources.ErrorSchemaMissing);
-            }
+                string propertyName)
+            => this._userMap.MapProperty(propertyName, this._schema);
+        #endregion
 
-            return this._userMap.MapProperty(propertyName, this._schema);
-        }
+        #region Protected constructors
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="schema">The schema the mapping is intended for.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="schema"/>
+        /// is <c>null.</c></exception>
+        protected LdapMapperBuilderBase(string schema) => this._schema = schema
+            ?? throw new ArgumentNullException(nameof(schema));
         #endregion
 
         #region Protected properties
@@ -77,7 +60,7 @@ namespace Visus.Ldap.Mapping {
 
         #region Private fields
         private readonly FluentLdapAttributeMap<TGroup> _groupMap = new();
-        private string? _schema;
+        private readonly string _schema;
         private readonly FluentLdapAttributeMap<TUser> _userMap = new();
         #endregion
     }

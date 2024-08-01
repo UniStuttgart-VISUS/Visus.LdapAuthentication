@@ -223,29 +223,11 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A different LDAP schema has already been set. The builder cannot be used to create mappings for mixed schemas..
-        /// </summary>
-        internal static string ErrorSchemaAlreadySet {
-            get {
-                return ResourceManager.GetString("ErrorSchemaAlreadySet", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The schema used by the attribute must match the schema used by the mapper..
         /// </summary>
         internal static string ErrorSchemaMismatch {
             get {
                 return ResourceManager.GetString("ErrorSchemaMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name of the LDAP schema must be set before properties can be mapped..
-        /// </summary>
-        internal static string ErrorSchemaMissing {
-            get {
-                return ResourceManager.GetString("ErrorSchemaMissing", resourceCulture);
             }
         }
     }
