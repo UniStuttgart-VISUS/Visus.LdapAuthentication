@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Visus.LdapAuthentication.Configuration;
 
@@ -126,9 +127,12 @@ namespace Visus.LdapAuthentication {
         /// object in order to restrict the data that must be retrieved to the
         /// absolute minimum for the application case.</para>
         /// </remarks>
+        /// <param name="cancellationToken">A cancellation token for aborting
+        /// the operation.</param>
         /// <returns>All users in the directory matching the global search
         /// criteria.</returns>
-        Task<IEnumerable<TUser>> GetUsersAsync();
+        Task<IEnumerable<TUser>> GetUsersAsync(
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
@@ -154,9 +158,12 @@ namespace Visus.LdapAuthentication {
         /// with the global search criteria for users. It is safe to pass
         /// <c>null</c>, in which case the additional filter criteria will
         /// be ignored.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting
+        /// the operation.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
-        Task<IEnumerable<TUser>> GetUsersAsync(string filter);
+        Task<IEnumerable<TUser>> GetUsersAsync(string filter,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all users from the directory that are matching the search
@@ -192,11 +199,14 @@ namespace Visus.LdapAuthentication {
         /// with the global search criteria for users. It is safe to pass
         /// <c>null</c>, in which case the additional filter criteria will
         /// be ignored.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting
+        /// the operation.</param>
         /// <returns>All users in the directory matching the given search
         /// criteria.</returns>
         Task<IEnumerable<TUser>> GetUsersAsync(
             IDictionary<string, SearchScope> searchBases,
-            string filter);
+            string filter,
+            CancellationToken cancellationToken = default);
     }
 
 }

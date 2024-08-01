@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 
@@ -129,6 +130,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="timeLimit">A time limit for the search. If this
         /// parameter is <see cref="TimeSpan.Zero"/> or less, no timeout will
         /// be used.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting
+        /// the operation between two pages.</param>
         /// <returns>The entries matching the specified search parameters.
         /// </returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
@@ -143,13 +146,16 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 string[] attributes,
                 int pageSize,
                 string sortingAttribute,
-                TimeSpan timeLimit) {
+                TimeSpan timeLimit,
+                CancellationToken cancellationToken) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             var request = new SearchRequest(@base, filter, scope, attributes);
             var reqControl = request.AddPaging(pageSize, sortingAttribute);
 
             do {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var results = timeLimit > TimeSpan.Zero
                     ? that.SendRequest(request, timeLimit)
                     : that.SendRequest(request);
@@ -190,6 +196,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="timeLimit">A time limit for the search. If this
         /// parameter is <see cref="TimeSpan.Zero"/> or less, no timeout will
         /// be used.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting
+        /// the operation.</param>
         /// <returns>The entries matching the specified search parameters.
         /// </returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
@@ -204,7 +212,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 string[] attributes,
                 int pageSize,
                 string sortingAttribute,
-                TimeSpan timeLimit) {
+                TimeSpan timeLimit,
+                CancellationToken cancellationToken = default) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             var request = new SearchRequest(@base, filter, scope, attributes);
@@ -212,6 +221,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
             var retval = Enumerable.Empty<SearchResultEntry>();
 
             do {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var task = timeLimit > TimeSpan.Zero
                     ? that.SendRequestAsync(request, timeLimit)
                     : that.SendRequestAsync(request);

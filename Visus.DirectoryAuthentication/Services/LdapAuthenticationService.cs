@@ -13,6 +13,7 @@ using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
@@ -140,7 +141,8 @@ namespace Visus.DirectoryAuthentication.Services {
                 string? authenticationType,
                 string? nameType,
                 string? roleType,
-                ClaimFilter? filter) {
+                ClaimFilter? filter,
+                CancellationToken cancellationToken) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._connectionService.Connect(
@@ -148,6 +150,7 @@ namespace Visus.DirectoryAuthentication.Services {
                 password ?? string.Empty);
 
             foreach (var b in this._options.SearchBases) {
+                cancellationToken.ThrowIfCancellationRequested();
                 var req = new SearchRequest(b.Key,
                     this.GetUserFilter(username),
                     b.Value,
@@ -226,7 +229,7 @@ namespace Visus.DirectoryAuthentication.Services {
 
         /// <inheritdoc />
         public async Task<TUser> LoginUserAsync(string username,
-                string password) {
+                string password, CancellationToken cancellationToken) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._connectionService.Connect(
@@ -236,6 +239,7 @@ namespace Visus.DirectoryAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
+                cancellationToken.ThrowIfCancellationRequested();
                 var req = new SearchRequest(b.Key,
                     this.GetUserFilter(username),
                     b.Value,
@@ -264,8 +268,10 @@ namespace Visus.DirectoryAuthentication.Services {
         public async Task<(TUser, IEnumerable<Claim>)> LoginUserAsync(
                 string username,
                 string password,
-                ClaimFilter? filter) {
-            var user = await this.LoginUserAsync(username, password);
+                ClaimFilter? filter,
+                CancellationToken cancellationToken) {
+            var user = await this.LoginUserAsync(username, password,
+                cancellationToken);
             var claims = this._claimsBuilder.GetClaims(user, filter)
                 .Distinct(ClaimEqualityComparer.Instance);
             return (user, claims);

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Visus.LdapAuthentication.Configuration;
 
@@ -136,6 +137,8 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <param name="logger">An optional logger for recording exception that
         /// are encountered during the paged search. It is safe to pass
         /// <c>null</c>, in which case errors will be silently ignored.</param>
+        /// <param name="cancellationToken">A cancellation token that allows
+        /// for aborting the search between pages.</param>
         /// <returns>The entries matching the specified search parameters.
         /// </returns>
         /// <exception cref="ArgumentNullException">If <paramref name="that"/>
@@ -151,7 +154,8 @@ namespace Visus.LdapAuthentication.Extensions {
                 int pageSize,
                 string sortingAttribute,
                 TimeSpan timeLimit,
-                ILogger? logger = null) {
+                ILogger? logger = null,
+                CancellationToken cancellationToken = default) {
             _ = that ?? throw new ArgumentNullException(nameof(that));
 
             var cntRead = 0;        // Number of entries already read.
@@ -160,6 +164,8 @@ namespace Visus.LdapAuthentication.Extensions {
             LdapEntry entry;        // Current entry to be emitted.
 
             do {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var constraints = new LdapSearchConstraints() {
                     TimeLimit = (int) timeLimit.TotalMilliseconds
                 };
@@ -297,6 +303,8 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <param name="constraints">The search constraits.</param>
         /// <param name="pollingInterval">The interval to wait when the queue is
         /// empty.</param>
+        /// <param name="cancellationToken">A cancellation token that allows for
+        /// aborting the operation.</param>
         /// <returns>The matching directory entries.</returns>
         public static async Task<IEnumerable<LdapEntry>> SearchAsync(
                 this LdapConnection that,
@@ -306,7 +314,8 @@ namespace Visus.LdapAuthentication.Extensions {
                 string[] attributes,
                 bool typesOnly,
                 LdapSearchConstraints? constraints,
-                TimeSpan pollingInterval) {
+                TimeSpan pollingInterval,
+                CancellationToken cancellationToken = default) {
             ArgumentNullException.ThrowIfNull(that, nameof(that));
 
             var pending = true;
@@ -315,8 +324,10 @@ namespace Visus.LdapAuthentication.Extensions {
             var retval = new List<LdapEntry>();
 
             while (pending) {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 while (!queue.IsResponseReceived()) {
-                    await Task.Delay(pollingInterval);
+                    await Task.Delay(pollingInterval, cancellationToken);
                 }
 
                 var msg = queue.GetResponse();
@@ -345,21 +356,25 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <param name="filter"></param>
         /// <param name="attributes"></param>
         /// <param name="pollingInterval"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task<IEnumerable<LdapEntry>> SearchAsync(
                 this LdapConnection that,
                 string @base,
                 SearchScope scope,
                 string filter,
                 string[] attributes,
-                TimeSpan pollingInterval)
+                TimeSpan pollingInterval,
+                CancellationToken cancellationToken = default)
             => that.SearchAsync(@base,
                 scope,
                 filter,
                 attributes,
                 false,
                 null,
-                pollingInterval);
+                pollingInterval,
+                cancellationToken);
 
         /// <summary>
         /// Wraps the asynchronous search using <see cref="LdapSearchQueue"/>
@@ -370,20 +385,24 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <param name="filter"></param>
         /// <param name="attributes"></param>
         /// <param name="pollingInterval"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task<IEnumerable<LdapEntry>> SearchAsync(
                 this LdapConnection that,
                 KeyValuePair<string, SearchScope> @base,
                 string filter,
                 string[] attributes,
-                TimeSpan pollingInterval)
+                TimeSpan pollingInterval,
+                CancellationToken cancellationToken = default)
             => that.SearchAsync(@base.Key,
                 @base.Value,
                 filter,
                 attributes,
                 false,
                 null,
-                pollingInterval);
+                pollingInterval,
+                cancellationToken);
 
         /// <summary>
         /// Performs an asynchronous search at all locations configured in
@@ -393,19 +412,21 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <param name="filter"></param>
         /// <param name="attributes"></param>
         /// <param name="options"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public static async Task<IEnumerable<LdapEntry>> SearchAsync(
                 this LdapConnection that,
                 string filter,
                 string[] attributes,
-                LdapOptions options) {
+                LdapOptions options,
+                CancellationToken cancellationToken = default) {
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
             var retval = new List<LdapEntry>();
 
             foreach (var b in options.SearchBases) {
                 retval.AddRange(await that.SearchAsync(b, filter, attributes,
-                    options.PollingInterval));
+                    options.PollingInterval, cancellationToken));
             }
 
             return retval;

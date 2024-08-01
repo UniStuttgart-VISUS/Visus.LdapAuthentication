@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Visus.Ldap.Claims;
 
@@ -102,13 +103,16 @@ namespace Visus.Ldap {
         /// <param name="filter">If not <c>null</c>, this callback will receive
         /// all claims before they are added to the principal and can decide
         /// which ones should be added and which ones should not.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting the
+        /// operation.</param>
         /// <returns>A principal in case of a successful login.</returns>
         Task<ClaimsPrincipal> LoginPrincipalAsync(string username,
             string password,
             string? authenticationType = null,
             string? nameType = null,
             string? roleType = null,
-            ClaimFilter? filter = null);
+            ClaimFilter? filter = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Performs an asynchronous LDAP bind using the specified credentials
@@ -127,11 +131,20 @@ namespace Visus.Ldap {
         /// <param name="filter">If not <c>null</c>, this callback will receive
         /// all claims before they are added to the principal and can decide
         /// which ones should be added and which ones should not.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting the
+        /// operation.</param>
         /// <returns>A principal in case of a successful login.</returns>
         Task<ClaimsPrincipal> LoginPrincipalAsync(string username,
-                string password, ClaimFilter? filter)
-            => this.LoginPrincipalAsync(username, password, null, null, null,
-                filter);
+                string password,
+                ClaimFilter? filter,
+                CancellationToken cancellationToken)
+            => this.LoginPrincipalAsync(username,
+                password,
+                null,
+                null,
+                null,
+                filter,
+                cancellationToken);
 
         /// <summary>
         /// Performs an asynchronous LDAP bind using the specified credentials
@@ -156,7 +169,7 @@ namespace Visus.Ldap {
         /// <returns>The user object and the claims derived from it in case of
         /// a successful login.</returns>
         (TUser, IEnumerable<Claim>) LoginUser(string username,
-            string password, ClaimFilter? filter = null);
+            string password, ClaimFilter? filter);
 
         /// <summary>
         /// Performs an LDAP bind using the specified credentials and retrieves
@@ -165,8 +178,11 @@ namespace Visus.Ldap {
         /// </summary>
         /// <param name="username">The user name to logon with.</param>
         /// <param name="password">The password of the user.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting the
+        /// operation.</param>
         /// <returns>The user object in case of a successful login.</returns>
-        Task<TUser> LoginUserAsync(string username, string password);
+        Task<TUser> LoginUserAsync(string username, string password,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Performs an asynchronous LDAP bind using the specified credentials,
@@ -178,10 +194,14 @@ namespace Visus.Ldap {
         /// <param name="password">The password of the user.</param>
         /// <param name="filter">An optional filter that allows callers to remove
         /// claims they are not interested in from the retuned ones.</param>
+        /// <param name="cancellationToken">A cancellation token for aborting the
+        /// operation.</param>
         /// <returns>The user object and the claims derived from it in case of
         /// a successful login.</returns>
         Task<(TUser, IEnumerable<Claim>)> LoginUserAsync(string username,
-            string password, ClaimFilter? filter = null);
+            string password,
+            ClaimFilter? filter,
+            CancellationToken cancellationToken = default);
     }
 
 }

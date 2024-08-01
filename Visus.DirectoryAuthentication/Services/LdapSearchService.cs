@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Extensions;
@@ -183,34 +184,40 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers()
             => GetUsers0(this._options.Mapping!.UsersFilter,
-                this._options.SearchBases);
+                this._options.SearchBases, CancellationToken.None);
 
         /// <inheritdoc />
-        public Task<IEnumerable<TUser>> GetUsersAsync()
+        public Task<IEnumerable<TUser>> GetUsersAsync(
+                CancellationToken cancellationToken)
             => GetUsersAsync0(this._options.Mapping!.UsersFilter,
-                this._options.SearchBases);
+                this._options.SearchBases, cancellationToken);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string filter)
             => GetUsers(this._options.SearchBases, filter);
 
         /// <inheritdoc />
-        public Task<IEnumerable<TUser>> GetUsersAsync(string filter)
-            => GetUsersAsync(this._options.SearchBases, filter);
+        public Task<IEnumerable<TUser>> GetUsersAsync(string filter,
+                CancellationToken cancellationToken)
+            => GetUsersAsync(this._options.SearchBases, filter,
+                cancellationToken);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(
                 IDictionary<string, SearchScope> searchBases,
                 string filter)
             => GetUsers0(MergeFilter(filter),
-                searchBases ?? this._options.SearchBases);
+                searchBases ?? this._options.SearchBases,
+                CancellationToken.None);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync(
                 IDictionary<string, SearchScope> searchBases,
-                string filter)
+                string filter,
+                CancellationToken cancellationToken)
             => GetUsersAsync0(MergeFilter(filter),
-                searchBases ?? this._options.SearchBases);
+                searchBases ?? this._options.SearchBases,
+                cancellationToken);
         #endregion
 
         #region Private Properties
@@ -318,10 +325,13 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="filter">A filter on the users object.</param>
         /// <param name="searchBases">The base and scope of the LDAP search.
         /// </param>
+        /// <param name="cancellationToken">A cancellation token for aborting
+        /// the paged search.</param>
         /// <returns>The users found at the specified locations in the
         /// directory.</returns>
         private IEnumerable<TUser> GetUsers0(string filter,
-                IDictionary<string, SearchScope> searchBases) {
+                IDictionary<string, SearchScope> searchBases,
+                CancellationToken cancellationToken) {
             Debug.Assert(filter != null);
             Debug.Assert(searchBases != null);
             Debug.Assert(this._options != null);
@@ -343,7 +353,8 @@ namespace Visus.DirectoryAuthentication.Services {
                     this._userAttributes,
                     this._options.PageSize,
                     sortAttribute.Name,
-                    this._options.Timeout);
+                    this._options.Timeout,
+                    cancellationToken);
 
                 // Convert LDAP entries to user objects.
                 foreach (var e in entries) {
@@ -367,9 +378,10 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <returns>The users found at the specified locations in the
         /// directory.</returns>
         private Task<IEnumerable<TUser>> GetUsersAsync0(string filter,
-                IDictionary<string, SearchScope> searchBases) {
+                IDictionary<string, SearchScope> searchBases,
+                CancellationToken cancellationToken) {
             return Task.Factory.StartNew(
-                () => GetUsers0(filter, searchBases));
+                () => GetUsers0(filter, searchBases, cancellationToken));
 
             // The following is insanely slow, but IDK why, so we just wrap
             // GetUsers0 in a task instead.

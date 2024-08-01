@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
@@ -138,7 +139,8 @@ namespace Visus.LdapAuthentication.Services {
                 string? authenticationType,
                 string? nameType,
                 string? roleType,
-                ClaimFilter? filter) {
+                ClaimFilter? filter,
+                CancellationToken cancellationToken) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._connectionService.Connect(
@@ -146,6 +148,7 @@ namespace Visus.LdapAuthentication.Services {
                 password ?? string.Empty);
 
             foreach (var b in this._options.SearchBases) {
+                cancellationToken.ThrowIfCancellationRequested();
                 var res = await connection.SearchAsync(b,
                     this.GetUserFilter(username),
                     this._userClaimAttributes,
@@ -221,7 +224,7 @@ namespace Visus.LdapAuthentication.Services {
 
         /// <inheritdoc />
         public async Task<TUser> LoginUserAsync(string username,
-                string password) {
+                string password, CancellationToken cancellationToken) {
             // Note: It is important to pass a non-null password to make sure
             // that end users do not authenticate as the server process.
             var connection = this._connectionService.Connect(
@@ -232,6 +235,7 @@ namespace Visus.LdapAuthentication.Services {
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
+                cancellationToken.ThrowIfCancellationRequested();
                 var res = await connection.SearchAsync(b, filter,
                     this._userAttributes, this._options.PollingInterval)
                     .ConfigureAwait(false);
@@ -257,8 +261,10 @@ namespace Visus.LdapAuthentication.Services {
         public async Task<(TUser, IEnumerable<Claim>)> LoginUserAsync(
                 string username,
                 string password,
-                ClaimFilter? filter) {
-            var user = await this.LoginUserAsync(username, password);
+                ClaimFilter? filter,
+                CancellationToken cancellationToken) {
+            var user = await this.LoginUserAsync(username, password,
+                cancellationToken);
             var claims = this._claimsBuilder.GetClaims(user, filter)
                 .Distinct(ClaimEqualityComparer.Instance);
             return (user, claims);
