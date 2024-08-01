@@ -16,7 +16,7 @@ namespace Visus.DirectoryIdentity {
     /// <summary>
     /// The default identity user to be retrieved from LDAP.
     /// </summary>
-    public sealed class LdapIdentityUser {
+    public class LdapIdentityUser {
 
         #region Public properties
         /// <summary>
@@ -83,7 +83,7 @@ namespace Visus.DirectoryIdentity {
         public DateTimeOffset? LastAccessFailed { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the user is be locked out.
+        /// Gets a flag indicating if the user is be locked out.
         /// </summary>
         public bool LockoutEnabled => (this.LockoutEnd != null);
 

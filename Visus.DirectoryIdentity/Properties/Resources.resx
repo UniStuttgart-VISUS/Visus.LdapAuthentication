@@ -120,4 +120,7 @@
   <data name="ErrorNoLdapAttribute" xml:space="preserve">
     <value>The LDAP attribute for the property "{0}" using the schema "{1}" could not be found.</value>
   </data>
+  <data name="ErrorReadOnlyStore" xml:space="preserve">
+    <value>This operation is not supported as the LDAP stores are read-only.</value>
+  </data>
 </root>
