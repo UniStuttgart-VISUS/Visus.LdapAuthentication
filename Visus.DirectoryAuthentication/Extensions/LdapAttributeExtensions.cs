@@ -45,6 +45,33 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 cultureInfo);
         }
 
+        private static object? GetValue(this DirectoryAttribute? that,
+                Type targetType,
+                IValueConverter? converter,
+                object? parameter = null,
+                CultureInfo? cultureInfo = null) {
+            if ((that == null) || (that.Count == 0) || (targetType == null)) {
+                return null;
+
+            } else if (converter != null) {
+                return converter.Convert(that[0],
+                    targetType,
+                    parameter,
+                    cultureInfo ?? CultureInfo.CurrentCulture);
+
+            } else if (that[0] is string s) {
+                // TODO: what is best effort here?
+                return s;
+
+            } else if (that[0] is byte[] b) {
+                // TODO: what is best effort here?
+                return Convert.ToBase64String(b);
+
+            } else {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Gets the value of an attribute.
         /// </summary>
