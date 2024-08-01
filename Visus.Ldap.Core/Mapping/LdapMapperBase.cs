@@ -185,20 +185,20 @@ namespace Visus.Ldap.Mapping {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="userMap"></param>
-        /// <param name="groupMap"></param>
+        /// <param name="userMap">The map for the user attributes.</param>
+        /// <param name="groupMap">The map for the group attributes.</param>
         /// <exception cref="ArgumentNullException">If
-        /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected LdapMapperBase(IOptions<LdapOptionsBase> options,
-                ILdapAttributeMap<TUser> userMap,
+        /// <paramref name="userMap"/> is <c>null</c>, or if
+        /// <paramref name="groupMap"/> is <c>null</c>.</exception>
+        protected LdapMapperBase(ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap) {
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
             this._groupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
             this._userMap = userMap
                 ?? throw new ArgumentNullException(nameof(userMap));
         }
+
+
         #endregion
 
         #region Protected methods

@@ -26,14 +26,11 @@ namespace Visus.LdapAuthentication.Mapping {
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        /// <param name="options">The LDAP options defining the mapping to
-        /// be performed.</param>
         /// <param name="userMap"></param>
         /// <param name="groupMap"></param>
-        public LdapMapper(IOptions<LdapOptions> options,
-                ILdapAttributeMap<TUser> userMap,
+        public LdapMapper(ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap)
-            : base(options, userMap, groupMap) { }
+                : base(userMap, groupMap) { }
 
         /// <inheritdoc />
         protected override object? GetAttribute(LdapEntry entry,

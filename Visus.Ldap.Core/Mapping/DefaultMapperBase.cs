@@ -142,8 +142,8 @@ namespace Visus.Ldap.Mapping {
         protected DefaultMapperBase(IOptions<LdapOptionsBase> options,
                 ILdapAttributeMap<LdapUser> userMap,
                 ILdapAttributeMap<LdapGroup> groupMap)
-                : base(options, userMap, groupMap) {
-            Debug.Assert(options != null);
+                : base(userMap, groupMap) {
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
             Debug.Assert(options.Value != null);
 
             this._groupDisplayName = GetLdapAttribute<LdapGroup>(

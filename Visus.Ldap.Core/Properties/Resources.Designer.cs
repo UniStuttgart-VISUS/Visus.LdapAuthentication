@@ -61,11 +61,29 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The property storing the account name was already configured..
+        /// </summary>
+        internal static string ErrorAccountNamePropertyAlreadySet {
+            get {
+                return ResourceManager.GetString("ErrorAccountNamePropertyAlreadySet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given object does not have the requested attribute mapped to a property..
         /// </summary>
         internal static string ErrorAttributeNotMapped {
             get {
                 return ResourceManager.GetString("ErrorAttributeNotMapped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property storing the distinguished name was already configured..
+        /// </summary>
+        internal static string ErrorDistinguishedNamePropertyAlreadySet {
+            get {
+                return ResourceManager.GetString("ErrorDistinguishedNamePropertyAlreadySet", resourceCulture);
             }
         }
         
@@ -84,6 +102,24 @@ namespace Visus.Ldap.Properties {
         internal static string ErrorEmptySearchBase {
             get {
                 return ResourceManager.GetString("ErrorEmptySearchBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property storing the group memberships was already configured..
+        /// </summary>
+        internal static string ErrorGroupMembershipsPropertyAlreadySet {
+            get {
+                return ResourceManager.GetString("ErrorGroupMembershipsPropertyAlreadySet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property storing the identity was already configured..
+        /// </summary>
+        internal static string ErrorIdentityPropertyAlreadySet {
+            get {
+                return ResourceManager.GetString("ErrorIdentityPropertyAlreadySet", resourceCulture);
             }
         }
         
@@ -133,6 +169,15 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The proeprty storing whether a group is the primary group was already configured..
+        /// </summary>
+        internal static string ErrorIsPrimaryGroupPropertyAlreadySet {
+            get {
+                return ResourceManager.GetString("ErrorIsPrimaryGroupPropertyAlreadySet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The property {0} of {1} lacks the required [LdapAttribute] annotation. This indicates an internal error in the library. Please report this bug..
         /// </summary>
         internal static string ErrorMissingLdapAnnotation {
@@ -156,6 +201,51 @@ namespace Visus.Ldap.Properties {
         internal static string ErrorMissingRequiredAttribute {
             get {
                 return ResourceManager.GetString("ErrorMissingRequiredAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property was already mapped to an attribute..
+        /// </summary>
+        internal static string ErrorPropertyAlreadyMapped {
+            get {
+                return ResourceManager.GetString("ErrorPropertyAlreadyMapped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given property {0} does not exist in type {1} or is not a public instance property..
+        /// </summary>
+        internal static string ErrorPropertyMissing {
+            get {
+                return ResourceManager.GetString("ErrorPropertyMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A different LDAP schema has already been set. The builder cannot be used to create mappings for mixed schemas..
+        /// </summary>
+        internal static string ErrorSchemaAlreadySet {
+            get {
+                return ResourceManager.GetString("ErrorSchemaAlreadySet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The schema used by the attribute must match the schema used by the mapper..
+        /// </summary>
+        internal static string ErrorSchemaMismatch {
+            get {
+                return ResourceManager.GetString("ErrorSchemaMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of the LDAP schema must be set before properties can be mapped..
+        /// </summary>
+        internal static string ErrorSchemaMissing {
+            get {
+                return ResourceManager.GetString("ErrorSchemaMissing", resourceCulture);
             }
         }
     }
