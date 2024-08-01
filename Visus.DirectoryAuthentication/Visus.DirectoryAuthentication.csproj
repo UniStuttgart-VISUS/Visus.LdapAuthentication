@@ -11,12 +11,12 @@
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication/tree/main/Visus.DirectoryAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>directoryservices ldap aspnet authentication net5</PackageTags>
-    <PackageReleaseNotes>Ignores IsSsl except for Windows due to https://github.com/dotnet/runtime/issues/43890</PackageReleaseNotes>
+    <PackageReleaseNotes>A major update of the API removing legacy features and streamlining LDAP attribute and claims mapping.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NeutralLanguage>en</NeutralLanguage>
     <UserSecretsId>e07a7441-ba97-46b5-9ce1-391f2c978578</UserSecretsId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-pre5</Version>
+    <Version>2.0.0</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

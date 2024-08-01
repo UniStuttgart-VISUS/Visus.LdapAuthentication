@@ -13,9 +13,8 @@
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageTags>ldap aspnet authentication net5</PackageTags>
     <NeutralLanguage>en</NeutralLanguage>
-    <Version>2.0.0-pre5</Version>
-    <PackageReleaseNotes>Adds the ability to customise the mapping of user objects by means of an external mapper rather than by modifying the user.
-Adds the ability to retrieve the default naming context from an LDAP connection.</PackageReleaseNotes>
+    <Version>2.0.0</Version>
+    <PackageReleaseNotes>A major update of the API removing legacy features and streamlining LDAP attribute and claims mapping.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Nullable>enable</Nullable>
   </PropertyGroup>

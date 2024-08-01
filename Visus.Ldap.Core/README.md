@@ -1,0 +1,2 @@
+# Visus.Ldap.Core
+This library implements shared functionality for [Visus.DirectoryAuthentication](https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication/tree/main/Visus.DirectoryAuthentication) and [Visus.LdapAuthentication](https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication/tree/main/Visus.LdapAuthentication). It has barely any use without one of these libaries and should not be installed independently.

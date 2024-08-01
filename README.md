@@ -41,7 +41,8 @@ Version 2.0 is a major rewrite of both libraries, which removes previously depre
 1. In your LDAP options section in appsettings.json, make sure to change "SearchBase" to "SearchBases" and provide a map from the DN to the search scope.
 1. In your LDAP options section in appsettings.json, make sure to replace "IsSsl" with the equivalent "TransportSecurity". **"IsSsl" is not honoured anymore! Without "TransportSecurity", your connections will not be encrypted!**
 1. In your startup code, replace all previous dependency injection extension methods with a version of `AddLdapAuthentication`. The template parameters allow you to change the type of user and group that the LDAP entries are mapped to.
-1. In your code, change all services to include the user and/or group type you want to use.
+1. In your code, change all services to include the user and/or group type you want to use as generic parameters of the service interfaces.
+1. In your code, update the `using` statements. Some shared classes like `LdapUser` have been moved from the `Visus.DirectoryAuthentication` and `Visus.LdapAuthentication` namespaces to the shared `Visus.Ldap` namespace. Furthermore, the namespaces are now structured to isolate LDAP mapping, claims mapping, etc.
 1. In your code, replace `ILdapAuthenticationService.Login` with `ILdapAuthenticationService.LoginUser` or `ILdapAuthenticationService.LoginPrincipal` depending on your needs.
 1. If you use `LdapAttributeAttribute.GetLdapAttribute` to reflect on LDAP attribute mappings in your code, inject `ILdapAttributeMap<LdapUserOrGroup>` to obtain similar information. `ILdapAttributeMap`s provide direct access to attribute names and `PropertyInfo`s and are more efficient than the previous on-demand reflection.
 
