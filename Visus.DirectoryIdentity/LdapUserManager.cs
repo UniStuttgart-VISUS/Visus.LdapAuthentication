@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Visus.Ldap;
+using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryIdentity {
@@ -30,28 +31,60 @@ namespace Visus.DirectoryIdentity {
             IdentityErrorDescriber errors,
             IServiceProvider services,
             ILdapAuthenticationService<TUser> authenticationService,
+            ILdapAttributeMap<TUser> userMap,
             ILogger<LdapUserManager<TUser>> logger)
         : UserManager<TUser>(store,
-              optionsAccessor,
-              passwordHasher,
-              userValidators,
-              passwordValidators,
-              keyNormaliser,
-              errors,
-              services,
-              logger)
+            optionsAccessor,
+            passwordHasher,
+            userValidators,
+            passwordValidators,
+            keyNormaliser,
+            errors,
+            services,
+            logger)
             where TUser :class {
 
+        /// <summary>
+        /// Retrieves the account name from <paramref name="user"/>, tries to
+        /// bing this account with the given <paramref name="password"/> and
+        /// answers the success of this operation.
+        /// </summary>
+        /// <param name="user">The user to logon.</param>
+        /// <param name="password">The password of the user.</param>
+        /// <returns><c>true</c> if the login to the LDAP server succeeded,
+        /// <c>false</c> otherwise.</returns>
         public override async Task<bool> CheckPasswordAsync(TUser user,
                 string password) {
             try {
-                var name = await this.GetUserNameAsync(user)
-                    .ConfigureAwait(false);
-                var entry = await this._authenticationService.LoginUserAsync(
-                    name!, password, this.CancellationToken)
+                // Get the account name from the attribute map.
+                var name = this._userMap.AccountNameProperty?.GetValue(user)
+                    as string;
+
+                // If we do not have a name here, try the user store next
+                if (name == null) {
+                    this.Logger.LogWarning("Could not obtain user account name "
+                        + "of {User} from the LDAP attribute map. Falling back "
+                        + "to using the user store.", user);
+                    name = await this.GetUserNameAsync(user)
+                        .ConfigureAwait(false);
+                }
+
+                if (name == null) {
+                    this.Logger.LogError("Failed to obtain a user name of "
+                        + "{User}. Please make sure that your user object "
+                        + "has been properly mapped to LDAP attributes and "
+                        + "that the AccountNameProperty has been set.", user);
+                    return false;
+                }
+
+                var entry = await this._authenticationService
+                    .LoginUserAsync(name, password, this.CancellationToken)
                     .ConfigureAwait(false);
                 return (entry != null);
-            } catch {
+            } catch (Exception ex) {
+                this.Logger.LogError(ex, "An unexpected error occurred when "
+                    + "trying to validate the login {User} against the LDAP "
+                    + "directory.", user);
                 return false;
             }
         }
@@ -59,6 +92,7 @@ namespace Visus.DirectoryIdentity {
         #region Private fields
         private readonly ILdapAuthenticationService<TUser> _authenticationService
             = authenticationService;
+        private readonly ILdapAttributeMap<TUser> _userMap = userMap;
         #endregion
     }
 }
