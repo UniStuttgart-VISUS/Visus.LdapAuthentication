@@ -39,7 +39,7 @@ namespace Visus.DirectoryIdentity.Tests {
 
                 var userStore = services.GetService<IQueryableUserStore<IdentityUser>>();
                 Assert.IsNotNull(userStore);
-                Assert.IsTrue(userStore.Users.Any());
+                Assert.IsNotNull(userStore.Users.FirstOrDefault());
             }
         }
 

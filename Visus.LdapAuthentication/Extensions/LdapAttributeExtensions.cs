@@ -21,10 +21,51 @@ namespace Visus.LdapAuthentication.Extensions {
 
         /// <summary>
         /// Gets the value of an attribute from the given
-        /// <paramref name="entry"/>, possibly converting it using the
-        /// <see cref="IValueConverter"/> configured in the
-        /// <see cref="LdapAttributeAttribute"/>.
+        /// <paramref name="entry"/>, possibly converting it to
+        /// <paramref name="targetType"/> using the
+        /// <see cref="IValueConverter"/> configured in <paramref name="that"/>.
         /// </summary>
+        /// <param name="that">An LDAP attribute descriptor.</param>
+        /// <param name="entry">The entry to retrieve the attribute
+        /// from.</param>
+        /// <param name="targetType">The target type to return. If anything
+        /// but a <see cref="string"/> or a <see cref="byte"/> array is
+        /// requested, you must provide a <paramref name="converter"/>.</param>
+        /// <param name="parameter">An optional parameter that will be passed
+        /// to the converter from <paramref name="attribute"/>.</param>
+        /// <param name="cultureInfo">The culture possibly used to convert the
+        /// attribute value. This parameter can be <c>null</c>, in which case
+        /// <see cref="CultureInfo.CurrentCulture" /> will be used.</param>
+        /// <returns>The value of the attribute.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="that"/> is <c>null</c>.</exception>
+        public static object? GetValue(this LdapAttributeAttribute that,
+                LdapEntry entry,
+                Type targetType,
+                object? parameter = null,
+                CultureInfo? cultureInfo = null) {
+            ArgumentNullException.ThrowIfNull(that, nameof(that));
+            try {
+                var attribute = entry?.GetAttribute(that.Name);
+                return attribute.GetValue(targetType,
+                    that.GetConverter(),
+                    parameter,
+                    cultureInfo);
+            } catch (KeyNotFoundException) {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the value of an attribute from the given
+        /// <paramref name="entry"/>, possibly converting it to
+        /// <typeparamref name="TValue"/> using the
+        /// <see cref="IValueConverter"/> configured in <paramref name="that"/>.
+        /// </summary>
+        /// <typeparam name="TValue">The target type to return. If anything
+        /// but a <see cref="string"/> or a <see cref="byte"/> array is
+        /// requested, you must provide a <paramref name="converter"/>.
+        /// </typeparam>
         /// <param name="that">An LDAP attribute descriptor.</param>
         /// <param name="entry">The entry to retrieve the attribute
         /// from.</param>
@@ -36,20 +77,14 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <returns>The value of the attribute.</returns>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="that"/> is <c>null</c>.</exception>
-        public static object? GetValue(this LdapAttributeAttribute that,
+        public static TValue? GetValue<TValue>(this LdapAttributeAttribute that,
                 LdapEntry entry,
                 object? parameter = null,
-                CultureInfo? cultureInfo = null) {
-            ArgumentNullException.ThrowIfNull(that, nameof(that));
-            try {
-                var attribute = entry?.GetAttribute(that.Name);
-                return attribute.GetValue(that.GetConverter(),
-                    parameter,
-                    cultureInfo);
-            } catch (KeyNotFoundException) {
-                return null;
-            }
-        }
+                CultureInfo? cultureInfo = null)
+            => (TValue?) that.GetValue(entry,
+                typeof(TValue),
+                parameter,
+                cultureInfo);
 
         /// <summary>
         /// Gets the value of an attribute.
@@ -58,9 +93,20 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <para>If a non-<c>null</c> converter is specified, this converter
         /// will be used to generate a string value.</para>
         /// <para>If the attribute is array-valued, only the first element will
-        /// be converted to a string value.</para>
+        /// be returned.</para>
+        /// <para>According to Microsoft's documentation at
+        /// https://learn.microsoft.com/de-de/dotnet/api/system.directoryservices.protocols.directoryattribute.item
+        /// the value is a string whenever possible and a byte array
+        /// otherwise. In the former case, the string will be returned as
+        /// is. In the latter case, the byte array will be converted to
+        /// a base64-encoded string.</para>
         /// </remarks>
-        /// <param name="that">An LDAP attribute.</param>
+        /// <param name="that">An LDAP attribute. It is safe to pass
+        /// <c>null</c>, in which case the returned value will be <c>null</c>
+        /// as well.</param>
+        /// <param name="targetType">The target type to return. If anything
+        /// but a <see cref="string"/> or a <see cref="byte"/> array is
+        /// requested, you must provide a <paramref name="converter"/>.</param>
         /// <param name="converter">An optional converter that is used to
         /// transform the attribute to a string. It is safe to pass <c>null</c>,
         /// in which case the string value will be returned directly.</param>
@@ -71,27 +117,31 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <see cref="CultureInfo.CurrentCulture" /> will be used.</param>
         /// <returns>The value of the attribute.</returns>
         public static object? GetValue(this LdapAttribute? that,
+                Type targetType,
                 IValueConverter? converter,
                 object? parameter = null,
                 CultureInfo? cultureInfo = null) {
-            if ((that == null) || (that.Size() == 0)) {
+            if ((that == null) || (that.Size() < 1) || (targetType == null)) {
                 return null;
 
             } else if (converter != null) {
                 // Note: Novell provides a string conversion for byte arrays in
                 // their entry, which is not what we want for SIDs or pictures,
                 // so we force the byte value here.
-                return converter.Convert(
-                    that.ByteValue,
-                    typeof(string),
+                return converter.Convert(that.ByteValue,
+                    targetType,
                     parameter,
                     cultureInfo ?? CultureInfo.CurrentCulture);
 
-            } else if (that.StringValue != null) {
+            } else if ((that.StringValue != null)
+                    && (targetType == typeof(string))) {
+                // Have a string and want a string, so that is easy.
                 return that.StringValue;
 
             } else if (that.ByteValue != null) {
-                return Convert.ToBase64String(that.ByteValue);
+                return (targetType == typeof(string))
+                    ? Convert.ToBase64String(that.ByteValue)
+                    : that.ByteValue;
 
             } else {
                 return null;

@@ -213,13 +213,13 @@ namespace Visus.LdapAuthentication.Extensions {
             Debug.Assert(mapping != null);
 
             var rid = that.GetAttribute(mapping.PrimaryGroupAttribute)
-                .GetValue(null)?.ToString();
+                .GetValue(typeof(string), null) as string;
             if (rid == null) {
                 return null;
             }
 
             var sid = that.GetAttribute(mapping.PrimaryGroupIdentityAttribute)
-                .GetValue(SidConverter)?.ToString();
+                .GetValue(typeof(string), SidConverter) as string;
             var endOfDomain = sid?.LastIndexOf('-') ?? -1;
             if (endOfDomain > 0) {
                 // If we have an actual SID for the user, assume an AD and

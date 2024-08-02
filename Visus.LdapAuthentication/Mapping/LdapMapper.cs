@@ -4,11 +4,10 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Options;
 using Novell.Directory.Ldap;
+using System;
 using System.Diagnostics;
 using Visus.Ldap.Mapping;
-using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
 
 
@@ -34,10 +33,12 @@ namespace Visus.LdapAuthentication.Mapping {
 
         /// <inheritdoc />
         protected override object? GetAttribute(LdapEntry entry,
+                Type targetType,
                 LdapAttributeAttribute attribute) {
             Debug.Assert(entry != null);
+            Debug.Assert(targetType != null);
             Debug.Assert(attribute != null);
-            return attribute.GetValue(entry);
+            return attribute.GetValue(entry, targetType);
         }
     }
 }

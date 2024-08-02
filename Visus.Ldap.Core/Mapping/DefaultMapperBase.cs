@@ -181,7 +181,7 @@ namespace Visus.Ldap.Mapping {
         /// </exception>
         protected TValue? GetAttribute<TValue>(TEntry entry,
                 LdapAttributeAttribute attribute) {
-            var value = this.GetAttribute(entry, attribute);
+            var value = this.GetAttribute(entry, typeof(TValue), attribute);
             return (value is TValue retval) ? retval : default;
         }
 
@@ -206,7 +206,7 @@ namespace Visus.Ldap.Mapping {
         /// type.</exception>
         protected TValue GetRequiredAttribute<TValue>(TEntry entry,
                 LdapAttributeAttribute attribute) {
-            var value = this.GetAttribute(entry, attribute);
+            var value = this.GetAttribute(entry, typeof(TValue), attribute);
             Debug.Assert(entry != null);
             Debug.Assert(attribute != null);
 

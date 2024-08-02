@@ -38,7 +38,7 @@ namespace Visus.DirectoryAuthentication.Claims {
         protected override object? GetAttribute(
                 SearchResultEntry entry,
                 LdapAttributeAttribute attribute) {
-            return attribute?.GetValue(entry);
+            return attribute?.GetValue<string>(entry);
         }
         #endregion
     }

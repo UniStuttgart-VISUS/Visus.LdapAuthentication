@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using System;
 using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using Visus.DirectoryAuthentication.Extensions;
@@ -32,10 +33,12 @@ namespace Visus.DirectoryAuthentication.Mapping {
 
         /// <inheritdoc />
         protected override object? GetAttribute(SearchResultEntry entry,
+                Type targetType,
                 LdapAttributeAttribute attribute) {
             Debug.Assert(entry != null);
+            Debug.Assert(targetType != null);
             Debug.Assert(attribute != null);
-            return attribute.GetValue(entry);
+            return attribute.GetValue(entry, targetType);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Visus.LdapAuthentication.Claims {
         protected override object? GetAttribute(
                 LdapEntry entry,
                 LdapAttributeAttribute attribute) {
-            return attribute?.GetValue(entry);
+            return attribute?.GetValue(entry, typeof(string));
         }
         #endregion
     }
