@@ -26,10 +26,14 @@ namespace Visus.DirectoryIdentity {
                 this IdentityBuilder builder,
                 Action<LdapOptions> options) {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-            // TODO: this is too late.
-            //builder.Services.AddScoped<UserManager<IdentityUser>, LdapUserManager<IdentityUser>>();
             builder.Services.AddLdapAuthentication<IdentityUser, IdentityRole>(
-                options, MapWellKnownSchema, MapWellKnownSchema);
+                options, MapWellKnownSchema, MapWellKnownSchema)
+                .AddScoped<IQueryableUserStore<IdentityUser>, LdapUserStore>()
+                .AddScoped<IUserClaimStore<IdentityUser>, LdapUserStore>()
+                .AddScoped<IUserEmailStore<IdentityUser>, LdapUserStore>()
+                .AddScoped<IUserLockoutStore<IdentityUser>, LdapUserStore>()
+                .AddScoped<IUserPhoneNumberStore<IdentityUser>, LdapUserStore>()
+                .AddScoped<IUserStore<IdentityUser>, LdapUserStore>();
             return builder;
         }
 

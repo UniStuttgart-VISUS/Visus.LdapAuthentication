@@ -4,6 +4,8 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities;
 using Visus.DirectoryAuthentication.Configuration;
 
 
@@ -17,6 +19,28 @@ namespace Visus.DirectoryIdentity.Tests {
     /// to run the tests against an actual LDAP directory.
     /// </remarks>
     internal sealed class TestSecrets {
+
+        /// <summary>
+        /// Create a new instance that is bound to the actual secrets.
+        /// </summary>
+        /// <returns></returns>
+        public static TestSecrets Create() {
+            var retval = new TestSecrets();
+            TestExtensions.CreateConfiguration().Bind(retval);
+            return retval;
+        }
+
+        /// <summary>
+        /// Answer whether tests requiring an actual server can run.
+        /// </summary>
+        public bool CanRun
+            => !string.IsNullOrWhiteSpace(this.ExistingUserAccount)
+            && !string.IsNullOrWhiteSpace(this.ExistingUserIdentity)
+            && (this.LdapOptions != null)
+            && !string.IsNullOrWhiteSpace(this.LdapOptions.User)
+            && !string.IsNullOrWhiteSpace(this.LdapOptions.Password)
+            && !string.IsNullOrWhiteSpace(this.NonExistingUserAccount)
+            && !string.IsNullOrWhiteSpace(this.NonExistingUserIdentity);
 
         /// <summary>
         /// Gets or sets the account name of a known user that can be searched
@@ -34,6 +58,11 @@ namespace Visus.DirectoryIdentity.Tests {
         /// Gets or sets the LDAP options for the test.
         /// </summary>
         public LdapOptions? LdapOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account name of a non-existing user.
+        /// </summary>
+        public string? NonExistingUserAccount { get; set; }
 
         /// <summary>
         /// Gets or sets the identity of a non-existing user.
