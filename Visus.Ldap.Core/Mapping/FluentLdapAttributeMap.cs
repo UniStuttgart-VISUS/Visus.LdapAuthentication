@@ -17,7 +17,7 @@ namespace Visus.Ldap.Mapping {
 
     /// <summary>
     /// An implementation of <see cref="ILdapAttributeMap{TObject}"/> that is
-    /// filled by a <see cref="ILdapMapperBuilder{TEntry, TUser, TGroup}"/>.
+    /// filled by a <see cref="ILdapAttributeMapBuilder{TEntry, TUser, TGroup}"/>.
     /// </summary>
     /// <typeparam name="TObject">The object to be mapped to.</typeparam>
     internal class FluentLdapAttributeMap<TObject>

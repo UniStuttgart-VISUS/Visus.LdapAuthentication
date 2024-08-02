@@ -80,14 +80,13 @@ namespace Visus.Ldap.Mapping {
         /// LDAP schema to use.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public LdapAttributeMapBase(LdapOptionsBase options) {
-            this._options = options
-                ?? throw new ArgumentNullException(nameof(options));
+        protected LdapAttributeMapBase(LdapOptionsBase options) {
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
 
             var flags = BindingFlags.Public | BindingFlags.Instance;
             this._properties = (from p in typeof(TObject).GetProperties(flags)
                                 let a = p.GetCustomAttributes<LdapAttributeAttribute>()
-                                    .Where(a => a.Schema == this._options.Schema)
+                                    .Where(a => a.Schema == options.Schema)
                                     .FirstOrDefault()
                                 where a != null
                                 select new {
@@ -113,7 +112,6 @@ namespace Visus.Ldap.Mapping {
         #endregion
 
         #region Private fields
-        private readonly LdapOptionsBase _options;
         private readonly Dictionary<PropertyInfo,
             LdapAttributeAttribute> _properties;
         #endregion
