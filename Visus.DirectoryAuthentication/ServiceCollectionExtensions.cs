@@ -5,10 +5,10 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
 using System.DirectoryServices.Protocols;
-using System.Runtime.CompilerServices;
 using Visus.DirectoryAuthentication.Claims;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Mapping;
@@ -47,6 +47,12 @@ namespace Visus.DirectoryAuthentication {
         /// </param>
         /// <param name="options">A callback configuring the options.</param>
         /// <returns><paramref name="services"/> after injection.</returns>
+        /// <param name="mapUser">If not <c>null</c>, the method will call this
+        /// function to build a custom mapping of <typeparamref name="TUser"/>
+        /// to LDAP attributes.</param>
+        /// <param name="mapGroup">If not <c>null</c>, the method will call this
+        /// function to build a custom mapping of <typeparamref name="TGroup"/>
+        /// to LDAP attributes.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="services"/> is <c>null</c>.</exception>
         public static IServiceCollection AddLdapAuthentication<
@@ -54,7 +60,9 @@ namespace Visus.DirectoryAuthentication {
                 TLdapMapper, TUserMap, TGroupMap,
                 TClaimsBuilder, TClaimsMapper, TUserClaimsMap, TGroupClaimsMap>(
                 this IServiceCollection services,
-                Action<LdapOptions> options)
+                Action<LdapOptions> options,
+                Action<ILdapAttributeMapSchemaSelector<TUser>>? mapUser = null,
+                Action<ILdapAttributeMapSchemaSelector<TGroup>>? mapGroup = null)
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TLdapMapper : class, ILdapMapper<SearchResultEntry, TUser, TGroup>
@@ -75,15 +83,45 @@ namespace Visus.DirectoryAuthentication {
                     FluentValidateOptions<LdapOptions, LdapOptionsValidator>>();
             }
 
-            return services
-                .AddSingleton<IClaimsBuilder<TUser, TGroup> , TClaimsBuilder>()
-                .AddSingleton<IClaimsMapper<SearchResultEntry>, TClaimsMapper>()
-                .AddSingleton<IGroupClaimsMap, TGroupClaimsMap>()
-                .AddSingleton<IUserClaimsMap, TUserClaimsMap>()
-                .AddSingleton<ILdapMapper<SearchResultEntry, TUser, TGroup>, TLdapMapper>()
-                .AddSingleton<ILdapAttributeMap<TUser>, TUserMap>()
-                .AddSingleton<ILdapAttributeMap<TGroup>, TGroupMap>()
-                .AddSingleton<ILdapConnectionService, LdapConnectionService>()
+            // If a callback for a custom user map was installed, create a
+            // builder and obtain the mapping, but only register it if nothing
+            // has been registered before.
+            if (mapUser != null) {
+                var builder = new LdapAttributeMapSchemaSelector<TUser>();
+
+                mapUser(builder);
+
+                var map = builder.Builder?.Build();
+                if (map != null) {
+                    services.TryAddSingleton(map);
+                }
+            }
+
+            // If a callback for a custom group map was installed, create a
+            // builder and obtain the mapping, but only register it if nothing
+            // has been registered before.
+            if (mapGroup != null) {
+                var builder = new LdapAttributeMapSchemaSelector<TGroup>();
+
+                mapGroup(builder);
+
+                var map = builder.Builder?.Build();
+                if (map != null) {
+                    services.TryAddSingleton(map);
+                }
+            }
+
+            // The following maps are only installed if the user has not provided
+            // a custom implementation before.
+            services.TryAddSingleton<IClaimsBuilder<TUser, TGroup>, TClaimsBuilder>();
+            services.TryAddSingleton<IClaimsMapper<SearchResultEntry>, TClaimsMapper>();
+            services.TryAddSingleton<IGroupClaimsMap, TGroupClaimsMap>();
+            services.TryAddSingleton<IUserClaimsMap, TUserClaimsMap>();
+            services.TryAddSingleton<ILdapMapper<SearchResultEntry, TUser, TGroup>, TLdapMapper>();
+            services.TryAddSingleton<ILdapAttributeMap<TUser>, TUserMap>();
+            services.TryAddSingleton<ILdapAttributeMap<TGroup>, TGroupMap>();
+
+            return services.AddSingleton<ILdapConnectionService, LdapConnectionService>()
                 .AddScoped<ILdapAuthenticationService<TUser>, LdapAuthenticationService<TUser, TGroup>>()
                 .AddScoped<ILdapSearchService<TUser, TGroup>, LdapSearchService<TUser, TGroup>>();
         }
@@ -94,13 +132,21 @@ namespace Visus.DirectoryAuthentication {
         /// <see cref="ILdapSearchService{TUser, TGroup}"/> to the dependency
         /// injection container and configures <see cref="LdapOptions"/>.
         /// </summary>
-        /// <typeparam name="TUser"></typeparam>
-        /// <typeparam name="TGroup"></typeparam>
-        /// <param name="services"></param>
-        /// <param name="options"></param>
+        /// <param name="services">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">A callback configuring the options.</param>
+        /// <param name="mapUser">If not <c>null</c>, the method will call this
+        /// function to build a custom mapping of <typeparamref name="TUser"/>
+        /// to LDAP attributes.</param>
+        /// <param name="mapGroup">If not <c>null</c>, the method will call this
+        /// function to build a custom mapping of <typeparamref name="TGroup"/>
+        /// to LDAP attributes.</param>
         /// <returns></returns>
         public static IServiceCollection AddLdapAuthentication<TUser, TGroup>(
-                this IServiceCollection services, Action<LdapOptions> options)
+                this IServiceCollection services,
+                Action<LdapOptions> options,
+                Action<ILdapAttributeMapSchemaSelector<TUser>>? mapUser = null,
+                Action<ILdapAttributeMapSchemaSelector<TGroup>>? mapGroup = null)
                 where TUser : class, new()
                 where TGroup : class, new()
             => services.AddLdapAuthentication<TUser,
@@ -111,7 +157,7 @@ namespace Visus.DirectoryAuthentication {
                 ClaimsBuilder<TUser, TGroup>,
                 ClaimsMapper,
                 ClaimsMap<TUser>,
-                ClaimsMap<TGroup>>(options);
+                ClaimsMap<TGroup>>(options, mapUser, mapGroup);
 
         /// <summary>
         /// Adds <see cref="ILdapAuthenticationService{TUser}"/>,
@@ -121,11 +167,22 @@ namespace Visus.DirectoryAuthentication {
         /// to the dependency injection container and configures
         /// <see cref="LdapOptions"/>.
         /// </summary>
-        /// <param name="services"></param>
-        /// <param name="options"></param>
+        /// <param name="services">The service collection to add the service to.
+        /// </param>
+        /// <param name="options">A callback configuring the options.</param>
+        /// <param name="mapUser">If not <c>null</c>, the method will call this
+        /// function to build a custom mapping of <typeparamref name="TUser"/>
+        /// to LDAP attributes.</param>
+        /// <param name="mapGroup">If not <c>null</c>, the method will call this
+        /// function to build a custom mapping of <typeparamref name="TGroup"/>
+        /// to LDAP attributes.</param>
         /// <returns></returns>
         public static IServiceCollection AddLdapAuthentication(
-                this IServiceCollection services, Action<LdapOptions> options)
-            => services.AddLdapAuthentication<LdapUser, LdapGroup>(options);
+                this IServiceCollection services,
+                Action<LdapOptions> options,
+                Action<ILdapAttributeMapSchemaSelector<LdapUser>>? mapUser = null,
+                Action<ILdapAttributeMapSchemaSelector<LdapGroup>>? mapGroup = null)
+            => services.AddLdapAuthentication<LdapUser, LdapGroup>(options,
+                mapUser, mapGroup);
     }
 }

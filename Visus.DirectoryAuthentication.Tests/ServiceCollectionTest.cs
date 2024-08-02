@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
+using System.Linq;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
@@ -122,6 +123,46 @@ namespace Visus.DirectoryAuthentication.Tests {
 
                 var service = provider.GetService<ILdapConnectionService>();
             });
+        }
+
+        [TestMethod]
+        public void TestFluentLdapAttributeMap() {
+            var configuration = TestExtensions.CreateConfiguration();
+
+            var collection = new ServiceCollection().AddMockLoggers();
+            collection.AddLdapAuthentication(o => {
+                var section = configuration.GetSection("LdapOptions");
+                section.Bind(o);
+
+                o.Servers = ["127.0.0.1"];
+                o.SearchBases = new Dictionary<string, SearchScope> {
+                    { "DC=domain", SearchScope.Base }
+                };
+                o.Schema = Schema.ActiveDirectory;
+            }, u => {
+                var b = u.ForSchema(Schema.ActiveDirectory);
+                b.MapProperty(nameof(LdapUser.Identity)).ToAttribute("objectSid");
+
+            }, g => {
+                var b = g.ForSchema(Schema.ActiveDirectory);
+                b.MapProperty(nameof(LdapGroup.Identity)).ToAttribute("objectSid");
+            });
+
+            var provider = collection.BuildServiceProvider();
+
+            {
+                var service = provider.GetService<ILdapAttributeMap<LdapUser>>();
+                Assert.IsNotNull(service, "User attribute map resolved");
+                Assert.AreEqual(1, service.Attributes.Count());
+                Assert.IsTrue(service.Attributes.Any(a => a.Name == "objectSid"));
+            }
+
+            {
+                var service = provider.GetService<ILdapAttributeMap<LdapGroup>>();
+                Assert.IsNotNull(service, "Group attribute map resolved");
+                Assert.AreEqual(1, service.Attributes.Count());
+                Assert.IsTrue(service.Attributes.Any(a => a.Name == "objectSid"));
+            }
         }
 
         private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();

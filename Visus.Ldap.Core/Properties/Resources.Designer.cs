@@ -223,6 +223,15 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An attribute map can only be built for a single schema..
+        /// </summary>
+        internal static string ErrorSchemaChange {
+            get {
+                return ResourceManager.GetString("ErrorSchemaChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The schema used by the attribute must match the schema used by the mapper..
         /// </summary>
         internal static string ErrorSchemaMismatch {

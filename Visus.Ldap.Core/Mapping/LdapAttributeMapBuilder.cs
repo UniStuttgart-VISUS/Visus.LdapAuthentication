@@ -25,8 +25,15 @@ namespace Visus.Ldap.Mapping {
         /// <param name="schema">The schema the mapping is intended for.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="schema"/>
         /// is <c>null.</c></exception>
-        public LdapAttributeMapBuilder(string schema) => this._schema = schema
+        public LdapAttributeMapBuilder(string schema) => this.Schema = schema
             ?? throw new ArgumentNullException(nameof(schema));
+        #endregion
+
+        #region Public properties
+        /// <summary>
+        /// Gets the schema the builder is for.
+        /// </summary>
+        public string Schema { get; }
         #endregion
 
         #region Public methods
@@ -37,13 +44,12 @@ namespace Visus.Ldap.Mapping {
 
         /// <inheritdoc />
         public ILdapPropertyMappingBuilder MapProperty(string propertyName)
-            => this._map.Value.MapProperty(propertyName, this._schema);
+            => this._map.Value.MapProperty(propertyName, this.Schema);
         #endregion
 
         #region Private fields
         private readonly Lazy<FluentLdapAttributeMap<TObject>> _map = new(
             () => new FluentLdapAttributeMap<TObject>());
-        private readonly string _schema;
         #endregion
     }
 }

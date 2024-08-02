@@ -187,5 +187,19 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(new LdapAttributeAttribute("hurz", "sAMAccountName")));
             }
         }
+
+        [TestMethod]
+        public void TestSchemaSelector() {
+            var builder = new LdapAttributeMapSchemaSelector<LdapUser>();
+            Assert.ThrowsException<ArgumentNullException>(() => builder.ForSchema(null!));
+
+            var b1 = builder.ForSchema(Schema.ActiveDirectory);
+            Assert.IsNotNull(b1);
+
+            var b2 = builder.ForSchema(Schema.ActiveDirectory);
+            Assert.IsNotNull(b2);
+
+            Assert.ThrowsException<InvalidOperationException>(() => builder.ForSchema("hurz"));
+        }
     }
 }
