@@ -122,7 +122,16 @@ namespace Visus.DirectoryIdentity {
         /// </summary>
         private static void MapActiveDirectory(
                 ILdapAttributeMapBuilder<IdentityRole> builder) {
-            throw new NotImplementedException("TODO");
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityRole.Id))
+                .StoringIdentity()
+                .ToAttribute("objectSid")
+                .WithConverter<SidConverter>();
+
+            builder.MapProperty(nameof(IdentityRole.Name))
+                .StoringAccountName()
+                .ToAttribute("sAMAccountName");
         }
 
         /// <summary>
@@ -160,7 +169,15 @@ namespace Visus.DirectoryIdentity {
         /// </summary>
         private static void MapIdmu(
                 ILdapAttributeMapBuilder<IdentityRole> builder) {
-            throw new NotImplementedException("TODO");
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityRole.Id))
+                .StoringIdentity()
+                .ToAttribute("gidNumber");
+
+            builder.MapProperty(nameof(IdentityRole.Name))
+                .StoringAccountName()
+                .ToAttribute("sAMAccountName");
         }
 
         /// <summary>
@@ -175,8 +192,7 @@ namespace Visus.DirectoryIdentity {
 
             builder.MapProperty(nameof(IdentityUser.Id))
                 .StoringIdentity()
-                .ToAttribute("uidNumber")
-                .WithConverter<SidConverter>();
+                .ToAttribute("uidNumber");
 
             builder.MapProperty(nameof(IdentityUser.PhoneNumber))
                 .ToAttribute("telephoneNumber");
@@ -191,7 +207,15 @@ namespace Visus.DirectoryIdentity {
         /// </summary>
         private static void MapRfc2307(
                 ILdapAttributeMapBuilder<IdentityRole> builder) {
-            throw new NotImplementedException("TODO");
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityRole.Id))
+                .StoringIdentity()
+                .ToAttribute("gidNumber");
+
+            builder.MapProperty(nameof(IdentityRole.Name))
+                .StoringAccountName()
+                .ToAttribute("gid");
         }
 
         /// <summary>
