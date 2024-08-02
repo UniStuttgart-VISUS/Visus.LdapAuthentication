@@ -187,6 +187,15 @@ namespace Visus.DirectoryAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type {0} is not annotated with an account name attribute..
+        /// </summary>
+        internal static string ErrorNoAccountName {
+            get {
+                return ResourceManager.GetString("ErrorNoAccountName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The type {0} is not annotated with a unique LdapIdentity attribute..
         /// </summary>
         internal static string ErrorNoIdentity {

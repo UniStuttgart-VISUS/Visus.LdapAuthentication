@@ -38,6 +38,16 @@ namespace Visus.Ldap.Mapping {
         public string GroupsAttribute { get; set; } = null!;
 
         /// <summary>
+        /// Gets or sets the filter used to identify group entries in the
+        /// directory.
+        /// </summary>
+        /// <remarks>
+        /// For an Active Directory, this is typically something like
+        /// &quot;(objectClass=group)&quot;
+        /// </remarks>
+        public string GroupsFilter { get; set; } = null!;
+
+        /// <summary>
         /// Gets or sets the attribute where the primary group identity is
         /// stored.
         /// </summary>
@@ -62,18 +72,25 @@ namespace Visus.Ldap.Mapping {
         public string PrimaryGroupIdentityAttribute { get; set; } = null!;
 
         /// <summary>
-        /// Gets or sets the filter to identify a single user by the user name.
+        /// Gets or sets the filter to identify a single user by the user name in
+        /// the authentication services.
         /// </summary>
         /// <remarks>
         /// <para>This must include a format string &qout;{0}&quot; where the
-        /// user name should be inserted.</para>
-        /// <para>For an Active Directory, this is typically something like
-        /// &quot;(sAMAccountName={0})&quot;</para>
+        /// user name should be inserted. For an Active Directory, this is
+        /// typically something like
+        /// &quot;(|(sAMAccountName={0})(userPrincipalName={0}))&quot;.</para>
+        /// <para>Note that we cannot reflect on the account name of the
+        /// user object in the authenication service, because as for the AD
+        /// case above, we might have different attribute to match like
+        /// the NTLM name (sAMAccountName) and the UPN. This cannot be achieved
+        /// by the property mapping in the user object.</para>
         /// </remarks>
         public string UserFilter { get; set; } = null!;
 
         /// <summary>
-        /// Gets or sets the filter used to identify user entries in directory
+        /// Gets or sets the filter used to identify user entries in the
+        /// directory.
         /// </summary>
         /// <remarks>
         /// For an Active Directory, this is typically something like

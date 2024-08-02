@@ -156,6 +156,9 @@
   <data name="ErrorMoveNext" xml:space="preserve">
     <value>Moving to next LDAP entry failed.</value>
   </data>
+  <data name="ErrorNoAccountName" xml:space="preserve">
+    <value>The type {0} is not annotated with an account name attribute.</value>
+  </data>
   <data name="ErrorPrimaryGroupClaim" xml:space="preserve">
     <value>Could not retrieve the primary group claim for "{0}".</value>
   </data>

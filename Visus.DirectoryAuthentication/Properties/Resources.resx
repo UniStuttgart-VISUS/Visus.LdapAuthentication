@@ -159,6 +159,9 @@
   <data name="ErrorLdapPageSize" xml:space="preserve">
     <value>The size of a page of LDAP search results must be at least 1.</value>
   </data>
+  <data name="ErrorNoAccountName" xml:space="preserve">
+    <value>The type {0} is not annotated with an account name attribute.</value>
+  </data>
   <data name="ErrorNoIdentity" xml:space="preserve">
     <value>The type {0} is not annotated with a unique LdapIdentity attribute.</value>
   </data>

@@ -20,6 +20,7 @@ namespace Visus.Ldap.Mapping {
         public LdapMappingValidator() {
             this.RuleFor(m => m.DistinguishedNameAttribute).NotEmpty();
             this.RuleFor(m => m.GroupsAttribute).NotEmpty();
+            this.RuleFor(m => m.GroupsFilter).NotEmpty();
             this.RuleFor(m => m.PrimaryGroupAttribute).NotEmpty();
             this.RuleFor(m => m.PrimaryGroupIdentityAttribute).NotEmpty();
             this.RuleFor(m => m.UserFilter).NotEmpty();

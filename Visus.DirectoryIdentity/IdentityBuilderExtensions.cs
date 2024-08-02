@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryIdentity.Properties;
@@ -21,6 +22,22 @@ namespace Visus.DirectoryIdentity {
     /// Extension methods for <see cref="IdentityBuilder"/>.
     /// </summary>
     public static class IdentityBuilderExtensions {
+
+        public static IdentityBuilder AddLdapStore<TUser, TRole>(
+                this IdentityBuilder builder,
+                Action<LdapOptions> options,
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TRole>, LdapOptionsBase>? mapRole = null)
+                where TUser : class, new()
+                where TRole : class, new() {
+            ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+            builder.Services.AddLdapAuthentication(options, mapUser, mapRole)
+                .AddScoped<IUserStore<TUser>, LdapStore<TUser, TRole>>()
+                .AddScoped<IQueryableUserStore<TUser>, LdapStore<TUser, TRole>>()
+                .AddScoped<IRoleStore<TRole>, LdapStore<TUser, TRole>>()
+                .AddScoped<IQueryableRoleStore<TRole>, LdapStore<TUser, TRole>>();
+            return builder;
+        }
 
         public static IdentityBuilder AddLdapStore(
                 this IdentityBuilder builder,

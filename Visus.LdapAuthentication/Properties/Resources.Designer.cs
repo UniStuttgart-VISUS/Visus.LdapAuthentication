@@ -178,6 +178,15 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type {0} is not annotated with an account name attribute..
+        /// </summary>
+        public static string ErrorNoAccountName {
+            get {
+                return ResourceManager.GetString("ErrorNoAccountName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not retrieve the primary group claim for &quot;{0}&quot;..
         /// </summary>
         public static string ErrorPrimaryGroupClaim {

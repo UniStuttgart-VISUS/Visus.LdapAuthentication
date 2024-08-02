@@ -686,6 +686,198 @@ namespace Visus.DirectoryIdentity {
 #endif
 
     /// <summary>
+    /// The most basic read-only LDAP-backed user and role (group) store
+    /// we can build.
+    /// </summary>
+    public class LdapStore<TUser, TRole> : IQueryableUserStore<TUser>,
+            IQueryableRoleStore<TRole>
+            where TUser : class, new()
+            where TRole : class, new() {
+
+        #region Public constructors
+        public LdapStore(ILdapSearchService<TUser, TRole> searchService,
+                IClaimsBuilder<TUser, TRole> claimsBuilder,
+                ILdapAttributeMap<TUser> userMap,
+                ILdapAttributeMap<TRole> roleMap,
+                IGroupClaimsMap groupClaims,
+                ILogger<LdapStore<TUser, TRole>> logger) {
+            this._claimsBuilder = claimsBuilder
+                ?? throw new ArgumentNullException(nameof(claimsBuilder));
+            this._groupClaims = groupClaims
+                ?? throw new ArgumentNullException(nameof(groupClaims));
+            this._logger = logger
+                ?? throw new ArgumentNullException(nameof(logger));
+            this._roleMap = roleMap
+                ?? throw new ArgumentNullException(nameof(roleMap));
+            this._searchService = searchService
+                ?? throw new ArgumentNullException(nameof(searchService));
+            this._userMap = userMap
+                ?? throw new ArgumentNullException(nameof(userMap));
+
+            // TODO: sanity checks of the maps.
+        }
+        #endregion
+
+        #region Public properties
+        /// <inheritdoc />
+        public IQueryable<TUser> Users
+            => this._searchService.GetUsers().AsQueryable();
+
+        /// <inheritdoc />
+        public IQueryable<TRole> Roles => throw new NotImplementedException("TODO");
+        #endregion
+
+        public Task<IdentityResult> CreateAsync(
+                TUser user,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task<IdentityResult> CreateAsync(
+                TRole role,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(role, nameof(role));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task<IdentityResult> DeleteAsync(
+                TUser user,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task<IdentityResult> DeleteAsync(
+                TRole role,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(role, nameof(role));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        /// <inheritdoc />
+        public void Dispose() {
+            this._searchService?.Dispose();
+        }
+
+        Task<TRole?> IRoleStore<TRole>.FindByIdAsync(
+                string roleId,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        Task<TUser?> IUserStore<TUser>.FindByIdAsync(
+                string userID,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        Task<TRole?> IRoleStore<TRole>.FindByNameAsync(
+                string normalizedRoleName,
+            CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        Task<TUser?> IUserStore<TUser>.FindByNameAsync(
+                string normalisedUserName,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task<string?> GetNormalizedRoleNameAsync(
+                TRole role,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task<string?> GetNormalizedUserNameAsync(
+                TUser user,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetRoleIdAsync(
+                TRole role,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task<string?> GetRoleNameAsync(
+                TRole role,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetUserIdAsync(
+                TUser user,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task<string?> GetUserNameAsync(
+                TUser user,
+                CancellationToken cancellationToken) {
+            throw new NotImplementedException();
+        }
+
+        public Task SetNormalizedRoleNameAsync(
+                TRole role,
+                string? normalizedName,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(role, nameof(role));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task SetNormalizedUserNameAsync(
+                TUser user,
+                string? normalisedName,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task SetRoleNameAsync(
+                TRole role,
+                string? roleName,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(role, nameof(role));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task SetUserNameAsync(
+                TUser user,
+                string? userName,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task<IdentityResult> UpdateAsync(
+                TUser user,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        public Task<IdentityResult> UpdateAsync(
+                TRole role,
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(role, nameof(role));
+            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+        }
+
+        #region Private fields
+        private readonly IClaimsBuilder<TUser, TRole> _claimsBuilder;
+        private readonly IGroupClaimsMap _groupClaims;
+        private readonly ILogger _logger;
+        private readonly ILdapAttributeMap<TRole> _roleMap;
+        private readonly ILdapSearchService<TUser, TRole> _searchService;
+        private readonly ILdapAttributeMap<TUser> _userMap;
+        #endregion
+    }
+
+
+    /// <summary>
     /// The implementation of an LDAP user store using the default
     /// <see cref="IdentityUser"/>.
     /// </summary>
