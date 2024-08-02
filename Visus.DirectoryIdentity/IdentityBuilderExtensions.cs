@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
 using Visus.DirectoryAuthentication;
@@ -25,6 +26,8 @@ namespace Visus.DirectoryIdentity {
                 this IdentityBuilder builder,
                 Action<LdapOptions> options) {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+            // TODO: this is too late.
+            //builder.Services.AddScoped<UserManager<IdentityUser>, LdapUserManager<IdentityUser>>();
             builder.Services.AddLdapAuthentication<IdentityUser, IdentityRole>(
                 options, MapWellKnownSchema, MapWellKnownSchema);
             return builder;
