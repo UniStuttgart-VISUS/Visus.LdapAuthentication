@@ -61,8 +61,8 @@ namespace Visus.LdapAuthentication {
                 TClaimsBuilder, TClaimsMapper, TUserClaimsMap, TGroupClaimsMap>(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapSchemaSelector<TUser>>? mapUser = null,
-                Action<ILdapAttributeMapSchemaSelector<TGroup>>? mapGroup = null)
+                Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptionsBase>? mapGroup = null)
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TLdapMapper : class, ILdapMapper<LdapEntry, TUser, TGroup>
@@ -87,28 +87,20 @@ namespace Visus.LdapAuthentication {
             // builder and obtain the mapping, but only register it if nothing
             // has been registered before.
             if (mapUser != null) {
-                var builder = new LdapAttributeMapSchemaSelector<TUser>();
-
-                mapUser(builder);
-
-                var map = builder.Builder?.Build();
-                if (map != null) {
-                    services.TryAddSingleton(map);
-                }
+                services.TryAddSingleton<ILdapAttributeMap<LdapUser>>(s => {
+                    var o = s.GetRequiredService<IOptions<LdapOptions>>();
+                    return new LdapAttributeMap<LdapUser>(mapUser, o.Value);
+                });
             }
 
             // If a callback for a custom group map was installed, create a
             // builder and obtain the mapping, but only register it if nothing
             // has been registered before.
             if (mapGroup != null) {
-                var builder = new LdapAttributeMapSchemaSelector<TGroup>();
-
-                mapGroup(builder);
-
-                var map = builder.Builder?.Build();
-                if (map != null) {
-                    services.TryAddSingleton(map);
-                }
+                services.TryAddSingleton<ILdapAttributeMap<LdapGroup>>(s => {
+                    var o = s.GetRequiredService<IOptions<LdapOptions>>();
+                    return new LdapAttributeMap<LdapGroup>(mapGroup, o.Value);
+                });
             }
 
             // The following maps are only installed if the user has not provided
@@ -147,8 +139,8 @@ namespace Visus.LdapAuthentication {
         public static IServiceCollection AddLdapAuthentication<TUser, TGroup>(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapSchemaSelector<TUser>>? mapUser = null,
-                Action<ILdapAttributeMapSchemaSelector<TGroup>>? mapGroup = null)
+                Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptionsBase>? mapGroup = null)
                 where TUser : class, new()
                 where TGroup : class, new()
             => services.AddLdapAuthentication<TUser,
@@ -182,8 +174,8 @@ namespace Visus.LdapAuthentication {
         public static IServiceCollection AddLdapAuthentication(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapSchemaSelector<LdapUser>>? mapUser = null,
-                Action<ILdapAttributeMapSchemaSelector<LdapGroup>>? mapGroup = null)
+                Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptionsBase>? mapGroup = null)
             => services.AddLdapAuthentication<LdapUser, LdapGroup>(options,
                 mapUser, mapGroup);
 

@@ -25,6 +25,31 @@ namespace Visus.LdapAuthentication.Mapping {
     /// LDAP schema to use.</param>
     /// <exception cref="ArgumentNullException">If
     /// <paramref name="options"/> is <c>null</c>.</exception>
-    public sealed class LdapAttributeMap<TObject>(IOptions<LdapOptions> options)
-        : LdapAttributeMapBase<TObject>(options?.Value!) { }
+    public sealed class LdapAttributeMap<TObject>
+            : LdapAttributeMapBase<TObject> {
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="options">The LDAP configuration, which determines the
+        /// LDAP schema to use.</param>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="options"/> is <c>null</c>.</exception>
+        public LdapAttributeMap(IOptions<LdapOptions> options)
+            : base(options?.Value!) { }
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="mapper">A callback that dynamically creates the mapping
+        /// using a <see cref="ILdapAttributeMapBuilder{TObject}"/>.</param>
+        /// <param name="options">The LDAP configuration, which determines the
+        /// LDAP schema to use.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="mapper"/>
+        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
+        /// </exception>
+        internal LdapAttributeMap(Action<ILdapAttributeMapBuilder<TObject>,
+                LdapOptionsBase> mapper, LdapOptionsBase options)
+                : base(mapper, options) { }
+    }
 }

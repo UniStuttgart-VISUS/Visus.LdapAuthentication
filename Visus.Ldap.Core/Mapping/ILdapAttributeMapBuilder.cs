@@ -19,16 +19,6 @@ namespace Visus.Ldap.Mapping {
     public interface ILdapAttributeMapBuilder<TObject> {
 
         /// <summary>
-        /// Builds the map from the current state of the builder.
-        /// </summary>
-        /// <returns>A new <see cref="ILdapAttributeMap{TObject}"/> based on the
-        /// current state of the builder, or possibly <c>null</c> if nothing has
-        /// been mapped.</returns>
-        /// <exception cref="InvalidOperationException">If the builder is not in
-        /// a state to build a valid mapper.</exception>
-        ILdapAttributeMap<TObject>? Build();
-
-        /// <summary>
         /// Begins mapping the given property of <typeparamref name="TObject"/>
         /// to an LDAP attribute.
         /// </summary>

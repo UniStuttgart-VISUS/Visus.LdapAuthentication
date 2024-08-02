@@ -6,6 +6,8 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Mapping;
 using Visus.Ldap;
 using Visus.Ldap.Mapping;
 
@@ -17,31 +19,32 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestGroupMap() {
-            var builder = new LdapAttributeMapBuilder<LdapGroup>(Schema.ActiveDirectory);
+            ILdapAttributeMap<LdapGroup> map = new LdapAttributeMap<LdapGroup>((builder, _) => {
+                builder.MapProperty(nameof(LdapGroup.AccountName))
+                    .StoringAccountName()
+                    .ToAttribute("sAMAccountName");
 
-            builder.MapProperty(nameof(LdapGroup.AccountName))
-                .StoringAccountName()
-                .ToAttribute("sAMAccountName");
+                builder.MapProperty(nameof(LdapGroup.DisplayName))
+                    .ToAttribute("displayName");
 
-            builder.MapProperty(nameof(LdapGroup.DisplayName))
-                .ToAttribute("displayName");
+                builder.MapProperty(nameof(LdapGroup.DistinguishedName))
+                    .StoringDistinguishedName()
+                    .ToAttribute("distinguishedName");
 
-            builder.MapProperty(nameof(LdapGroup.DistinguishedName))
-                .StoringDistinguishedName()
-                .ToAttribute("distinguishedName");
+                builder.MapProperty(nameof(LdapGroup.Identity))
+                    .StoringIdentity()
+                    .ToAttribute("objectSid")
+                    .WithConverter<SidConverter>();
 
-            builder.MapProperty(nameof(LdapGroup.Identity))
-                .StoringIdentity()
-                .ToAttribute("objectSid")
-                .WithConverter<SidConverter>();
+                builder.MapProperty(nameof(LdapGroup.IsPrimary))
+                    .StoringPrimaryGroupFlag();
+            }, new LdapOptions() {
+                Schema = Schema.ActiveDirectory
+            });
 
-            builder.MapProperty(nameof(LdapGroup.IsPrimary))
-                .StoringPrimaryGroupFlag();
-
-            var map = builder.Build();
             Assert.IsNotNull(map);
             Assert.IsNotNull(map.AccountNameProperty);
-            Assert.IsNotNull(map.DistinguishedNameAttribute);
+            Assert.IsNotNull(map.DistinguishedNameProperty);
             Assert.IsNotNull(map.IdentityProperty);
             Assert.IsNull(map.GroupMembershipsProperty);
             Assert.IsNotNull(map.IsPrimaryGroupProperty);
@@ -65,40 +68,41 @@ namespace Visus.DirectoryAuthentication.Tests {
 
         [TestMethod]
         public void TestUserMap() {
-            var builder = new LdapAttributeMapBuilder<LdapUser>(Schema.ActiveDirectory);
-
-            builder.MapProperty(nameof(LdapUser.AccountName))
+            ILdapAttributeMap<LdapUser> map = new LdapAttributeMap<LdapUser>((builder, _) => {
+                builder.MapProperty(nameof(LdapUser.AccountName))
                 .StoringAccountName()
                 .ToAttribute("sAMAccountName");
 
-            builder.MapProperty(nameof(LdapUser.ChristianName))
-                .ToAttribute("givenName");
+                builder.MapProperty(nameof(LdapUser.ChristianName))
+                    .ToAttribute("givenName");
 
-            builder.MapProperty(nameof(LdapUser.DisplayName))
-                .ToAttribute("displayName");
+                builder.MapProperty(nameof(LdapUser.DisplayName))
+                    .ToAttribute("displayName");
 
-            builder.MapProperty(nameof(LdapUser.DistinguishedName))
-                .StoringDistinguishedName()
-                .ToAttribute(new LdapAttributeAttribute(Schema.ActiveDirectory, "distinguishedName"));
+                builder.MapProperty(nameof(LdapUser.DistinguishedName))
+                    .StoringDistinguishedName()
+                    .ToAttribute(new LdapAttributeAttribute(Schema.ActiveDirectory, "distinguishedName"));
 
-            builder.MapProperty(nameof(LdapUser.EmailAddress))
-                .ToAttribute("mail");
+                builder.MapProperty(nameof(LdapUser.EmailAddress))
+                    .ToAttribute("mail");
 
-            builder.MapProperty(nameof(LdapUser.Groups))
-                .StoringGroupMemberships();
+                builder.MapProperty(nameof(LdapUser.Groups))
+                    .StoringGroupMemberships();
 
-            builder.MapProperty(nameof(LdapGroup.Identity))
-                .StoringIdentity()
-                .ToAttribute("objectSid")
-                .WithConverter(typeof(SidConverter));
+                builder.MapProperty(nameof(LdapGroup.Identity))
+                    .StoringIdentity()
+                    .ToAttribute("objectSid")
+                    .WithConverter(typeof(SidConverter));
 
-            builder.MapProperty(nameof(LdapUser.Surname))
-                .ToAttribute("sn");
+                builder.MapProperty(nameof(LdapUser.Surname))
+                    .ToAttribute("sn");
+            }, new LdapOptions() {
+                Schema = Schema.ActiveDirectory
+            });
 
-            var map = builder.Build();
             Assert.IsNotNull(map);
             Assert.IsNotNull(map.AccountNameProperty);
-            Assert.IsNotNull(map.DistinguishedNameAttribute);
+            Assert.IsNotNull(map.DistinguishedNameProperty);
             Assert.IsNotNull(map.IdentityProperty);
             Assert.IsNotNull(map.GroupMembershipsProperty);
             Assert.IsNull(map.IsPrimaryGroupProperty);
@@ -123,83 +127,72 @@ namespace Visus.DirectoryAuthentication.Tests {
         }
 
         [TestMethod]
-        public void TestRequireSchema() {
-            Assert.ThrowsException<ArgumentNullException>(() => new LdapAttributeMapBuilder<LdapGroup>(null!));
-            Assert.ThrowsException<ArgumentNullException>(() => new LdapAttributeMapBuilder<LdapUser>(null!));
-        }
-
-        [TestMethod]
         public void TestPreventMappingChange() {
-            var builder = new LdapAttributeMapBuilder<LdapGroup>(Schema.ActiveDirectory);
+            var map = new LdapAttributeMap<LdapUser>((builder, _) => {
+                {
+                    var prop = builder.MapProperty(nameof(LdapGroup.AccountName));
+                    Assert.IsNotNull(prop.ToAttribute("sAMAccountName"));
+                    Assert.ThrowsException<InvalidOperationException>(() => prop.ToAttribute("sAMAccountName"));
+                }
 
-            {
-                var prop = builder.MapProperty(nameof(LdapGroup.AccountName));
-                Assert.IsNotNull(prop.ToAttribute("sAMAccountName"));
-                Assert.ThrowsException<InvalidOperationException>(() => prop.ToAttribute("sAMAccountName"));
-            }
-
-            {
-                var prop = builder.MapProperty(nameof(LdapUser.AccountName));
-                Assert.IsNotNull(prop.ToAttribute("sAMAccountName"));
-                Assert.ThrowsException<InvalidOperationException>(() => prop.ToAttribute("sAMAccountName"));
-            }
+                {
+                    var prop = builder.MapProperty(nameof(LdapUser.AccountName));
+                    Assert.IsNotNull(prop.ToAttribute("sAMAccountName"));
+                    Assert.ThrowsException<InvalidOperationException>(() => prop.ToAttribute("sAMAccountName"));
+                }
+            }, new LdapOptions() {
+                Schema = Schema.ActiveDirectory
+            });
         }
 
         [TestMethod]
         public void TestPreventInvalidProperty() {
-            var builder = new LdapAttributeMapBuilder<LdapUser>(Schema.ActiveDirectory);
-            Assert.ThrowsException<ArgumentNullException>(() => builder.MapProperty(null!));
-            Assert.ThrowsException<ArgumentNullException>(() => builder.MapProperty(null!));
-            Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
-            Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
+            var map = new LdapAttributeMap<LdapUser>((builder, _) => {
+                Assert.ThrowsException<ArgumentNullException>(() => builder.MapProperty(null!));
+                Assert.ThrowsException<ArgumentNullException>(() => builder.MapProperty(null!));
+                Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
+                Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
+            }, new LdapOptions() {
+                Schema = Schema.ActiveDirectory
+            });
         }
 
         [TestMethod]
         public void TestPreventInvalidAttribute() {
-            var builder = new LdapAttributeMapBuilder<LdapUser>(Schema.ActiveDirectory);
+            var map = new LdapAttributeMap<LdapUser>((builder, _) => {
+                {
+                    var prop = builder.MapProperty(nameof(LdapGroup.AccountName));
+                    Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((string) null!));
+                    Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((LdapAttributeAttribute) null!));
+                    Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(string.Empty));
+                }
 
-            {
-                var prop = builder.MapProperty(nameof(LdapGroup.AccountName));
-                Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((string) null!));
-                Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((LdapAttributeAttribute) null!));
-                Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(string.Empty));
-            }
-
-            {
-                var prop = builder.MapProperty(nameof(LdapUser.AccountName));
-                Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((string) null!));
-                Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((LdapAttributeAttribute) null!));
-                Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(string.Empty));
-            }
+                {
+                    var prop = builder.MapProperty(nameof(LdapUser.AccountName));
+                    Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((string) null!));
+                    Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((LdapAttributeAttribute) null!));
+                    Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(string.Empty));
+                }
+            }, new LdapOptions() {
+                Schema = Schema.ActiveDirectory
+            });
         }
 
         [TestMethod]
         public void TestPreventSchemaMismatch() {
-            var builder = new LdapAttributeMapBuilder<LdapUser>(Schema.ActiveDirectory);
+            var map = new LdapAttributeMap<LdapUser>((builder, _) => {
+                {
+                    var prop = builder.MapProperty(nameof(LdapGroup.AccountName));
+                    Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(new LdapAttributeAttribute("hurz", "sAMAccountName")));
+                }
 
-            {
-                var prop = builder.MapProperty(nameof(LdapGroup.AccountName));
-                Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(new LdapAttributeAttribute("hurz", "sAMAccountName")));
-            }
-
-            {
-                var prop = builder.MapProperty(nameof(LdapUser.AccountName));
-                Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(new LdapAttributeAttribute("hurz", "sAMAccountName")));
-            }
-        }
-
-        [TestMethod]
-        public void TestSchemaSelector() {
-            var builder = new LdapAttributeMapSchemaSelector<LdapUser>();
-            Assert.ThrowsException<ArgumentNullException>(() => builder.ForSchema(null!));
-
-            var b1 = builder.ForSchema(Schema.ActiveDirectory);
-            Assert.IsNotNull(b1);
-
-            var b2 = builder.ForSchema(Schema.ActiveDirectory);
-            Assert.IsNotNull(b2);
-
-            Assert.ThrowsException<InvalidOperationException>(() => builder.ForSchema("hurz"));
+                {
+                    var prop = builder.MapProperty(nameof(LdapUser.AccountName));
+                    Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(new LdapAttributeAttribute("hurz", "sAMAccountName")));
+                }
+            }, new LdapOptions() {
+                Schema = Schema.ActiveDirectory
+            });
         }
     }
 }

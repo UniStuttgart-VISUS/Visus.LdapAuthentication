@@ -7,9 +7,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
+using System.Xml.Linq;
 using Visus.Ldap.Configuration;
+using Visus.Ldap.Properties;
 
 
 namespace Visus.Ldap.Mapping {
@@ -27,7 +31,7 @@ namespace Visus.Ldap.Mapping {
 
         #region Public properties
         /// <inheritdoc />
-        public PropertyInfo? AccountNameProperty { get; }
+        public PropertyInfo? AccountNameProperty { get; private set; }
 
         /// <inheritdoc />
         public IEnumerable<string> AttributeNames { get; }
@@ -37,16 +41,16 @@ namespace Visus.Ldap.Mapping {
             => this._properties.Values;
 
         /// <inheritdoc />
-        public PropertyInfo? DistinguishedNameProperty { get; }
+        public PropertyInfo? DistinguishedNameProperty { get; private set; }
 
         /// <inheritdoc />
-        public PropertyInfo? GroupMembershipsProperty { get; }
+        public PropertyInfo? GroupMembershipsProperty { get; private set; }
 
         /// <inheritdoc />
-        public PropertyInfo? IdentityProperty { get; }
+        public PropertyInfo? IdentityProperty { get; private set; }
 
         /// <inheritdoc />
-        public PropertyInfo? IsPrimaryGroupProperty { get; }
+        public PropertyInfo? IsPrimaryGroupProperty { get; private set; }
 
         /// <inheritdoc />
         public IEnumerable<PropertyInfo> Properties
@@ -82,9 +86,7 @@ namespace Visus.Ldap.Mapping {
         /// <paramref name="options"/> is <c>null</c>.</exception>
         protected LdapAttributeMapBase(LdapOptionsBase options) {
             ArgumentNullException.ThrowIfNull(options, nameof(options));
-
-            var flags = BindingFlags.Public | BindingFlags.Instance;
-            this._properties = (from p in typeof(TObject).GetProperties(flags)
+            this._properties = (from p in typeof(TObject).GetProperties(PropertyFlags)
                                 let a = p.GetCustomAttributes<LdapAttributeAttribute>()
                                     .Where(a => a.Schema == options.Schema)
                                     .FirstOrDefault()
@@ -109,11 +111,196 @@ namespace Visus.Ldap.Mapping {
             this.IsPrimaryGroupProperty = PrimaryGroupFlagAttribute
                 .GetProperty<TObject>();
         }
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="mapper">A callback that dynamically creates the mapping
+        /// using a <see cref="ILdapAttributeMapBuilder{TObject}"/>.</param>
+        /// <param name="options">The LDAP configuration, which determines the
+        /// LDAP schema to use.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="mapper"/>
+        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
+        /// </exception>
+        protected LdapAttributeMapBase(Action<ILdapAttributeMapBuilder<TObject>,
+                LdapOptionsBase> mapper, LdapOptionsBase options) {
+            ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+            this._properties = new();
+            mapper(new MapBuilder(this, options.Schema), options);
+
+            this.AttributeNames = this.Attributes.Select(a => a.Name)
+                .Distinct()
+                .ToArray();
+
+        }
+        #endregion
+
+        #region Nested class EntryBuilder
+        /// <summary>
+        /// The proxy creating entries in the map.
+        /// </summary>
+        private class EntryBuilder : ILdapPropertyMappingBuilder,
+                ILdapAttributeMappingBuilder {
+
+            #region Public constructors
+            public EntryBuilder(
+                    LdapAttributeMapBase<TObject> map,
+                    string propertyName,
+                    string schema) {
+                Debug.Assert(map != null);
+                Debug.Assert(schema != null);
+                ArgumentNullException.ThrowIfNull(propertyName, nameof(propertyName));
+                ArgumentNullException.ThrowIfNull(schema, nameof(schema));
+
+                this._property = typeof(TObject).GetProperty(propertyName, PropertyFlags)!;
+                if (this._property == null) {
+                    var msg = Resources.ErrorPropertyMissing;
+                    msg = string.Format(msg, propertyName, typeof(TObject).Name);
+                    throw new ArgumentException(msg);
+                }
+
+                this._map = map;
+                this._schema = schema;
+            }
+            #endregion
+
+            #region Public methods
+            /// <inheritdoc />
+            public ILdapPropertyMappingBuilder StoringAccountName() {
+                if (this._map.AccountNameProperty != null) {
+                    throw new InvalidOperationException(
+                        Resources.ErrorAccountNamePropertyAlreadySet);
+                }
+
+                this._map.AccountNameProperty = this._property;
+                return this;
+            }
+
+            /// <inheritdoc />
+            public ILdapPropertyMappingBuilder StoringDistinguishedName() {
+                if (this._map.DistinguishedNameProperty != null) {
+                    throw new InvalidOperationException(
+                        Resources.ErrorDistinguishedNamePropertyAlreadySet);
+                }
+
+                this._map.DistinguishedNameProperty = this._property;
+                return this;
+            }
+
+            /// <inheritdoc />
+            public ILdapPropertyMappingBuilder StoringGroupMemberships() {
+                if (this._map.GroupMembershipsProperty != null) {
+                    throw new InvalidOperationException(
+                        Resources.ErrorGroupMembershipsPropertyAlreadySet);
+                }
+
+                this._map.GroupMembershipsProperty = this._property;
+                return this;
+            }
+
+            /// <inheritdoc />
+            public ILdapPropertyMappingBuilder StoringIdentity() {
+                if (this._map.IdentityProperty != null) {
+                    throw new InvalidOperationException(
+                        Resources.ErrorIdentityPropertyAlreadySet);
+                }
+
+                this._map.IdentityProperty = this._property;
+                return this;
+            }
+
+            /// <inheritdoc />
+            public ILdapPropertyMappingBuilder StoringPrimaryGroupFlag() {
+                if (this._map.IsPrimaryGroupProperty != null) {
+                    throw new InvalidOperationException(
+                        Resources.ErrorIsPrimaryGroupPropertyAlreadySet);
+                }
+
+                this._map.IsPrimaryGroupProperty = this._property;
+                return this;
+            }
+
+            /// <inheritdoc />
+            public ILdapAttributeMappingBuilder ToAttribute(
+                    string attributeName) {
+                ArgumentException.ThrowIfNullOrEmpty(attributeName,
+                    nameof(attributeName));
+                var attribute = new LdapAttributeAttribute(this._schema,
+                    attributeName);
+                this.ToAttribute(attribute);
+                return this;
+            }
+
+            /// <inheritdoc />
+            public void ToAttribute(LdapAttributeAttribute attribute) {
+                ArgumentNullException.ThrowIfNull(attribute, nameof(attribute));
+
+                if (attribute.Schema != this._schema) {
+                    throw new ArgumentException(Resources.ErrorSchemaMismatch);
+                }
+
+                if (this._attribute != null) {
+                    throw new InvalidOperationException(
+                        Resources.ErrorPropertyAlreadyMapped);
+                }
+
+                this._map._properties[this._property]
+                    = this._attribute
+                    = attribute;
+            }
+
+            /// <inheritdoc />
+            public void WithConverter(Type converter) {
+                Debug.Assert(this._attribute != null);
+                ArgumentNullException.ThrowIfNull(converter, nameof(converter));
+                this._attribute.Converter = converter;
+            }
+            #endregion
+
+            #region Private fields
+            private LdapAttributeAttribute? _attribute;
+            private readonly LdapAttributeMapBase<TObject> _map;
+            private readonly PropertyInfo _property;
+            private readonly string _schema;
+            #endregion
+        }
+        #endregion
+
+        #region Nested class MapBuilder
+        /// <summary>
+        /// Provides the entry point to the fluent initialisation of the
+        /// map.
+        /// </summary>
+        private class MapBuilder : ILdapAttributeMapBuilder<TObject> {
+
+            #region Public constructors
+            public MapBuilder(LdapAttributeMapBase<TObject> map,
+                    string schema) {
+                Debug.Assert(map != null);
+                Debug.Assert(schema != null);
+                this._map = map;
+                this._schema = schema;
+            }
+            #endregion
+
+            #region Public methods
+            public ILdapPropertyMappingBuilder MapProperty(string propertyName)
+                => new EntryBuilder(this._map, propertyName, this._schema);
+            #endregion
+
+            #region Private fields
+            private readonly LdapAttributeMapBase<TObject> _map;
+            private readonly string _schema;
+            #endregion
+        }
         #endregion
 
         #region Private fields
-        private readonly Dictionary<PropertyInfo,
-            LdapAttributeAttribute> _properties;
+        private const BindingFlags PropertyFlags = BindingFlags.Public
+            | BindingFlags.Instance;
+        private readonly Dictionary<PropertyInfo, LdapAttributeAttribute> _properties;
         #endregion
     }
 }

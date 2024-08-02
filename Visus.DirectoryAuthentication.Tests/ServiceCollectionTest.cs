@@ -139,13 +139,11 @@ namespace Visus.DirectoryAuthentication.Tests {
                     { "DC=domain", SearchScope.Base }
                 };
                 o.Schema = Schema.ActiveDirectory;
-            }, u => {
-                var b = u.ForSchema(Schema.ActiveDirectory);
-                b.MapProperty(nameof(LdapUser.Identity)).ToAttribute("objectSid");
+            }, (u, _) => {
+                u.MapProperty(nameof(LdapUser.Identity)).ToAttribute("objectSid");
 
-            }, g => {
-                var b = g.ForSchema(Schema.ActiveDirectory);
-                b.MapProperty(nameof(LdapGroup.Identity)).ToAttribute("objectSid");
+            }, (g, _) => {
+                g.MapProperty(nameof(LdapGroup.Identity)).ToAttribute("objectSid");
             });
 
             var provider = collection.BuildServiceProvider();
