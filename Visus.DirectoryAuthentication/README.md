@@ -84,6 +84,7 @@ The built-in schemas are hard-coded in the library like this:
 ```C#
 new LdapMapping() {
     GroupsAttribute = "memberOf",
+    GroupsFilter = "(objectClass=group)",
     PrimaryGroupAttribute = "primaryGroupID",
     PrimaryGroupIdentityAttribute = "objectSid",
     UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
@@ -96,6 +97,7 @@ You can, however, provide your own mapping in the JSON configuration like this:
 {
     "Mapping": {
         "GroupsAttribute": "memberOf",
+        "GroupsFilter": "(objectClass=group)",
         "PrimaryGroupAttribute": "primaryGroupID",
         "PrimaryGroupIdentityAttribute:" "objectSid",
         "UserFilter": "(|(sAMAccountName={0})(userPrincipalName={0}))",
@@ -108,10 +110,11 @@ The properties of a mapping are:
 
 - **DistinguishedNameAttribute:** The attribute to get the distinguished name of a user or group. This defaults to "distinguishedName" and there should be no need to modify it.
 - **GroupsAttribute:** The attribute where (non-primary) groups are stored. The mapper uses this information to assign groups to user objects.
+- **GroupsFilter:** The LDAP filter that allows for selecting all groups. This property is required if you want to use [`ILdapSearchService`](ILdapSearchService.cs).
 - **PrimaryGroupAttribute:** The attribute where the SID or GID of the primary group is stored in a user's entry.
 - **PrimaryGroupIdentityAttribute:** The attribute where the SID or GID is stored within the entry of the primary group.
 - **UserFilter:** The LDAP filter that allows the library to select the user by the user name that is input into the login field. This should cover all inputs that allow the user to bind to the LDAP server. For instance, Active Directory does not only allow for binding via the user name (`sAMAccountName`), but also via user@domain (`userPrincipalName`), so both ways need to be specified in the `UserFilter`. Technically, users could also bind via the distinguished name, but this is typcially not relevant for real-world scenarios, so our built-in mapping does not include this. If you fail to specify the correct filter here, users might be able to authenticate (bind to the LDAP server), but the authentication in the library will fail because the user object cannot be retrieved.
-- **UsersFilter:** The LDAP filter that allows for selecting all users. Please note that for both, Active Directory and OpenLDAP, users are people and machines, so you want to filter on people only here. This property is required if you want to user [`ILdapSearchService`](ILdapSearchService.cs).
+- **UsersFilter:** The LDAP filter that allows for selecting all users. Please note that for both, Active Directory and OpenLDAP, users are people and machines, so you want to filter on people only here. This property is required if you want to use [`ILdapSearchService`](ILdapSearchService.cs).
 
 ## Authenticate a user
 There are two methods for authenticating a user, the one returning the user object you registered, the other directly returns a `ClaimsPrincipal`. These two methods can be used in controllers to implement cookie-based or JWT-based authorisation. An example for a cookie-based login method using user and group objects looks like:
