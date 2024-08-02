@@ -61,8 +61,8 @@ namespace Visus.DirectoryAuthentication {
                 TClaimsBuilder, TClaimsMapper, TUserClaimsMap, TGroupClaimsMap>(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptionsBase>? mapGroup = null)
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TGroup>, LdapOptionsBase>? mapGroup = null)
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TLdapMapper : class, ILdapMapper<SearchResultEntry, TUser, TGroup>
@@ -87,9 +87,9 @@ namespace Visus.DirectoryAuthentication {
             // builder and obtain the mapping, but only register it if nothing
             // has been registered before.
             if (mapUser != null) {
-                services.TryAddSingleton<ILdapAttributeMap<LdapUser>>(s => {
+                services.TryAddSingleton<ILdapAttributeMap<TUser>>(s => {
                     var o = s.GetRequiredService<IOptions<LdapOptions>>();
-                    return new LdapAttributeMap<LdapUser>(mapUser, o.Value);
+                    return new LdapAttributeMap<TUser>(mapUser, o.Value);
                 });
             }
 
@@ -97,9 +97,9 @@ namespace Visus.DirectoryAuthentication {
             // builder and obtain the mapping, but only register it if nothing
             // has been registered before.
             if (mapGroup != null) {
-                services.TryAddSingleton<ILdapAttributeMap<LdapGroup>>(s => {
+                services.TryAddSingleton<ILdapAttributeMap<TGroup>>(s => {
                     var o = s.GetRequiredService<IOptions<LdapOptions>>();
-                    return new LdapAttributeMap<LdapGroup>(mapGroup, o.Value);
+                    return new LdapAttributeMap<TGroup>(mapGroup, o.Value);
                 });
             }
 
@@ -137,8 +137,8 @@ namespace Visus.DirectoryAuthentication {
         public static IServiceCollection AddLdapAuthentication<TUser, TGroup>(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptionsBase>? mapGroup = null)
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TGroup>, LdapOptionsBase>? mapGroup = null)
                 where TUser : class, new()
                 where TGroup : class, new()
             => services.AddLdapAuthentication<TUser,

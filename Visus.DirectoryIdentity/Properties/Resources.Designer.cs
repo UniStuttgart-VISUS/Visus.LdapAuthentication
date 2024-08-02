@@ -77,5 +77,14 @@ namespace Visus.DirectoryIdentity.Properties {
                 return ResourceManager.GetString("ErrorReadOnlyStore", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The given LDAP schema &quot;{0}&quot; is not one of the well-known ones with built-in mappings for IdentityUser. Use an alternative method that allows for manual configuration of the mapping..
+        /// </summary>
+        internal static string ErrorSchemaNotWellKnown {
+            get {
+                return ResourceManager.GetString("ErrorSchemaNotWellKnown", resourceCulture);
+            }
+        }
     }
 }

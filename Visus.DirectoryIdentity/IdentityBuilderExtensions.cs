@@ -5,11 +5,13 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Diagnostics;
 using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
-using Visus.Ldap;
+using Visus.DirectoryIdentity.Properties;
+using Visus.Ldap.Configuration;
+using Visus.Ldap.Mapping;
 
 
 namespace Visus.DirectoryIdentity {
@@ -19,18 +21,14 @@ namespace Visus.DirectoryIdentity {
     /// </summary>
     public static class IdentityBuilderExtensions {
 
-        //public static IdentityBuilder AddLdapStore<TUser>(
-        //        this IdentityBuilder that,
-        //        Action<LdapOptions> ldapOptions) {
-        //    ArgumentNullException.ThrowIfNull(that, nameof(that));
-        //    that.Services.AddLdapAuthentication<IdentityUser, IdentityRole>(
-        //        ldapOptions, u, => {
-        //            u.ForSchema("")
-
-        //        }, g => {
-
-        //        });
-        //}
+        public static IdentityBuilder AddLdapStore(
+                this IdentityBuilder builder,
+                Action<LdapOptions> options) {
+            ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+            builder.Services.AddLdapAuthentication<IdentityUser, IdentityRole>(
+                options, MapWellKnownSchema, MapWellKnownSchema);
+            return builder;
+        }
 
         //    /// <summary>
         //    /// Adds an <see cref="LdapUserStore{TUser}"/> for the specified type of
@@ -87,5 +85,168 @@ namespace Visus.DirectoryIdentity {
         //        //return that.AddLdapStore<LdapIdentityUser, LdapGroup>(ldapOptions);
         //        throw new NotImplementedException();
         //    }
+
+        #region Private methods
+        /// <summary>
+        /// Maps <see cref="IdentityUser"/> to ADDS attributes.
+        /// </summary>
+        private static void MapActiveDirectory(
+                ILdapAttributeMapBuilder<IdentityUser> builder) {
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityUser.AccessFailedCount))
+                .ToAttribute("badPwdCount");
+
+            builder.MapProperty(nameof(IdentityUser.Email))
+                .ToAttribute("mail");
+
+            builder.MapProperty(nameof(IdentityUser.Id))
+                .StoringIdentity()
+                .ToAttribute("objectSid")
+                .WithConverter<SidConverter>();
+
+            builder.MapProperty(nameof(IdentityUser.LockoutEnd))
+                .ToAttribute("lockoutTime")
+                .WithConverter<FileTimeConverter>();
+
+            builder.MapProperty(nameof(IdentityUser.PhoneNumber))
+                .ToAttribute("telephoneNumber");
+
+            builder.MapProperty(nameof(IdentityUser.UserName))
+                .StoringAccountName()
+                .ToAttribute("sAMAccountName");
+        }
+
+        /// <summary>
+        /// Maps <see cref="IdentityRole"/> to ADDS attributes.
+        /// </summary>
+        private static void MapActiveDirectory(
+                ILdapAttributeMapBuilder<IdentityRole> builder) {
+            throw new NotImplementedException("TODO");
+        }
+
+        /// <summary>
+        /// Maps <see cref="IdentityUser"/> to IDMU attributes.
+        /// </summary>
+        private static void MapIdmu(
+                ILdapAttributeMapBuilder<IdentityUser> builder) {
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityUser.AccessFailedCount))
+                .ToAttribute("badPwdCount");
+
+            builder.MapProperty(nameof(IdentityUser.Email))
+                .ToAttribute("mail");
+
+            builder.MapProperty(nameof(IdentityUser.Id))
+                .StoringIdentity()
+                .ToAttribute("uidNumber")
+                .WithConverter<SidConverter>();
+
+            builder.MapProperty(nameof(IdentityUser.LockoutEnd))
+                .ToAttribute("lockoutTime")
+                .WithConverter<FileTimeConverter>();
+
+            builder.MapProperty(nameof(IdentityUser.PhoneNumber))
+                .ToAttribute("telephoneNumber");
+
+            builder.MapProperty(nameof(IdentityUser.UserName))
+                .StoringAccountName()
+                .ToAttribute("sAMAccountName");
+        }
+
+        /// <summary>
+        /// Maps <see cref="IdentityRole"/> to IDMU attributes.
+        /// </summary>
+        private static void MapIdmu(
+                ILdapAttributeMapBuilder<IdentityRole> builder) {
+            throw new NotImplementedException("TODO");
+        }
+
+        /// <summary>
+        /// Makes <see cref="IdentityUser"/> to RFC 2307 attributes.
+        /// </summary>
+        private static void MapRfc2307(
+                ILdapAttributeMapBuilder<IdentityUser> builder) {
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityUser.Email))
+                .ToAttribute("mail");
+
+            builder.MapProperty(nameof(IdentityUser.Id))
+                .StoringIdentity()
+                .ToAttribute("uidNumber")
+                .WithConverter<SidConverter>();
+
+            builder.MapProperty(nameof(IdentityUser.PhoneNumber))
+                .ToAttribute("telephoneNumber");
+
+            builder.MapProperty(nameof(IdentityUser.UserName))
+                .StoringAccountName()
+                .ToAttribute("uid");
+        }
+
+        /// <summary>
+        /// Maps <see cref="IdentityRole"/> to RFC 2307 attributes.
+        /// </summary>
+        private static void MapRfc2307(
+                ILdapAttributeMapBuilder<IdentityRole> builder) {
+            throw new NotImplementedException("TODO");
+        }
+
+        /// <summary>
+        /// Creates a mapping for <see cref="IdentityUser"/> for one of the
+        /// well-known LDAP schemas.
+        /// </summary>
+        private static void MapWellKnownSchema(
+                ILdapAttributeMapBuilder<IdentityUser> builder,
+                LdapOptionsBase options) {
+            switch (options.Schema) {
+                case Schema.ActiveDirectory:
+                    MapActiveDirectory(builder);
+                    break;
+
+                case Schema.IdentityManagementForUnix:
+                    MapIdmu(builder);
+                    break;
+
+                case Schema.Rfc2307:
+                    MapRfc2307(builder);
+                    break;
+
+                default:
+                    throw new ArgumentException(string.Format(
+                        Resources.ErrorSchemaNotWellKnown,
+                        options.Schema));
+            }
+        }
+
+        /// <summary>
+        /// Creates a mapping for <see cref="IdentityRole"/> for one of the
+        /// well-known LDAP schemas.
+        /// </summary>
+        private static void MapWellKnownSchema(
+                ILdapAttributeMapBuilder<IdentityRole> builder,
+                LdapOptionsBase options) {
+            switch (options.Schema) {
+                case Schema.ActiveDirectory:
+                    MapActiveDirectory(builder);
+                    break;
+
+                case Schema.IdentityManagementForUnix:
+                    MapIdmu(builder);
+                    break;
+
+                case Schema.Rfc2307:
+                    MapRfc2307(builder);
+                    break;
+
+                default:
+                    throw new ArgumentException(string.Format(
+                        Resources.ErrorSchemaNotWellKnown,
+                        options.Schema));
+            }
+        }
+        #endregion
     }
 }
