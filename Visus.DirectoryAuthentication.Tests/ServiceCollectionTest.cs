@@ -163,6 +163,46 @@ namespace Visus.DirectoryAuthentication.Tests {
             }
         }
 
+        [TestMethod]
+        public void TestFluentClaimsMap() {
+            var configuration = TestExtensions.CreateConfiguration();
+
+            var collection = new ServiceCollection().AddMockLoggers();
+            collection.AddLdapAuthentication(o => {
+                var section = configuration.GetSection("LdapOptions");
+                section.Bind(o);
+
+                o.Servers = ["127.0.0.1"];
+                o.SearchBases = new Dictionary<string, SearchScope> {
+                    { "DC=domain", SearchScope.Base }
+                };
+                o.Schema = Schema.ActiveDirectory;
+            }, null, null,(u, _) => {
+                u.MapProperty(nameof(LdapUser.Identity)).ToClaim("id");
+
+            }, (g, _) => {
+                g.MapProperty(nameof(LdapGroup.Identity)).ToClaim("id");
+            });
+
+            var provider = collection.BuildServiceProvider();
+
+            var attribute = new LdapAttributeAttribute(Schema.ActiveDirectory, "objectSid") {
+                Converter = typeof(SidConverter)
+            };
+
+            {
+                var service = provider.GetService<IUserClaimsMap>();
+                Assert.IsNotNull(service, "User claims map resolved");
+                Assert.AreEqual("id", service[attribute].Single().Name);
+            }
+
+            {
+                var service = provider.GetService<IGroupClaimsMap>();
+                Assert.IsNotNull(service, "Group claims map resolved");
+                Assert.AreEqual("id", service[attribute].Single().Name);
+            }
+        }
+
         private readonly TestSecrets _testSecrets = TestExtensions.CreateSecrets();
     }
 }

@@ -59,6 +59,7 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="mapGroupClaims">If not <c>null</c>, the method will call
         /// this function to build a custom mapping to
         /// <typeparamref name="TGroup"/> to claim types.</param>
+        /// <returns><paramref name="services"/>.</returns>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="services"/> is <c>null</c>.</exception>
         public static IServiceCollection AddLdapAuthentication<
