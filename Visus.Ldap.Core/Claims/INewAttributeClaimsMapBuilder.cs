@@ -15,7 +15,7 @@ namespace Visus.Ldap.Claims {
     /// Allows for attaching one or more <see cref="Claim"/>s to an
     /// <see cref="LdapAttributeAttribute"/>.
     /// </summary>
-    public interface INewAttributeClaimsBuilder: IAttributeClaimsBuilder {
+    public interface INewAttributeClaimsMapBuilder: IAttributeClaimsMapBuilder {
 
         /// <summary>
         /// Adds a converter of the specified type to the mapping.
@@ -26,13 +26,14 @@ namespace Visus.Ldap.Claims {
         /// <paramref name="converter"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="converter"/>
         /// does not implement <see cref="IValueConverter"/>.</exception>
-        void WithConverter(Type converter);
+        IAttributeClaimsMapBuilder WithConverter(Type converter);
 
         /// <summary>
         /// Adds a converter to the mapping.
         /// </summary>
         /// <typeparam name="TConverter">The type of the converter.</typeparam>
-        void WithConverter<TConverter>() where TConverter : IValueConverter
+        IAttributeClaimsMapBuilder WithConverter<TConverter>()
+                where TConverter : IValueConverter
             => this.WithConverter(typeof(TConverter));
     }
 }

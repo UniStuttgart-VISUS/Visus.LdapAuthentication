@@ -133,7 +133,6 @@ namespace Visus.Ldap.Mapping {
             this.AttributeNames = this.Attributes.Select(a => a.Name)
                 .Distinct()
                 .ToArray();
-
         }
         #endregion
 
@@ -225,11 +224,8 @@ namespace Visus.Ldap.Mapping {
             /// <inheritdoc />
             public ILdapAttributeMappingBuilder ToAttribute(
                     string attributeName) {
-                ArgumentException.ThrowIfNullOrEmpty(attributeName,
-                    nameof(attributeName));
-                var attribute = new LdapAttributeAttribute(this._schema,
-                    attributeName);
-                this.ToAttribute(attribute);
+                this.ToAttribute(new LdapAttributeAttribute(this._schema,
+                    attributeName));
                 return this;
             }
 

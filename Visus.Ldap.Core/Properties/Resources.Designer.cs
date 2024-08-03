@@ -223,6 +223,15 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The given property {0} of type {1} does not have an [LdapAttribute] for the schema &quot;{2}&quot;..
+        /// </summary>
+        internal static string ErrorPropertyWithoutAttribute {
+            get {
+                return ResourceManager.GetString("ErrorPropertyWithoutAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An attribute map can only be built for a single schema..
         /// </summary>
         internal static string ErrorSchemaChange {

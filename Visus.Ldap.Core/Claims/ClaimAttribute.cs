@@ -116,8 +116,11 @@ namespace Visus.Ldap.Claims {
         /// Initialises a new instance.
         /// </summary>
         /// <param name="name">The name of the claim.</param>
+        /// <exception cref="ArgumentException">If <paramref name="name"/>
+        /// is <c>null</c> or empty.</exception>
         public ClaimAttribute(string name) {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
+            ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+            this.Name = name;
         }
         #endregion
 

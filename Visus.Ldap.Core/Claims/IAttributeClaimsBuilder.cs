@@ -17,7 +17,7 @@ namespace Visus.Ldap.Claims {
     /// Allows for attaching one or more <see cref="Claim"/>s to an
     /// <see cref="LdapAttributeAttribute"/>.
     /// </summary>
-    public interface IAttributeClaimsBuilder {
+    public interface IAttributeClaimsMapBuilder {
 
         /// <summary>
         /// Adds the given claim to the attribute.
@@ -26,7 +26,7 @@ namespace Visus.Ldap.Claims {
         /// <returns><c>this</c>.</returns>
         /// <exception cref="ArgumentException">If <paramref name="claim"/>
         /// is <c>null</c> or an empty string.</exception>
-        IAttributeClaimsBuilder ToClaim(string claim);
+        IAttributeClaimsMapBuilder ToClaim(string claim);
 
         /// <summary>
         /// Adds the given claims to the attribute.
@@ -38,15 +38,7 @@ namespace Visus.Ldap.Claims {
         /// <exception cref="ArgumentException">If any of the
         /// <paramref name="claims"/> is <c>null</c> or an empty string.
         /// </exception>
-        IAttributeClaimsBuilder ToClaims(IEnumerable<string> claims) {
-            ArgumentNullException.ThrowIfNull(claims, nameof(claims));
-
-            foreach (var c in claims) {
-                this.ToClaim(c);
-            }
-
-            return this;
-        }
+        IAttributeClaimsMapBuilder ToClaims(IEnumerable<string> claims);
 
         /// <summary>
         /// Adds the given claims to the attribute.
@@ -58,7 +50,7 @@ namespace Visus.Ldap.Claims {
         /// <exception cref="ArgumentException">If any of the
         /// <paramref name="claims"/> is <c>null</c> or an empty string.
         /// </exception>
-        IAttributeClaimsBuilder ToClaims(params string[] claims)
+        IAttributeClaimsMapBuilder ToClaims(params string[] claims)
             => this.ToClaims(claims.AsEnumerable());
     }
 }

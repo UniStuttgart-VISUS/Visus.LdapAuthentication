@@ -37,8 +37,8 @@ namespace Visus.Ldap.Mapping {
         /// <param name="name">The name of the LDAP attribute to lookup for the
         /// annotated property.</param>
         public LdapAttributeAttribute(string schema, string name) {
-            this.Name = name
-                ?? throw new ArgumentNullException(nameof(name));
+            ArgumentException.ThrowIfNullOrEmpty(name);
+            this.Name = name;
             this.Schema = schema
                 ?? throw new ArgumentNullException(nameof(schema));
         }

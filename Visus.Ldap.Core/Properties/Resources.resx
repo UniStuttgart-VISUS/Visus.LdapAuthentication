@@ -171,6 +171,9 @@
   <data name="ErrorPropertyMissing" xml:space="preserve">
     <value>The given property {0} does not exist in type {1} or is not a public instance property.</value>
   </data>
+  <data name="ErrorPropertyWithoutAttribute" xml:space="preserve">
+    <value>The given property {0} of type {1} does not have an [LdapAttribute] for the schema "{2}".</value>
+  </data>
   <data name="ErrorSchemaChange" xml:space="preserve">
     <value>An attribute map can only be built for a single schema.</value>
   </data>

@@ -5,8 +5,10 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.Extensions.Options;
+using System;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.Ldap.Claims;
+using Visus.Ldap.Configuration;
 
 
 namespace Visus.DirectoryAuthentication.Claims {
@@ -23,7 +25,6 @@ namespace Visus.DirectoryAuthentication.Claims {
     /// mapping.</typeparam>
     public sealed class ClaimsMap<TObject> : ClaimsMapBase<TObject> {
 
-        #region Public constructors
         /// <summary>
         /// Initialises a new instance.
         /// </summary>
@@ -33,6 +34,19 @@ namespace Visus.DirectoryAuthentication.Claims {
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public ClaimsMap(IOptions<LdapOptions> options)
             : base(options?.Value!) { }
-        #endregion
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="mapper">A callback that dynamically creates the mapping
+        /// using a <see cref="IClaimsMapBuilder"/>.</param>
+        /// <param name="options">The LDAP configuration, which determines the
+        /// LDAP schema to use.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="mapper"/>
+        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
+        /// </exception>
+        internal ClaimsMap(Action<IClaimsMapBuilder, LdapOptionsBase> mapper,
+                LdapOptions options)
+            : base(mapper, options) { }
     }
 }
