@@ -4,9 +4,11 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -153,7 +155,8 @@ namespace Visus.Ldap.Mapping {
                 ArgumentNullException.ThrowIfNull(propertyName, nameof(propertyName));
                 ArgumentNullException.ThrowIfNull(schema, nameof(schema));
 
-                this._property = typeof(TObject).GetProperty(propertyName, PropertyFlags)!;
+                this._property = typeof(TObject).GetProperty(propertyName,
+                    PropertyFlags)!;
                 if (this._property == null) {
                     var msg = Resources.ErrorPropertyMissing;
                     msg = string.Format(msg, propertyName, typeof(TObject).Name);
@@ -219,6 +222,23 @@ namespace Visus.Ldap.Mapping {
 
                 this._map.IsPrimaryGroupProperty = this._property;
                 return this;
+            }
+
+            /// <inheritdoc />
+            public void ToAnnotatedAttribute() {
+                Debug.Assert(this._property != null);
+                var attribute = this._property
+                    .GetCustomAttributes<LdapAttributeAttribute>()
+                    .FirstOrDefault(a => a.Schema == this._schema);
+
+                if (attribute == null) {
+                    var msg = Resources.ErrorPropertyWithoutAttribute;
+                    msg = string.Format(msg, this._property.Name,
+                        typeof(TObject).Name, this._schema);
+                    throw new InvalidOperationException(msg);
+                }
+
+                this.ToAttribute(attribute);
             }
 
             /// <inheritdoc />

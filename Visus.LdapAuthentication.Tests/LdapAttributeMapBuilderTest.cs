@@ -29,7 +29,7 @@ namespace Visus.LdapAuthentication.Tests {
 
                 builder.MapProperty(nameof(LdapGroup.DistinguishedName))
                     .StoringDistinguishedName()
-                    .ToAttribute("distinguishedName");
+                    .ToAnnotatedAttribute();
 
                 builder.MapProperty(nameof(LdapGroup.Identity))
                     .StoringIdentity()

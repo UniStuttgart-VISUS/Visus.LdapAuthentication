@@ -50,6 +50,15 @@ namespace Visus.Ldap.Mapping {
         ILdapPropertyMappingBuilder StoringPrimaryGroupFlag();
 
         /// <summary>
+        /// Maps the property configured by this builder according to its
+        /// annotation with <see cref="LdapAttributeAttribute"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">If the property does
+        /// not have a <see cref="LdapAttributeAttribute"/> for the current
+        /// schema.</exception>
+        void ToAnnotatedAttribute();
+
+        /// <summary>
         /// Maps the property configured by this builder to the LDAP attribute
         /// with the specified name.
         /// </summary>
