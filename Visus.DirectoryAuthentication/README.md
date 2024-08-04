@@ -188,7 +188,7 @@ public sealed class MinimalUser {
     public string Identity { get; set; } = null!;
 ```
 
-In version 2.1 of the library, the `ILdapAttributeMappingBuilder` allows for customising the lookup tables used by the LDAP mapper without building a custom mapper altogether. This enables users to (i) change how the default `LdapUser` and `LdapGroup` are mapped and (ii) build mappings for third-party types that cannot be annotated. Let's assume you want ot change `LdapUser` to use the account name as its identity rather than the SID/UID. This could be achieved in like this:
+In version 2.1 of the library, the `ILdapAttributeMappingBuilder` allows for customising the lookup tables used by the LDAP mapper without building a custom mapper altogether. This enables users to (i) change how the default `LdapUser` and `LdapGroup` are mapped and (ii) build mappings for third-party types that cannot be annotated. Let's assume you want ot change `LdapUser` to use the account name as its identity rather than the SID/UID. This could be achieved like this:
 ```C#
 builder.Services.AddLdapAuthentication(o => {
     this.Configuration.GetSection(LdapOptions.Section).Bind(o);
