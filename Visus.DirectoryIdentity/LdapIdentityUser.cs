@@ -14,7 +14,7 @@ using System;
 namespace Visus.DirectoryIdentity {
 
     /// <summary>
-    /// The default identity user to be retrieved from LDAP.
+    /// A basic representation of an identity user from LDAP.
     /// </summary>
     public class LdapIdentityUser {
 

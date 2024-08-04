@@ -14,7 +14,7 @@ using Visus.Ldap;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryIdentity {
+namespace Visus.DirectoryIdentity.Managers {
 
     /// <summary>
     /// A specialisation of the default <see cref="UserManager{TUser}"/>, which

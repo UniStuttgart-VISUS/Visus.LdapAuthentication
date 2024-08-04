@@ -1,4 +1,4 @@
-﻿// <copyright file="LdapUserStore.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="LdapStore.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -7,10 +7,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication;
@@ -19,7 +16,7 @@ using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryIdentity {
+namespace Visus.DirectoryIdentity.Stores {
 #if false
     /// <summary>
     /// An ASP.NET Core Identity store that retrieves its information from LDAP.
@@ -703,7 +700,7 @@ namespace Visus.DirectoryIdentity {
                 ILogger<LdapStore<TUser, TRole>> logger) {
             this._claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));
-            this._groupClaims = groupClaims
+            this._roleClaims = groupClaims
                 ?? throw new ArgumentNullException(nameof(groupClaims));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
@@ -727,6 +724,15 @@ namespace Visus.DirectoryIdentity {
         public IQueryable<TRole> Roles => throw new NotImplementedException("TODO");
         #endregion
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task<IdentityResult> CreateAsync(
                 TUser user,
                 CancellationToken cancellationToken) {
@@ -734,6 +740,15 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task<IdentityResult> CreateAsync(
                 TRole role,
                 CancellationToken cancellationToken) {
@@ -741,6 +756,15 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task<IdentityResult> DeleteAsync(
                 TUser user,
                 CancellationToken cancellationToken) {
@@ -748,6 +772,15 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task<IdentityResult> DeleteAsync(
                 TRole role,
                 CancellationToken cancellationToken) {
@@ -766,11 +799,11 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         Task<TUser?> IUserStore<TUser>.FindByIdAsync(
                 string userID,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => this._searchService.GetUserByIdentityAsync(userID);
 
         Task<TRole?> IRoleStore<TRole>.FindByNameAsync(
                 string normalizedRoleName,
@@ -778,48 +811,67 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         Task<TUser?> IUserStore<TUser>.FindByNameAsync(
                 string normalisedUserName,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => this._searchService.GetUserByAccountNameAsync(
+                normalisedUserName);
 
+        /// <inheritdoc />
         public Task<string?> GetNormalizedRoleNameAsync(
                 TRole role,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => this.GetRoleNameAsync(role, cancellationToken);
 
+        /// <inheritdoc />
         public Task<string?> GetNormalizedUserNameAsync(
                 TUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => this.GetUserNameAsync(user, cancellationToken);
 
+        /// <inheritdoc />
         public Task<string> GetRoleIdAsync(
                 TRole role,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => Task.FromResult(this._roleMap.IdentityProperty
+                ?.GetValue(role)
+                ?.ToString()
+                ?? string.Empty);
 
+        /// <inheritdoc />
         public Task<string?> GetRoleNameAsync(
                 TRole role,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => Task.FromResult(this._roleMap.AccountNameProperty
+                ?.GetValue(role) as string);
 
+        /// <inheritdoc />
         public Task<string> GetUserIdAsync(
                 TUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => Task.FromResult(this._userMap.IdentityProperty
+                ?.GetValue(user)
+                ?.ToString()
+                ?? string.Empty);
 
+        /// <inheritdoc />
         public Task<string?> GetUserNameAsync(
                 TUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
+                CancellationToken cancellationToken)
+            => Task.FromResult(this._userMap.IdentityProperty
+                ?.GetValue(user) as string);
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="normalizedName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task SetNormalizedRoleNameAsync(
                 TRole role,
                 string? normalizedName,
@@ -828,6 +880,16 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="normalisedName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task SetNormalizedUserNameAsync(
                 TUser user,
                 string? normalisedName,
@@ -836,6 +898,16 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="roleName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task SetRoleNameAsync(
                 TRole role,
                 string? roleName,
@@ -844,6 +916,16 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="userName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task SetUserNameAsync(
                 TUser user,
                 string? userName,
@@ -852,6 +934,15 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task<IdentityResult> UpdateAsync(
                 TUser user,
                 CancellationToken cancellationToken) {
@@ -859,6 +950,15 @@ namespace Visus.DirectoryIdentity {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
+        /// <summary>
+        /// This method is not implemented, because the current implementation
+        /// does not allow for modifying users or groups in the directory.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Unconditionally.
+        /// </exception>
         public Task<IdentityResult> UpdateAsync(
                 TRole role,
                 CancellationToken cancellationToken) {
@@ -868,450 +968,11 @@ namespace Visus.DirectoryIdentity {
 
         #region Private fields
         private readonly IClaimsBuilder<TUser, TRole> _claimsBuilder;
-        private readonly IGroupClaimsMap _groupClaims;
         private readonly ILogger _logger;
+        private readonly IGroupClaimsMap _roleClaims;
         private readonly ILdapAttributeMap<TRole> _roleMap;
         private readonly ILdapSearchService<TUser, TRole> _searchService;
         private readonly ILdapAttributeMap<TUser> _userMap;
-        #endregion
-    }
-
-
-    /// <summary>
-    /// The implementation of an LDAP user store using the default
-    /// <see cref="IdentityUser"/>.
-    /// </summary>
-    public class LdapUserStore : IQueryableUserStore<IdentityUser>,
-            IUserClaimStore<IdentityUser>,
-            IUserEmailStore<IdentityUser>,
-            IUserLockoutStore<IdentityUser>,
-            IUserPhoneNumberStore<IdentityUser> {
-
-        #region Public constructors
-        public LdapUserStore(
-                ILdapSearchService<IdentityUser, IdentityRole> searchService,
-                IClaimsBuilder<IdentityUser, IdentityRole> claimsBuilder,
-                ILdapAttributeMap<IdentityUser> userMap,
-                IGroupClaimsMap groupClaims,
-                ILogger<LdapUserStore> logger) {
-            this._claimsBuilder = claimsBuilder
-                ?? throw new ArgumentNullException(nameof(claimsBuilder));
-            this._groupClaims = groupClaims
-                ?? throw new ArgumentNullException(nameof(groupClaims));
-            this._logger = logger
-                ?? throw new ArgumentNullException(nameof(logger));
-            this._searchService = searchService
-                ?? throw new ArgumentNullException(nameof(searchService));
-            this._userMap = userMap
-                ?? throw new ArgumentNullException(nameof(userMap));
-
-            {
-                var prop = typeof(IdentityUser).GetProperty(
-                    nameof(IdentityUser.Email));
-                Debug.Assert(prop != null);
-                this._emailAttribute = this._userMap[prop]!;
-                Debug.Assert(this._emailAttribute != null);
-            }
-        }
-        #endregion
-
-        #region Public properties
-        /// <inheritdoc />
-        public IQueryable<IdentityUser> Users
-            => this._searchService.GetUsers().AsQueryable();
-        #endregion
-
-        #region Public methods
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claims"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task AddClaimsAsync(IdentityUser user,
-                IEnumerable<Claim> claims,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task<IdentityResult> CreateAsync(IdentityUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task<IdentityResult> DeleteAsync(IdentityUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <inheritdoc />
-        public void Dispose() {
-            this._searchService?.Dispose();
-        }
-
-        /// <inheritdoc />
-        public async Task<IdentityUser?> FindByEmailAsync(
-                string normalisedEmail,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(normalisedEmail,
-                nameof(normalisedEmail));
-            var filter = $"({this._emailAttribute.Name}={normalisedEmail})";
-            var results = await this._searchService.GetUsersAsync(filter,
-                cancellationToken);
-            return results.SingleOrDefault();
-        }
-
-        /// <inheritdoc />
-        public Task<IdentityUser?> FindByIdAsync(
-                string userID,
-                CancellationToken cancellationToken) {
-            return this._searchService.GetUserByIdentityAsync(userID);
-        }
-
-        /// <inheritdoc />
-        public Task<IdentityUser?> FindByNameAsync(
-                string normalisedUserName,
-                CancellationToken cancellationToken) {
-            return this._searchService.GetUserByAccountNameAsync(
-                normalisedUserName);
-        }
-
-        /// <inheritdoc />
-        public Task<int> GetAccessFailedCountAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.AccessFailedCount);
-        }
-
-        /// <inheritdoc />
-        public Task<IList<Claim>> GetClaimsAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            var retval = this._claimsBuilder.GetClaims(user);
-            throw new NotImplementedException("TODO: How do we find the groups?");
-        }
-
-        /// <inheritdoc />
-        public Task<string?> GetEmailAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.Email);
-        }
-
-        /// <inheritdoc />
-        public Task<bool> GetEmailConfirmedAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            // Note: we do not allow for editing, so any e-mail address is
-            // always considered to be confirmed.
-            return Task.FromResult(true);
-        }
-
-        /// <inheritdoc />
-        public Task<bool> GetLockoutEnabledAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.LockoutEnabled);
-        }
-
-        /// <inheritdoc />
-        public Task<DateTimeOffset?> GetLockoutEndDateAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.LockoutEnd);
-        }
-
-        /// <inheritdoc />
-        public Task<string?> GetNormalizedEmailAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.Email?.ToLowerInvariant());
-        }
-
-        /// <inheritdoc />
-        public Task<string?> GetNormalizedUserNameAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.UserName?.ToLowerInvariant());
-        }
-
-        /// <inheritdoc />
-        public Task<string?> GetPhoneNumberAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.PhoneNumber);
-        }
-
-        /// <inheritdoc />
-        public Task<bool> GetPhoneNumberConfirmedAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            // Note: we do not allow for editing, so any phone number is always
-            // considered to be confirmed.
-            return Task.FromResult(true);
-        }
-
-        /// <inheritdoc />
-        public Task<string> GetUserIdAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.Id);
-        }
-
-        /// <inheritdoc />
-        public Task<string?> GetUserNameAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user?.UserName);
-        }
-
-        /// <inheritdoc />
-        public Task<IList<IdentityUser>> GetUsersForClaimAsync(
-                Claim claim,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException("TODO");
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task<int> IncrementAccessFailedCountAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claims"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task RemoveClaimsAsync(
-                IdentityUser user,
-                IEnumerable<Claim> claims,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claim"></param>
-        /// <param name="newClaim"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task ReplaceClaimAsync(
-                IdentityUser user,
-                Claim claim,
-                Claim newClaim,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task ResetAccessFailedCountAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="email"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetEmailAsync(
-                IdentityUser user,
-                string? email,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="confirmed"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetEmailConfirmedAsync(
-                IdentityUser user,
-                bool confirmed,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="enabled"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetLockoutEnabledAsync(
-                IdentityUser user,
-                bool enabled,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="lockoutEnd"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetLockoutEndDateAsync(
-                IdentityUser user,
-                DateTimeOffset? lockoutEnd,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="normalisedEmail"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetNormalizedEmailAsync(
-                IdentityUser user,
-                string? normalisedEmail,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="normalisedName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetNormalizedUserNameAsync(
-                IdentityUser user,
-                string? normalisedName,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="phoneNumber"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetPhoneNumberAsync(
-                IdentityUser user,
-                string? phoneNumber,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="confirmed"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetPhoneNumberConfirmedAsync(
-                IdentityUser user,
-                bool confirmed,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="userName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task SetUserNameAsync(
-                IdentityUser user,
-                string? userName,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task<IdentityResult> UpdateAsync(
-                IdentityUser user,
-                CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
-        }
-        #endregion
-
-        #region Private fields
-        private readonly LdapAttributeAttribute _emailAttribute;
-        private readonly IClaimsBuilder<IdentityUser, IdentityRole> _claimsBuilder;
-        private readonly IGroupClaimsMap _groupClaims;
-        private readonly ILogger _logger;
-        private readonly ILdapSearchService<IdentityUser, IdentityRole> _searchService;
-        private readonly ILdapAttributeMap<IdentityUser> _userMap;
         #endregion
     }
 }

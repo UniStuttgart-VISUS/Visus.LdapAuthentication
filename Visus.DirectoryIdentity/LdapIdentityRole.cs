@@ -12,7 +12,7 @@ using Visus.Ldap.Mapping;
 namespace Visus.DirectoryIdentity {
 
     /// <summary>
-    /// The base class for a role, which is derived from an LDAP group.
+    /// The basic representation of a role, which is derived from an LDAP group.
     /// </summary>
     public class LdapIdentityRole {
 

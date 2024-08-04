@@ -7,6 +7,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Visus.DirectoryIdentity.Managers;
 
 
 namespace Visus.DirectoryIdentity {

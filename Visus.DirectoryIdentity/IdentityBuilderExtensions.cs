@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryIdentity.Properties;
+using Visus.DirectoryIdentity.Stores;
+using Visus.Ldap.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 
@@ -27,11 +28,14 @@ namespace Visus.DirectoryIdentity {
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,
                 Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<TRole>, LdapOptionsBase>? mapRole = null)
+                Action<ILdapAttributeMapBuilder<TRole>, LdapOptionsBase>? mapRole = null,
+                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptionsBase>? mapRoleClaims = null)
                 where TUser : class, new()
                 where TRole : class, new() {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-            builder.Services.AddLdapAuthentication(options, mapUser, mapRole)
+            builder.Services.AddLdapAuthentication(options,
+                mapUser, mapRole, mapUserClaims, mapRoleClaims)
                 .AddScoped<IUserStore<TUser>, LdapStore<TUser, TRole>>()
                 .AddScoped<IQueryableUserStore<TUser>, LdapStore<TUser, TRole>>()
                 .AddScoped<IRoleStore<TRole>, LdapStore<TUser, TRole>>()
@@ -39,20 +43,20 @@ namespace Visus.DirectoryIdentity {
             return builder;
         }
 
-        public static IdentityBuilder AddLdapStore(
-                this IdentityBuilder builder,
-                Action<LdapOptions> options) {
-            ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-            builder.Services.AddLdapAuthentication<IdentityUser, IdentityRole>(
-                options, MapWellKnownSchema, MapWellKnownSchema)
-                .AddScoped<IQueryableUserStore<IdentityUser>, LdapUserStore>()
-                .AddScoped<IUserClaimStore<IdentityUser>, LdapUserStore>()
-                .AddScoped<IUserEmailStore<IdentityUser>, LdapUserStore>()
-                .AddScoped<IUserLockoutStore<IdentityUser>, LdapUserStore>()
-                .AddScoped<IUserPhoneNumberStore<IdentityUser>, LdapUserStore>()
-                .AddScoped<IUserStore<IdentityUser>, LdapUserStore>();
-            return builder;
-        }
+        //public static IdentityBuilder AddLdapStore(
+        //        this IdentityBuilder builder,
+        //        Action<LdapOptions> options) {
+        //    ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        //    builder.Services.AddLdapAuthentication<IdentityUser, IdentityRole>(
+        //        options, MapWellKnownSchema, MapWellKnownSchema)
+        //        .AddScoped<IQueryableUserStore<IdentityUser>, LdapUserStore>()
+        //        .AddScoped<IUserClaimStore<IdentityUser>, LdapUserStore>()
+        //        .AddScoped<IUserEmailStore<IdentityUser>, LdapUserStore>()
+        //        .AddScoped<IUserLockoutStore<IdentityUser>, LdapUserStore>()
+        //        .AddScoped<IUserPhoneNumberStore<IdentityUser>, LdapUserStore>()
+        //        .AddScoped<IUserStore<IdentityUser>, LdapUserStore>();
+        //    return builder;
+        //}
 
         //    /// <summary>
         //    /// Adds an <see cref="LdapUserStore{TUser}"/> for the specified type of
