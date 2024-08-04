@@ -188,6 +188,36 @@ public sealed class MinimalUser {
     public string Identity { get; set; } = null!;
 ```
 
+In version 2.1 of the library, the `ILdapAttributeMappingBuilder` allows for customising the lookup tables used by the LDAP mapper without building a custom mapper altogether. This enables users to (i) change how the default `LdapUser` and `LdapGroup` are mapped and (ii) build mappings for third-party types that cannot be annotated. Let's assume you want ot change `LdapUser` to use the account name as its identity rather than the SID/UID. This could be achieved in like this:
+```C#
+builder.Services.AddLdapAuthentication(o => {
+    this.Configuration.GetSection(LdapOptions.Section).Bind(o);
+}, (b, _) => {
+    // Map all properties except for Identity to annotated LDAP attributes.
+    b.MapProperty(nameof(LdapUser.AccountName))
+        .StoringAccountName()
+        .ToAnnotatedAttribute();
+    b.MapProperty(nameof(LdapUser.ChristianName))
+        .ToAnnotatedAttribute();
+    b.MapProperty(nameof(LdapUser.DisplayName))
+        .ToAnnotatedAttribute();
+    b.MapProperty(nameof(LdapUser.DistinguishedName))
+        .StoringDistingushedName()
+        .ToAnnotatedAttribute();
+    b.MapProperty(nameof(LdapUser.EmailAddress))
+        .ToAnnotatedAttribute();
+    b.MapProperty(nameof(LdapUser.Groups))
+        .StoringGroupMemberships();
+    b.MapProperty(nameof(LdapUser.Surname))
+        .ToAnnotatedAttribute();
+
+    // Change the identity to the account name.
+    b.MapProperty(nameof(LdapUser.Identity))
+        .StoringIdentity()
+        .ToAttribute("sAMAccountName");
+});
+```
+
 ### Customising the group object
 In a similar way you can provide your own replacement of `LdapUser`, you can also provide a replacement for `LdapGroup`, which contains the information to create group-based claims. Like for the user, you can rely on `LdapMapper` and annotations via attributes or customise the assignment of LDAP attributes to properties in a custom mapper.
 
@@ -198,7 +228,7 @@ Your own LDAP group object should be annotated with the same attributes describe
 ### Customising claims
 If you do not need additional information from the directory than what is provided by `LdapUser` and `LdapGroup`, but you want to customise the `System.Security.Claims.Claim`s generated, you should consider providing a custom `IClaimsBuilder` to make these claims from the information provided by the user object. The `ILdapAuthenticationService` uses this class to obtain the claims for a user in the `LoginUser` method that returns a user object and its claims. Have a look at the default [`ClaimsBuilderBase`](Claims/ClaimsBuilder.cs) in `Visus.Ldap.Core` for inspiration on how to do this. The default builder uses the `Claim` attribute to translate properties to claims.
 
-Note that if you login a `System.Security.Claims.ClaimPrincipal` directly, the `ILdapAuthentication` will use `IClaimsMapper` instead of `IClaimsBuilder` to map LDAP entries directly to claims without the intermediate step of making a user object. As for the `IClaimsBuilder`, you can replace the default [`ClaimsMapperBase`](Claims/ClaimsMapper.cs) from `Visus.Ldap.Core` with your own one.
+Note that if you login a `System.Security.Claims.ClaimPrincipal` directly, the `ILdapAuthentication` will use `IClaimsMapper` instead of `IClaimsBuilder` to map LDAP entries directly to claims without the intermediate step of making a user object. As for the `IClaimsBuilder`, you can replace the default [`ClaimsMapperBase`](Claims/ClaimsMapper.cs) from `Visus.Ldap.Core` with your own one. Starting with version 2.1 of the library it is also possible to customise the claims maps using a `IClaimsMapBuilder` in a callback passed to `AddLdapAuthentication`.
 
 Please be aware that, depending on your group hierarchy, a user might be member of a group via multiple paths. The library can recursively enumerate the whole group hierarchy, but it will not eliminate duplicates when doing so. In order to remove duplicate claims from the results of `IClaimsBuilder` and `IClaimsMapper`, we provide the `Visus.Ldap.Claims.ClaimsEqualityComparer`, which can be used with the `Distinct` LINQ method to remove duplicate claims.
 
