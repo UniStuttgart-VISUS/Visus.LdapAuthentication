@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -199,6 +200,26 @@ namespace Visus.Ldap.Claims {
 
             /// <inheritdoc />
             public IAttributeClaimsMapBuilder MapProperty(string propertyName) {
+                (_, var a) = this.GetAnnotatedProperty(propertyName);
+                return this.MapAttribute(a);
+            }
+
+            /// <inheritdoc />
+            public void MapPropertyToAnnotatedClaims(string propertyName) {
+                (var p, var a) = this.GetAnnotatedProperty(propertyName);
+                var claims = p.GetCustomAttributes<ClaimAttribute>();
+
+                if (!this._map._claims.TryGetValue(a, out var existing)) {
+                    existing = Enumerable.Empty<ClaimAttribute>();
+                }
+
+                this._map._claims[a] = existing.Concat(claims);
+            }
+            #endregion
+
+            #region Private methods
+            private (PropertyInfo, LdapAttribute) GetAnnotatedProperty(
+                    string propertyName) {
                 var p = typeof(TObject).GetProperty(propertyName, PropertyFlags);
                 if (p == null) {
                     var msg = Resources.ErrorPropertyMissing;
@@ -215,7 +236,7 @@ namespace Visus.Ldap.Claims {
                     throw new ArgumentException(msg);
                 }
 
-                return this.MapAttribute(a);
+                return (p, a);
             }
             #endregion
 

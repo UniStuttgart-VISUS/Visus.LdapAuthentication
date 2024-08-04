@@ -50,5 +50,15 @@ namespace Visus.Ldap.Claims {
         /// <exception cref="ArgumentException">If the specified property
         /// does not exist in the mapped type.</exception>
         IAttributeClaimsMapBuilder MapProperty(string propertyName);
+
+        /// <summary>
+        /// Maps the LDAP attribute stored in the property named
+        /// <paramref name="propertyName"/> to the claims that are attached
+        /// to the property via <see cref="ClaimAttribute"/>s.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to map.</param>
+        /// <exception cref="ArgumentException">If the specified property
+        /// does not exist in the mapped type.</exception>
+        void MapPropertyToAnnotatedClaims(string propertyName);
     }
 }

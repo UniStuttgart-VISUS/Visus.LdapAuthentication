@@ -62,8 +62,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 builder.MapProperty(nameof(LdapUser.AccountName))
                     .ToClaims(ClaimTypes.WindowsAccountName, ClaimTypes.NameIdentifier);
 
-                builder.MapAttribute("givenName")
-                    .ToClaim(ClaimTypes.GivenName);
+                builder.MapPropertyToAnnotatedClaims(nameof(LdapUser.ChristianName));
 
                 builder.MapAttribute(new LdapAttributeAttribute(Schema.ActiveDirectory, "mail"))
                     .ToClaim(ClaimTypes.Email);
