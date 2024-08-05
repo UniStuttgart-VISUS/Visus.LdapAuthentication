@@ -79,6 +79,15 @@ namespace Visus.DirectoryIdentity.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The mandatory mapping {0} is missing..
+        /// </summary>
+        internal static string ErrorRequiredPropertyMappingMissing {
+            get {
+                return ResourceManager.GetString("ErrorRequiredPropertyMappingMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The given LDAP schema &quot;{0}&quot; is not one of the well-known ones with built-in mappings for IdentityUser. Use an alternative method that allows for manual configuration of the mapping..
         /// </summary>
         internal static string ErrorSchemaNotWellKnown {

@@ -6,13 +6,16 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication;
+using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryIdentity.Properties;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
@@ -37,6 +40,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// Initialises a new instance.
         /// </summary>
         /// <param name="searchService"></param>
+        /// <param name="ldapOptions"></param>
         /// <param name="userMap"></param>
         /// <param name="roleMap"></param>
         /// <param name="claimsBuilder"></param>
@@ -46,6 +50,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <exception cref="ArgumentNullException">If any of the parameters
         /// is <c>null</c>.</exception>
         public LdapStore(ILdapSearchService<TUser, TRole> searchService,
+                IOptions<LdapOptions> ldapOptions,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TRole> roleMap,
                 IClaimsBuilder<TUser, TRole> claimsBuilder,
@@ -57,6 +62,8 @@ namespace Visus.DirectoryIdentity.Stores {
 
             this._claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));
+            this._ldapOptions = ldapOptions?.Value
+                ?? throw new ArgumentNullException(nameof(ldapOptions));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._roleMap = roleMap
@@ -66,7 +73,20 @@ namespace Visus.DirectoryIdentity.Stores {
             this._userMap = userMap
                 ?? throw new ArgumentNullException(nameof(userMap));
 
-            // TODO: sanity checks of the maps.
+            // Check that we have every necessary property mapped.
+            if (this._roleMap.AccountNameProperty == null) {
+                throw new ArgumentException(string.Format(
+                    Resources.ErrorRequiredPropertyMappingMissing,
+                    nameof(this._roleMap.AccountNameProperty)),
+                    nameof(roleMap));
+            }
+
+            if (this._userMap.AccountNameProperty == null) {
+                throw new ArgumentException(string.Format(
+                    Resources.ErrorRequiredPropertyMappingMissing,
+                    nameof(this._userMap.AccountNameProperty)),
+                    nameof(userMap));
+            }
 
             // Build a map from claim types to attribute names to obtain users
             // based on their claims. Note that we assume that the claims are
@@ -220,11 +240,24 @@ namespace Visus.DirectoryIdentity.Stores {
                 normalisedRoleName);
 
         /// <inheritdoc />
-        Task<TUser?> IUserStore<TUser>.FindByNameAsync(
+        async Task<TUser?> IUserStore<TUser>.FindByNameAsync(
                 string normalisedUserName,
-                CancellationToken cancellationToken)
-            => this._searchService.GetUserByAccountNameAsync(
+                CancellationToken cancellationToken) {
+            ArgumentNullException.ThrowIfNull(normalisedUserName,
+                nameof(normalisedUserName));
+            Debug.Assert(this._ldapOptions.Mapping != null);
+            Debug.Assert(this._ldapOptions.Mapping.UserFilter != null);
+            // Note: Identity Core uses the e-mail address as login name, so
+            // we cannot just look for the account name, but must include
+            // the UPN, too. A login will fail if this method cannot retrieve
+            // a user object, even if the LDAP bind succeeded.
+            var filter = string.Format(this._ldapOptions.Mapping.UserFilter,
                 normalisedUserName);
+            var users = await this._searchService
+                .GetUsersAsync(filter,cancellationToken)
+                .ConfigureAwait(false);
+            return users.SingleOrDefault();
+        }
 
         /// <inheritdoc />
         public Task<IList<Claim>> GetClaimsAsync(
@@ -373,76 +406,50 @@ namespace Visus.DirectoryIdentity.Stores {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
 
-        /// <summary>
-        /// This method is not implemented, because the current implementation
-        /// does not allow for modifying users or groups in the directory.
-        /// </summary>
-        /// <param name="role"></param>
-        /// <param name="normalizedName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException">Unconditionally.
-        /// </exception>
+        /// <inheritdoc />
         public Task SetNormalizedRoleNameAsync(
                 TRole role,
                 string? normalizedName,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(role, nameof(role));
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            // Note: This does nothing on purpose as we only know where the
+            // non-normalised name is located, but not where the normalised
+            // one is stored if there is any.
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This method is not implemented, because the current implementation
-        /// does not allow for modifying users or groups in the directory.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="normalisedName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException">Unconditionally.
-        /// </exception>
+        /// <inheritdoc />
         public Task SetNormalizedUserNameAsync(
                 TUser user,
                 string? normalisedName,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            // Note: This does nothing on purpose as we only know where the
+            // non-normalised name is located, but not where the normalised
+            // one is stored if there is any.
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This method is not implemented, because the current implementation
-        /// does not allow for modifying users or groups in the directory.
-        /// </summary>
-        /// <param name="role"></param>
-        /// <param name="roleName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException">Unconditionally.
-        /// </exception>
+        /// <inheritdoc />
         public Task SetRoleNameAsync(
                 TRole role,
                 string? roleName,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(role, nameof(role));
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            Debug.Assert(this._roleMap.AccountNameProperty != null);
+            this._roleMap.AccountNameProperty.SetValue(role, roleName);
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This method is not implemented, because the current implementation
-        /// does not allow for modifying users or groups in the directory.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="userName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException">Unconditionally.
-        /// </exception>
+        /// <inheritdoc />
         public Task SetUserNameAsync(
                 TUser user,
                 string? userName,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            Debug.Assert(this._userMap.AccountNameProperty != null);
+            this._userMap.AccountNameProperty.SetValue(user, userName);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -503,6 +510,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         #region Private fields
         private readonly IClaimsBuilder<TUser, TRole> _claimsBuilder;
+        private readonly LdapOptions _ldapOptions;
         private readonly ILogger _logger;
         private readonly Dictionary<string, string> _roleClaimAttributes = new();
         private readonly ILdapAttributeMap<TRole> _roleMap;

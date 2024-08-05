@@ -123,6 +123,9 @@
   <data name="ErrorReadOnlyStore" xml:space="preserve">
     <value>This operation is not supported as the LDAP stores are read-only.</value>
   </data>
+  <data name="ErrorRequiredPropertyMappingMissing" xml:space="preserve">
+    <value>The mandatory mapping {0} is missing.</value>
+  </data>
   <data name="ErrorSchemaNotWellKnown" xml:space="preserve">
     <value>The given LDAP schema "{0}" is not one of the well-known ones with built-in mappings for IdentityUser. Use an alternative method that allows for manual configuration of the mapping.</value>
   </data>

@@ -6,12 +6,14 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication;
+using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryIdentity.Properties;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
@@ -42,6 +44,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// Initialises a new instance.
         /// </summary>
         /// <param name="searchService"></param>
+        /// <param name="ldapOptions"></param>
         /// <param name="userMap"></param>
         /// <param name="roleMap"></param>
         /// <param name="claimsBuilder"></param>
@@ -52,6 +55,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// is <c>null</c>.</exception>
         public IdentityLdapStore(
                 ILdapSearchService<TUser, TRole> searchService,
+                IOptions<LdapOptions> ldapOptions,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TRole> roleMap,
                 IClaimsBuilder<TUser, TRole> claimsBuilder,
@@ -59,6 +63,7 @@ namespace Visus.DirectoryIdentity.Stores {
                 IGroupClaimsMap roleClaims,
                 ILogger<IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>> logger)
             : base(searchService,
+                  ldapOptions,
                   userMap,
                   roleMap,
                   claimsBuilder,
@@ -184,135 +189,91 @@ namespace Visus.DirectoryIdentity.Stores {
             return Task.FromResult(user.UserName);
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task<int> IncrementAccessFailedCountAsync(
                 TUser user,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            return Task.FromResult(++user.AccessFailedCount);
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task ResetAccessFailedCountAsync(
                 TUser user,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.AccessFailedCount = 0;
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="email"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task SetEmailAsync(
                 TUser user,
                 string? email,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.Email = email;
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="confirmed"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task SetEmailConfirmedAsync(
                 TUser user,
                 bool confirmed,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.EmailConfirmed = confirmed;
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="enabled"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task SetLockoutEnabledAsync(
                 TUser user,
                 bool enabled,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.LockoutEnabled = enabled;
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="lockoutEnd"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task SetLockoutEndDateAsync(
                 TUser user,
                 DateTimeOffset? lockoutEnd,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.LockoutEnd = lockoutEnd;
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="normalisedEmail"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task SetNormalizedEmailAsync(
                 TUser user,
                 string? normalisedEmail,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.NormalizedEmail = normalisedEmail;
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="phoneNumber"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task SetPhoneNumberAsync(
                 TUser user,
                 string? phoneNumber,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.PhoneNumber = phoneNumber;
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// This operation is not supported.
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="confirmed"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <inheritdoc />
         public Task SetPhoneNumberConfirmedAsync(
                 TUser user,
                 bool confirmed,
                 CancellationToken cancellationToken) {
-            throw new NotImplementedException(Resources.ErrorReadOnlyStore);
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+            user.PhoneNumberConfirmed = confirmed;
+            return Task.CompletedTask;
         }
         #endregion
 
