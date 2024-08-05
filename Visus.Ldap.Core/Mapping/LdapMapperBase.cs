@@ -4,13 +4,11 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Visus.Ldap.Configuration;
 using Visus.Ldap.Properties;
 
 
@@ -30,8 +28,7 @@ namespace Visus.Ldap.Mapping {
 
         #region Public properties
         /// <inheritdoc />
-        public virtual bool GroupIsGroupMember
-            => (this._groupMap.GroupMembershipsProperty != null);
+        public virtual bool GroupIsGroupMember => this._groupMap.IsGroupMember;
 
         /// <inheritdoc />
         public virtual IEnumerable<string> RequiredGroupAttributes
@@ -42,8 +39,7 @@ namespace Visus.Ldap.Mapping {
             => this._userMap.AttributeNames;
 
         /// <inheritdoc />
-        public virtual bool UserIsGroupMember
-            => (this._userMap.GroupMembershipsProperty != null);
+        public virtual bool UserIsGroupMember => this._userMap.IsGroupMember;
         #endregion
 
         #region Public methods
@@ -199,8 +195,6 @@ namespace Visus.Ldap.Mapping {
             this._userMap = userMap
                 ?? throw new ArgumentNullException(nameof(userMap));
         }
-
-
         #endregion
 
         #region Protected methods

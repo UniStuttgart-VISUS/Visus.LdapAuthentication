@@ -29,7 +29,7 @@ namespace Visus.Ldap.Mapping {
         /// group memberships of the group.
         /// </summary>
         /// <remarks>
-        /// This information enables the users for the mapper to find out whether
+        /// This information enables the users of the mapper to find out whether
         /// they need to query the directory to obtain the information about
         /// group membership before doing so.
         /// </remarks>
@@ -52,7 +52,7 @@ namespace Visus.Ldap.Mapping {
         /// group memberships of the user.
         /// </summary>
         /// <remarks>
-        /// This information enables the users for the mapper to find out whether
+        /// This information enables the users of the mapper to find out whether
         /// they need to query the directory to obtain the information about
         /// group membership before doing so.
         /// </remarks>

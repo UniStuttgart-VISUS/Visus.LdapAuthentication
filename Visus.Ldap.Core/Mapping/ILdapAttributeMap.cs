@@ -81,6 +81,17 @@ namespace Visus.Ldap.Mapping {
             : null;
 
         /// <summary>
+        /// Gets whether <typeparamref name="TObject"/> has a property holding
+        /// group memberships.
+        /// </summary>
+        /// <remarks>
+        /// This information enables the users of the mapper to find out whether
+        /// they need to query the directory to obtain the information about
+        /// group membership before doing so.
+        /// </remarks>
+        bool IsGroupMember => (this.GroupMembershipsProperty != null);
+
+        /// <summary>
         /// Gets, if any, the property marked with
         /// <see cref="IsPrimaryGroupProperty"/>.
         /// </summary>

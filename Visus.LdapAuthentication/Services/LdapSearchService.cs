@@ -11,13 +11,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Visus.Ldap.Extensions;
+using Visus.DirectoryAuthentication.Services;
+using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
-using Visus.LdapAuthentication.Properties;
 
 
 namespace Visus.LdapAuthentication.Services {
@@ -25,14 +26,17 @@ namespace Visus.LdapAuthentication.Services {
     /// <summary>
     /// Implementation of <see cref="ILdapSearchService"/> using the search
     /// attributes defined by the active mapping of
-    /// <typeparamref name="TUser"/>.
+    /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>.
     /// </summary>
     /// <typeparam name="TUser">The type of user to be created for the search
     /// results, which also defines attributes like the unique identity in
-    /// combination with the global options from <see cref="IOptions"/>.
+    /// combination with the global options from <see cref="LdapOptions"/>.
+    /// </typeparam>
+    /// <typeparam name="TGroup">The type used to represent an LDAP group.
     /// </typeparam>
     public sealed class LdapSearchService<TUser, TGroup>
-            : ILdapSearchService<TUser, TGroup>
+            : LdapSearchServiceBase<TUser, TGroup, SearchScope>,
+            ILdapSearchService<TUser, TGroup>
             where TUser : class, new()
             where TGroup : class, new() {
 
@@ -48,8 +52,11 @@ namespace Visus.LdapAuthentication.Services {
         /// <typeparamref name="TUser"/> and <see cref="TGroup"/> from an
         /// LDAP entry.</param>
         /// <param name="userMap">An LDAP property map for
-        /// <typeparamref name="TUser"/> that allows the server to retrieve
+        /// <typeparamref name="TUser"/> that allows the service to retrieve
         /// infromation about the user object.</param>
+        /// <param name="groupMap">An LDAP property map for
+        /// <typeparamref name="TGroup"/> that allows the service to retrieve
+        /// infromation about the group object.</param>
         /// <param name="logger">A logger for persisting important messages like
         /// failed search requests.</param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
@@ -58,7 +65,9 @@ namespace Visus.LdapAuthentication.Services {
                 ILdapConnectionService connectionService,
                 ILdapMapper<LdapEntry, TUser, TGroup> mapper,
                 ILdapAttributeMap<TUser> userMap,
-                ILogger<LdapSearchService<TUser, TGroup>> logger) {
+                ILdapAttributeMap<TGroup> groupMap,
+                ILogger<LdapSearchService<TUser, TGroup>> logger)
+                : base(options.Value, userMap, groupMap) {
             ArgumentNullException.ThrowIfNull(connectionService,
                 nameof(connectionService));
 
@@ -68,108 +77,15 @@ namespace Visus.LdapAuthentication.Services {
                 ?? throw new ArgumentNullException(nameof(options));
             this._mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
-            this._userMap = userMap
-                ?? throw new ArgumentNullException(nameof(userMap));
 
             this._connection = connectionService.Connect(
                 this._options.User, this._options.Password);
-
-            Debug.Assert(this._options.Mapping != null);
-            this._userAttributes = this._mapper.RequiredUserAttributes
-                .Append(this._options.Mapping.PrimaryGroupAttribute)
-                .Append(this._options.Mapping.GroupsAttribute)
-                .ToArray();
         }
         #endregion
 
-        #region Public methods
+        #region Protected properties
         /// <inheritdoc />
-        public void Dispose() {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <inheritdoc />
-        public TUser? GetUserByAccountName(string accountName) {
-            var att = this._userMap.AccountNameAttribute?.Name;
-            var filter = accountName.EscapeLdapFilterExpression();
-            return this.GetUser0($"({att}={filter})");
-        }
-
-        /// <inheritdoc />
-        public Task<TUser?> GetUserByAccountNameAsync(string accountName) {
-            var att = this._userMap.AccountNameAttribute?.Name;
-            var filter = accountName.EscapeLdapFilterExpression();
-            return this.GetUserAsync0($"({att}={filter})");
-        }
-
-        /// <inheritdoc />
-        public TUser? GetUserByDistinguishedName(string distinguishedName) {
-            var att = this._userMap.DistinguishedNameAttribute!.Name;
-            var filter = $"({att}={distinguishedName})";
-            return this.GetUser0($"({att}={filter})");
-        }
-
-        /// <inheritdoc />
-        public Task<TUser?> GetUserByDistinguishedNameAsync(
-                string distinguishedName) {
-            var att = this._userMap.DistinguishedNameAttribute!.Name;
-            var filter = distinguishedName.EscapeLdapFilterExpression();
-            return this.GetUserAsync0($"({att}={filter})");
-        }
-
-        /// <inheritdoc />
-        public TUser? GetUserByIdentity(string identity) {
-            var att = this._userMap.IdentityAttribute!.Name;
-            var filter = identity.EscapeLdapFilterExpression();
-            return this.GetUser0($"({att}={filter})");
-        }
-
-        /// <inheritdoc />
-        public Task<TUser?> GetUserByIdentityAsync(string identity) {
-            var att = this._userMap.IdentityAttribute!.Name;
-            var filter = identity.EscapeLdapFilterExpression();
-            return this.GetUserAsync0($"({att}={filter})");
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<TUser> GetUsers()
-            => GetUsers0(this._options.Mapping!.UsersFilter,
-                this._options.SearchBases,
-                CancellationToken.None);
-
-        /// <inheritdoc />
-        public Task<IEnumerable<TUser>> GetUsersAsync(
-                CancellationToken cancellationToken)
-            => GetUsersAsync0(this._options.Mapping!.UsersFilter,
-                this._options.SearchBases, cancellationToken);
-
-        /// <inheritdoc />
-        public IEnumerable<TUser> GetUsers(string filter)
-            => GetUsers(this._options.SearchBases, filter);
-
-        /// <inheritdoc />
-        public Task<IEnumerable<TUser>> GetUsersAsync(string filter,
-                CancellationToken cancellationToken)
-            => GetUsersAsync(this._options.SearchBases, filter,
-                cancellationToken);
-
-        /// <inheritdoc />
-        public IEnumerable<TUser> GetUsers(
-                IDictionary<string, SearchScope> searchBases,
-                string filter)
-            => GetUsers0(MergeFilter(filter),
-                searchBases ?? this._options.SearchBases,
-                CancellationToken.None);
-
-        /// <inheritdoc />
-        public Task<IEnumerable<TUser>> GetUsersAsync(
-                IDictionary<string, SearchScope> searchBases,
-                string filter,
-                CancellationToken cancellationToken)
-            => GetUsersAsync0(MergeFilter(filter),
-                searchBases ?? this._options.SearchBases,
-                cancellationToken);
+        protected override LdapOptionsBase Options => this._options;
         #endregion
 
         #region Private Properties
@@ -185,13 +101,9 @@ namespace Visus.LdapAuthentication.Services {
         }
         #endregion
 
-        #region Private methods
-        /// <summary>
-        /// Disposes managed resources if <paramref name="isDisposing"/> is
-        /// <c>true</c>.
-        /// </summary>
-        /// <param name="isDisposing"></param>
-        private void Dispose(bool isDisposing) {
+        #region Protected methods
+        /// <inheritdoc />
+        protected override void Dispose(bool isDisposing) {
             if (isDisposing) {
                 this._connection?.Dispose();
             }
@@ -199,141 +111,232 @@ namespace Visus.LdapAuthentication.Services {
             this._connection = null;
         }
 
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override IEnumerable<TGroup> GetGroupEntries(
+                string filter,
+                IDictionary<string, SearchScope>? searchBases,
+                CancellationToken cancellationToken)
+            => this.GetEntries<TGroup>(filter,
+                searchBases,
+                this.GroupAttributes,
+                this.GroupMap.IdentityAttribute!.Name,
+                this.MapGroup,
+                cancellationToken);
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override TGroup? GetGroupEntry(
+                string filter,
+                IDictionary<string, SearchScope>? searchBases)
+            => this.GetEntry<TGroup>(filter,
+                searchBases,
+                this.GroupAttributes,
+                this.MapGroup);
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override Task<TGroup?> GetGroupEntryAsync(
+                string filter,
+                IDictionary<string, SearchScope>? searchBases)
+            => this.GetEntryAsync<TGroup>(filter,
+                searchBases,
+                this.GroupAttributes,
+                this.MapGroup);
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override IEnumerable<TUser> GetUserEntries(
+                string filter,
+                IDictionary<string, SearchScope>? searchBases,
+                CancellationToken cancellationToken)
+            => this.GetEntries<TUser>(filter,
+                searchBases,
+                this.UserAttributes,
+                this.UserMap.IdentityAttribute!.Name,
+                this.MapUser,
+                cancellationToken);
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override TUser? GetUserEntry(string filter,
+                IDictionary<string, SearchScope>? searchBases)
+            => this.GetEntry<TUser>(filter,
+                searchBases,
+                this.UserAttributes,
+                this.MapUser);
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override Task<TUser?> GetUserEntryAsync(string filter,
+                IDictionary<string, SearchScope>? searchBases)
+            => this.GetEntryAsync<TUser>(filter,
+                searchBases,
+                this.UserAttributes,
+                this.MapUser);
+        #endregion
+
+
+        #region Private methods
         /// <summary>
-        /// Gets ta single user matching the given <paramref name="filter"/>
-        /// expression.
+        /// Gets all entries matching <paramref name="filter"/> and maps them
+        /// to <typeparamref name="TObject"/>s using <paramref name="map"/> and
+        /// the specified <paramref name="attributes"/>.
         /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        private TUser? GetUser0(string filter) {
-            var retval = new TUser();
-
-            foreach (var b in this._options.SearchBases) {
-                var res = this.Connection.Search(b, filter,
-                    this._userAttributes);
-                var entry = res.NextEntry();
-                if (entry != null) {
-                    this._mapper.MapUser(entry, retval);
-                    var groups = entry.GetGroups(this.Connection,
-                        this._mapper,
-                        this._options);
-                    this._mapper.SetGroups(retval, groups);
-                    return retval;
-                }
-            }
-
-            // Not found at this point.
-            this._logger.LogWarning(Resources.ErrorEntryNotFound, filter);
-            return null;
-        }
-
-        /// <summary>
-        /// Gets ta single user matching the given <paramref name="filter"/>
-        /// expression.
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        private async Task<TUser?> GetUserAsync0(string filter) {
-            var retval = new TUser();
-
-            foreach (var b in this._options.SearchBases) {
-                var entry = (await this.Connection.SearchAsync(b, filter,
-                    this._userAttributes, this._options.PollingInterval))
-                    .FirstOrDefault();
-                if (entry != null) {
-                    this._mapper.MapUser(entry, retval);
-                    var groups = entry.GetGroups(this.Connection,
-                        this._mapper,
-                        this._options);
-                    this._mapper.SetGroups(retval, groups);
-                    return retval;
-                }
-            }
-
-            // Not found at this point.
-            this._logger.LogWarning(Resources.ErrorEntryNotFound, filter);
-            return null;
-        }
-
-        /// <summary>
-        /// Retrieves the users matching the given filter.
-        /// </summary>
-        /// <param name="filter">A filter on the users object.</param>
-        /// <param name="searchBases">The base and scope of the LDAP search.
-        /// </param>
-        /// <param name="cancellationToken">A cancellation token for aborting
-        /// the paged search.</param>
-        /// <returns>The users found at the specified locations in the
-        /// directory.</returns>
-        private IEnumerable<TUser> GetUsers0(string filter,
-                IDictionary<string, SearchScope> searchBases,
-                CancellationToken cancellationToken) {
-            Debug.Assert(filter != null);
-            Debug.Assert(searchBases != null);
-            Debug.Assert(this._options != null);
-            Debug.Assert(this._options.Mapping != null);
-            var user = new TUser();
-
-            // Determine the property to sort the results, which is required
-            // as paging LDAP results requires sorting.
-            var sortAttribute = this._userMap.IdentityAttribute;
+        private IEnumerable<TObject> GetEntries<TObject>(string filter,
+                IDictionary<string, SearchScope>? searchBases,
+                string[] attributes,
+                string sortAttribute,
+                Func<LdapEntry, TObject, TObject> map,
+                CancellationToken cancellationToken)
+                where TObject : class, new() {
+            Debug.Assert(attributes != null);
             Debug.Assert(sortAttribute != null);
+            Debug.Assert(map != null);
+            ArgumentException.ThrowIfNullOrEmpty(filter, nameof(filter));
+
+            if (searchBases == null) {
+                searchBases = this._options.SearchBases;
+                this._logger.LogDebug("No search bases specified, using "
+                    + "{SearchBases} from the LDAP options.",
+                    string.Join(", ", searchBases.Keys));
+            }
 
             foreach (var b in searchBases) {
                 // Perform a paged search (there might be a lot of users, which
-                // cannot be retruned at once).
-                var entries = Connection.PagedSearch(
+                // cannot be retruned at once.
+                var entries = this.Connection.PagedSearch(
                     b.Key,
                     b.Value,
                     filter,
-                    this._userAttributes,
-                    _options.PageSize,
-                    sortAttribute.Name,
+                    attributes,
+                    this._options.PageSize,
+                    sortAttribute,
                     this._options.Timeout,
                     this._logger,
                     cancellationToken);
 
-                // Convert LDAP entries to user objects.
+                // Convert LDAP entries to objects.
                 foreach (var e in entries) {
-                    this._mapper.MapUser(e, user);
-                    var groups = e.GetGroups(this.Connection,
-                        this._mapper,
-                        this._options);
-                    this._mapper.SetGroups(user, groups);
-                    yield return user;
-                    user = new TUser();
+                    yield return map(e, new TObject());
                 }
-
             }
         }
 
         /// <summary>
-        /// Asychronously retrieves the users matching the given filter.
+        /// Gets a single entry matching <paramref name="filter"/> and maps it
+        /// to <typeparamref name="TObject"/> using <paramref name="map"/> and
+        /// the specified <paramref name="attributes"/>.
         /// </summary>
-        /// <param name="filter">A filter on the users object.</param>
-        /// <param name="searchBases">The base and scope of the LDAP search.
-        /// </param>
-        /// <returns>The users found at the specified locations in the
-        /// directory.</returns>
-        private Task<IEnumerable<TUser>> GetUsersAsync0(string filter,
-                IDictionary<string, SearchScope> searchBases,
-                CancellationToken cancellationToken)
-            => Task.Factory.StartNew(
-                () => GetUsers0(filter, searchBases, cancellationToken));
+        private TObject? GetEntry<TObject>(string filter,
+                IDictionary<string, SearchScope>? searchBases,
+                string[] attributes,
+                Func<LdapEntry, TObject, TObject> map)
+                where TObject : class, new() {
+            Debug.Assert(attributes != null);
+            Debug.Assert(map != null);
+            ArgumentException.ThrowIfNullOrEmpty(filter, nameof(filter));
+
+            if (searchBases == null) {
+                searchBases = this._options.SearchBases;
+                this._logger.LogDebug("No search bases specified, using "
+                    + "{SearchBases} from the LDAP options.",
+                    string.Join(", ", searchBases.Keys));
+            }
+
+            foreach (var b in searchBases) {
+                var res = this.Connection.Search(b, filter, attributes);
+                var entry = res.NextEntry();
+                if (entry != null) {
+                    return map(entry, new TObject());
+                }
+            }
+
+            // Not found at this point.
+            this._logger.LogWarning("An entry matching {Filter} does not exist "
+                + "in the directory in the specified search locations "
+                + "{SearcBases}.", filter, string.Join(", ", searchBases.Keys));
+            return null;
+        }
 
         /// <summary>
-        /// Merges the given filter with the default filter in
-        /// <see cref="_options"/>.
+        /// Gets a single entry matching <paramref name="filter"/> and maps it
+        /// to <typeparamref name="TObject"/> using <paramref name="map"/> and
+        /// the specified <paramref name="attributes"/>.
         /// </summary>
-        /// <param name="filter">The user-provided filter, which may be
-        /// <c>null</c>.</param>
-        /// <returns>The actual filter to be used in a query.</returns>
-        private string MergeFilter(string filter) {
-            if (string.IsNullOrWhiteSpace(filter)) {
-                return this._options.Mapping!.UsersFilter;
-            } else {
-                return $"(&{this._options.Mapping!.UsersFilter}{filter})";
+        private async Task<TObject?> GetEntryAsync<TObject>(string filter,
+                IDictionary<string, SearchScope>? searchBases,
+                string[] attributes,
+                Func<LdapEntry, TObject, TObject> map)
+                where TObject : class, new() {
+            Debug.Assert(attributes != null);
+            Debug.Assert(map != null);
+            ArgumentException.ThrowIfNullOrEmpty(filter, nameof(filter));
+
+            if (searchBases == null) {
+                searchBases = this._options.SearchBases;
+                this._logger.LogDebug("No search bases specified, using "
+                    + "{SearchBases} from the LDAP options.",
+                    string.Join(", ", searchBases.Keys));
             }
+
+            foreach (var b in searchBases) {
+                var entry = (await this.Connection.SearchAsync(
+                    b, filter, attributes, this._options.PollingInterval)
+                    .ConfigureAwait(false))
+                    .FirstOrDefault();
+                if (entry != null) {
+                    return map(entry, new TObject());
+                }
+            }
+
+            // Not found at this point.
+            this._logger.LogWarning("An entry matching {Filter} does not exist "
+                + "in the directory in the specified search locations "
+                + "{SearcBases}.", filter, string.Join(", ", searchBases.Keys));
+            return null;
+        }
+
+        /// <summary>
+        /// Maps the given <paramref name="entry"/> to the given
+        /// <paramref name="group"/>, adding group memberships as well should
+        /// they be configured.
+        /// </summary>
+        private TGroup MapGroup(LdapEntry entry, TGroup group) {
+            Debug.Assert(entry != null);
+            Debug.Assert(group != null);
+
+            this._mapper.MapGroup(entry, group);
+
+            if (this._mapper.GroupIsGroupMember) {
+                var groups = entry.GetGroups(this.Connection,
+                    this._mapper,
+                    this._options);
+                this._mapper.SetGroups(group, groups);
+            }
+
+            return group;
+        }
+
+        /// <summary>
+        /// Maps the given <paramref name="entry"/> to the given
+        /// <paramref name="user"/>, adding group memberships as well should
+        /// they be configured.
+        /// </summary>
+        private TUser MapUser(LdapEntry entry, TUser user) {
+            Debug.Assert(entry != null);
+            Debug.Assert(user != null);
+
+            this._mapper.MapUser(entry, user);
+
+            if (this._mapper.UserIsGroupMember) {
+                var groups = entry.GetGroups(this.Connection,
+                    this._mapper,
+                    this._options);
+                this._mapper.SetGroups(user, groups);
+            }
+
+            return user;
         }
         #endregion
 
@@ -342,9 +345,6 @@ namespace Visus.LdapAuthentication.Services {
         private readonly ILogger _logger;
         private readonly ILdapMapper<LdapEntry, TUser, TGroup> _mapper;
         private readonly LdapOptions _options;
-        private readonly string[] _userAttributes;
-        private readonly ILdapAttributeMap<TUser> _userMap;
-
         #endregion
     }
 }

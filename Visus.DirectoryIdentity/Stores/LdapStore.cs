@@ -789,7 +789,7 @@ namespace Visus.DirectoryIdentity.Stores {
         }
 
         /// <inheritdoc />
-        public void Dispose() {
+        public virtual void Dispose() {
             this._searchService?.Dispose();
         }
 
@@ -819,19 +819,19 @@ namespace Visus.DirectoryIdentity.Stores {
                 normalisedUserName);
 
         /// <inheritdoc />
-        public Task<string?> GetNormalizedRoleNameAsync(
+        public virtual Task<string?> GetNormalizedRoleNameAsync(
                 TRole role,
                 CancellationToken cancellationToken)
             => this.GetRoleNameAsync(role, cancellationToken);
 
         /// <inheritdoc />
-        public Task<string?> GetNormalizedUserNameAsync(
+        public virtual Task<string?> GetNormalizedUserNameAsync(
                 TUser user,
                 CancellationToken cancellationToken)
             => this.GetUserNameAsync(user, cancellationToken);
 
         /// <inheritdoc />
-        public Task<string> GetRoleIdAsync(
+        public virtual Task<string> GetRoleIdAsync(
                 TRole role,
                 CancellationToken cancellationToken)
             => Task.FromResult(this._roleMap.IdentityProperty
@@ -840,14 +840,14 @@ namespace Visus.DirectoryIdentity.Stores {
                 ?? string.Empty);
 
         /// <inheritdoc />
-        public Task<string?> GetRoleNameAsync(
+        public virtual Task<string?> GetRoleNameAsync(
                 TRole role,
                 CancellationToken cancellationToken)
             => Task.FromResult(this._roleMap.AccountNameProperty
                 ?.GetValue(role) as string);
 
         /// <inheritdoc />
-        public Task<string> GetUserIdAsync(
+        public virtual Task<string> GetUserIdAsync(
                 TUser user,
                 CancellationToken cancellationToken)
             => Task.FromResult(this._userMap.IdentityProperty
@@ -856,7 +856,7 @@ namespace Visus.DirectoryIdentity.Stores {
                 ?? string.Empty);
 
         /// <inheritdoc />
-        public Task<string?> GetUserNameAsync(
+        public virtual Task<string?> GetUserNameAsync(
                 TUser user,
                 CancellationToken cancellationToken)
             => Task.FromResult(this._userMap.IdentityProperty

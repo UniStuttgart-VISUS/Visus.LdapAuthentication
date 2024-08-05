@@ -25,23 +25,26 @@ namespace Visus.DirectoryIdentity.Stores {
     /// The implementation of an LDAP user store using the default
     /// <see cref="IdentityUser"/>.
     /// </summary>
-    /// <typeparam name="TKey">The type used for the primary key for the
+    /// <typeparam name="TUserKey">The type used for the primary key for the
     /// user.</typeparam>
-    public class IdentityLdapStore<TKey>
-            : IQueryableUserStore<IdentityUser<TKey>>,
-            IUserClaimStore<IdentityUser<TKey>>,
-            IUserEmailStore<IdentityUser<TKey>>,
-            IUserLockoutStore<IdentityUser<TKey>>,
-            IUserPhoneNumberStore<IdentityUser<TKey>>
-            where TKey : IEquatable<TKey> {
+    public class IdentityLdapStore<TUserKey, TRoleKey>
+            : LdapStore<IdentityUser<TUserKey>, IdentityRole<TRoleKey>>,
+            IUserClaimStore<IdentityUser<TUserKey>>,
+            IUserEmailStore<IdentityUser<TUserKey>>,
+            IUserLockoutStore<IdentityUser<TUserKey>>,
+            IUserPhoneNumberStore<IdentityUser<TUserKey>>
+            where TUserKey : IEquatable<TUserKey>
+            where TRoleKey : IEquatable<TRoleKey> {
 
         #region Public constructors
         public IdentityLdapStore(
-                ILdapSearchService<IdentityUser<TKey>, IdentityRole<TKey>> searchService,
-                IClaimsBuilder<IdentityUser<TKey>, IdentityRole<TKey>> claimsBuilder,
-                ILdapAttributeMap<IdentityUser<TKey>> userMap,
+                ILdapSearchService<IdentityUser<TUserKey>,
+                    IdentityRole<TRoleKey>> searchService,
+                IClaimsBuilder<IdentityUser<TUserKey>,
+                    IdentityRole<TRoleKey>> claimsBuilder,
+                ILdapAttributeMap<IdentityUser<TUserKey>> userMap,
                 IGroupClaimsMap groupClaims,
-                ILogger<IdentityLdapStore<TKey>> logger) {
+                ILogger<IdentityLdapStore<TUserKey, TRoleKey>> logger) {
             this._claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));
             this._groupClaims = groupClaims
@@ -65,7 +68,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         #region Public properties
         /// <inheritdoc />
-        public IQueryable<IdentityUser<TKey>> Users
+        public IQueryable<IdentityUser<TUserKey>> Users
             => this._searchService.GetUsers().AsQueryable();
         #endregion
 
@@ -79,7 +82,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task AddClaimsAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 IEnumerable<Claim> claims,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -93,7 +96,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task<IdentityResult> CreateAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
@@ -106,7 +109,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task<IdentityResult> DeleteAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
@@ -117,7 +120,7 @@ namespace Visus.DirectoryIdentity.Stores {
         }
 
         /// <inheritdoc />
-        public async Task<IdentityUser<TKey>?> FindByEmailAsync(
+        public async Task<IdentityUser<TUserKey>?> FindByEmailAsync(
                 string normalisedEmail,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(normalisedEmail,
@@ -129,14 +132,14 @@ namespace Visus.DirectoryIdentity.Stores {
         }
 
         /// <inheritdoc />
-        public Task<IdentityUser<TKey>?> FindByIdAsync(
+        public Task<IdentityUser<TUserKey>?> FindByIdAsync(
                 string userID,
                 CancellationToken cancellationToken) {
             return this._searchService.GetUserByIdentityAsync(userID);
         }
 
         /// <inheritdoc />
-        public Task<IdentityUser<TKey>?> FindByNameAsync(
+        public Task<IdentityUser<TUserKey>?> FindByNameAsync(
                 string normalisedUserName,
                 CancellationToken cancellationToken) {
             return this._searchService.GetUserByAccountNameAsync(
@@ -145,7 +148,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<int> GetAccessFailedCountAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.AccessFailedCount);
@@ -153,7 +156,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<IList<Claim>> GetClaimsAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             var retval = this._claimsBuilder.GetClaims(user);
@@ -162,7 +165,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<string?> GetEmailAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.Email);
@@ -170,7 +173,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<bool> GetEmailConfirmedAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             // Note: we do not allow for editing, so any e-mail address is
             // always considered to be confirmed.
@@ -179,7 +182,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<bool> GetLockoutEnabledAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.LockoutEnabled);
@@ -187,7 +190,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<DateTimeOffset?> GetLockoutEndDateAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.LockoutEnd);
@@ -195,7 +198,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<string?> GetNormalizedEmailAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.Email?.ToLowerInvariant());
@@ -203,7 +206,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<string?> GetNormalizedUserNameAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.UserName?.ToLowerInvariant());
@@ -211,7 +214,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<string?> GetPhoneNumberAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.PhoneNumber);
@@ -219,7 +222,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<bool> GetPhoneNumberConfirmedAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             // Note: we do not allow for editing, so any phone number is always
             // considered to be confirmed.
@@ -228,7 +231,7 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<string> GetUserIdAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user.Id.ToString()!);
@@ -236,14 +239,14 @@ namespace Visus.DirectoryIdentity.Stores {
 
         /// <inheritdoc />
         public Task<string?> GetUserNameAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
             return Task.FromResult(user?.UserName);
         }
 
         /// <inheritdoc />
-        public Task<IList<IdentityUser<TKey>>> GetUsersForClaimAsync(
+        public Task<IList<IdentityUser<TUserKey>>> GetUsersForClaimAsync(
                 Claim claim,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException("TODO");
@@ -257,7 +260,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task<int> IncrementAccessFailedCountAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
@@ -271,7 +274,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task RemoveClaimsAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 IEnumerable<Claim> claims,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -287,7 +290,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task ReplaceClaimAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 Claim claim,
                 Claim newClaim,
                 CancellationToken cancellationToken) {
@@ -302,7 +305,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task ResetAccessFailedCountAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
@@ -316,7 +319,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetEmailAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 string? email,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -331,7 +334,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetEmailConfirmedAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 bool confirmed,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -346,7 +349,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetLockoutEnabledAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 bool enabled,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -361,7 +364,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetLockoutEndDateAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 DateTimeOffset? lockoutEnd,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -376,7 +379,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetNormalizedEmailAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 string? normalisedEmail,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -391,7 +394,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetNormalizedUserNameAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 string? normalisedName,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -406,7 +409,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetPhoneNumberAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 string? phoneNumber,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -421,7 +424,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetPhoneNumberConfirmedAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 bool confirmed,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -436,7 +439,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task SetUserNameAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 string? userName,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
@@ -450,7 +453,7 @@ namespace Visus.DirectoryIdentity.Stores {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public Task<IdentityResult> UpdateAsync(
-                IdentityUser<TKey> user,
+                IdentityUser<TUserKey> user,
                 CancellationToken cancellationToken) {
             throw new NotImplementedException(Resources.ErrorReadOnlyStore);
         }
@@ -458,13 +461,13 @@ namespace Visus.DirectoryIdentity.Stores {
 
         #region Private fields
         private readonly LdapAttributeAttribute _emailAttribute;
-        private readonly IClaimsBuilder<IdentityUser<TKey>,
-            IdentityRole<TKey>> _claimsBuilder;
+        private readonly IClaimsBuilder<IdentityUser<TUserKey>,
+            IdentityRole<TRoleKey>> _claimsBuilder;
         private readonly IGroupClaimsMap _groupClaims;
         private readonly ILogger _logger;
-        private readonly ILdapSearchService<IdentityUser<TKey>,
-            IdentityRole<TKey>> _searchService;
-        private readonly ILdapAttributeMap<IdentityUser<TKey>> _userMap;
+        private readonly ILdapSearchService<IdentityUser<TUserKey>,
+            IdentityRole<TRoleKey>> _searchService;
+        private readonly ILdapAttributeMap<IdentityUser<TUserKey>> _userMap;
         #endregion
     }
 }
