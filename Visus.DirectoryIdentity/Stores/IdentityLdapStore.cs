@@ -38,6 +38,18 @@ namespace Visus.DirectoryIdentity.Stores {
             where TRoleKey : IEquatable<TRoleKey> {
 
         #region Public constructors
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="searchService"></param>
+        /// <param name="userMap"></param>
+        /// <param name="roleMap"></param>
+        /// <param name="claimsBuilder"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="roleClaims"></param>
+        /// <param name="logger"></param>
+        /// <exception cref="ArgumentNullException">If any of the parameters
+        /// is <c>null</c>.</exception>
         public IdentityLdapStore(
                 ILdapSearchService<TUser, TRole> searchService,
                 ILdapAttributeMap<TUser> userMap,
@@ -169,7 +181,7 @@ namespace Visus.DirectoryIdentity.Stores {
                 TUser user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user?.UserName);
+            return Task.FromResult(user.UserName);
         }
 
         /// <summary>

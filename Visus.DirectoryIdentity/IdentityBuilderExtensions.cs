@@ -53,6 +53,8 @@ namespace Visus.DirectoryIdentity {
         /// the map will be build using reflection an annotation son properties
         /// of <typeparamref name="TRole"/>.</param>
         /// <returns><paramref name="builder"/>.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="builder"/> is <c>null</c>.</exception>
         public static IdentityBuilder AddLdapStore<TUser, TRole>(
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,
@@ -83,17 +85,33 @@ namespace Visus.DirectoryIdentity {
         /// Adds a store for retrieving <see cref="IdentityUser{TKey}"/>s and
         /// their <see cref="IdentityRole{TKey}"/>s from an LDAP server.
         /// </summary>
-        /// <typeparam name="TUser"></typeparam>
-        /// <typeparam name="TUserKey"></typeparam>
-        /// <typeparam name="TRole"></typeparam>
-        /// <typeparam name="TRoleKey"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="options"></param>
-        /// <param name="mapUser"></param>
-        /// <param name="mapRole"></param>
-        /// <param name="mapUserClaims"></param>
-        /// <param name="mapRoleClaims"></param>
-        /// <returns></returns>
+        /// <typeparam name="TUser">The <see cref="IdentityUser{TKey}"/>-derived
+        /// type of the user object.</typeparam>
+        /// <typeparam name="TUserKey">The key used for the user object.
+        /// </typeparam>
+        /// <typeparam name="TRole">The <see cref="IdentityRole{TKey}"/>-derived
+        /// type of the role object.</typeparam>
+        /// <typeparam name="TRoleKey">The key used for the role object.
+        /// </typeparam>
+        /// <param name="builder">The identity builder to add the store to.
+        /// </param>
+        /// <param name="options">The LDAP options determining the connection to
+        /// the LDAP server as well as basic mappings.</param>
+        /// <param name="mapUser">A callback for providing the property to
+        /// attribute maps for the user object. If this parameter is
+        /// <c>null</c>, a built-in mapping will be used.</param>
+        /// <param name="mapRole">A callback for providing the property to
+        /// attribute maps for the role object. If this parameter is
+        /// <c>null</c>, a built-in mapping will be used.</param>
+        /// <param name="mapUserClaims">A callback to provide custom mappings
+        /// from LDAP attributes to claims. If this parameter is <c>null</c>,
+        /// a built-in mapping will be used.</param>
+        /// <param name="mapRoleClaims">A callback to provide custom mappings
+        /// from LDAP attributes to claims. If this parameter is <c>null</c>,
+        /// a built-in mapping will be used.</param>
+        /// <returns><paramref name="builder"/>.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="builder"/> is <c>null</c>.</exception>
         public static IdentityBuilder AddIdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>(
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,
@@ -131,13 +149,25 @@ namespace Visus.DirectoryIdentity {
         /// Adds a store for retrieving <see cref="IdentityUser"/>s and their
         /// <see cref="IdentityRole"/>s from an LDAP server.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="options"></param>
-        /// <param name="mapUser"></param>
-        /// <param name="mapRole"></param>
-        /// <param name="mapUserClaims"></param>
-        /// <param name="mapRoleClaims"></param>
-        /// <returns></returns>
+        /// <param name="builder">The identity builder to add the store to.
+        /// </param>
+        /// <param name="options">The LDAP options determining the connection to
+        /// the LDAP server as well as basic mappings.</param>
+        /// <param name="mapUser">A callback for providing the property to
+        /// attribute maps for the user object. If this parameter is
+        /// <c>null</c>, a built-in mapping will be used.</param>
+        /// <param name="mapRole">A callback for providing the property to
+        /// attribute maps for the role object. If this parameter is
+        /// <c>null</c>, a built-in mapping will be used.</param>
+        /// <param name="mapUserClaims">A callback to provide custom mappings
+        /// from LDAP attributes to claims. If this parameter is <c>null</c>,
+        /// a built-in mapping will be used.</param>
+        /// <param name="mapRoleClaims">A callback to provide custom mappings
+        /// from LDAP attributes to claims. If this parameter is <c>null</c>,
+        /// a built-in mapping will be used.</param>
+        /// <returns><paramref name="builder"/>.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="builder"/> is <c>null</c>.</exception>
         public static IdentityBuilder AddIdentityLdapStore(
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,

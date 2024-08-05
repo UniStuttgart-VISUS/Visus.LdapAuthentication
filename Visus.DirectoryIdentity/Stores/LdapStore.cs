@@ -33,6 +33,18 @@ namespace Visus.DirectoryIdentity.Stores {
             where TRole : class, new() {
 
         #region Public constructors
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        /// <param name="searchService"></param>
+        /// <param name="userMap"></param>
+        /// <param name="roleMap"></param>
+        /// <param name="claimsBuilder"></param>
+        /// <param name="userClaims"></param>
+        /// <param name="roleClaims"></param>
+        /// <param name="logger"></param>
+        /// <exception cref="ArgumentNullException">If any of the parameters
+        /// is <c>null</c>.</exception>
         public LdapStore(ILdapSearchService<TUser, TRole> searchService,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TRole> roleMap,
