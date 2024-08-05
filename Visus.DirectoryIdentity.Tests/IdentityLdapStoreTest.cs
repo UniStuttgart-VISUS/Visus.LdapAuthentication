@@ -23,7 +23,6 @@ namespace Visus.DirectoryIdentity.Tests {
             var collection = new ServiceCollection().AddMockLoggers();
 
             if (this._testSecrets.CanRun) {
-                collection.AddLdapUserManager<IdentityUser>();
                 collection.AddIdentityCore<IdentityUser>()
                     .AddIdentityLdapStore(o => {
                         var section = configuration.GetSection("LdapOptions");

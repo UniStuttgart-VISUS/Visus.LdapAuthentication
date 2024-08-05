@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryIdentity.Managers;
 using Visus.DirectoryIdentity.Properties;
 using Visus.DirectoryIdentity.Stores;
 using Visus.Ldap.Claims;
@@ -27,7 +28,9 @@ namespace Visus.DirectoryIdentity {
 
         /// <summary>
         /// Adds an <see cref="LdapStore{TUser, TRole}"/> for obtaining users
-        /// and their roles (groups in the directory) from an LDAP server.
+        /// and their roles (groups in the directory) from an LDAP server along
+        /// with a <see cref="LdapUserManager{TUser}"/> to authenticate a
+        /// <typeparamref name="TUser"/> with an LDAP bind.
         /// </summary>
         /// <typeparam name="TUser">The type of the identity user.</typeparam>
         /// <typeparam name="TRole">The type of the identity role (the groups).
@@ -66,6 +69,8 @@ namespace Visus.DirectoryIdentity {
                 where TRole : class, new() {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
+            builder.AddUserManager<LdapUserManager<TUser>>();
+
             builder.Services.AddLdapAuthentication(options,
                 mapUser, mapRole,
                 mapUserClaims, mapRoleClaims);
@@ -83,7 +88,9 @@ namespace Visus.DirectoryIdentity {
 
         /// <summary>
         /// Adds a store for retrieving <see cref="IdentityUser{TKey}"/>s and
-        /// their <see cref="IdentityRole{TKey}"/>s from an LDAP server.
+        /// their <see cref="IdentityRole{TKey}"/>s from an LDAP server along
+        /// with a <see cref="LdapUserManager{TUser}"/> to authenticate a
+        /// <typeparamref name="TUser"/> with an LDAP bind.
         /// </summary>
         /// <typeparam name="TUser">The <see cref="IdentityUser{TKey}"/>-derived
         /// type of the user object.</typeparam>
@@ -125,6 +132,8 @@ namespace Visus.DirectoryIdentity {
                 where TRoleKey : IEquatable<TRoleKey> {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
+            builder.AddUserManager<LdapUserManager<TUser>>();
+
             builder.Services.AddLdapAuthentication(options,
                 mapUser ?? MapWellKnownUser<TUser, TUserKey>,
                 mapRole ?? MapWellKnownRole<TRole, TRoleKey>,
@@ -147,7 +156,9 @@ namespace Visus.DirectoryIdentity {
 
         /// <summary>
         /// Adds a store for retrieving <see cref="IdentityUser"/>s and their
-        /// <see cref="IdentityRole"/>s from an LDAP server.
+        /// <see cref="IdentityRole"/>s from an LDAP server along
+        /// with a <see cref="LdapUserManager{TUser}"/> to authenticate a
+        /// <typeparamref name="TUser"/> with an LDAP bind.
         /// </summary>
         /// <param name="builder">The identity builder to add the store to.
         /// </param>

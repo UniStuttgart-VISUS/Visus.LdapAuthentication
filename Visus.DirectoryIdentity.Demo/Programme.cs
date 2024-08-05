@@ -13,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
-builder.Services.AddLdapUserManager<IdentityUser>();
 builder.Services.AddDefaultIdentity<IdentityUser>().AddIdentityLdapStore(o => {
     builder.Configuration.GetSection(LdapOptions.Section).Bind(o);
 });
