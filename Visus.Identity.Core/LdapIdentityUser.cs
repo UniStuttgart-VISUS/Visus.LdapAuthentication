@@ -8,10 +8,9 @@ using System.Security.Claims;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
 using Microsoft.AspNetCore.Identity;
-using System;
 
 
-namespace Visus.DirectoryIdentity {
+namespace Visus.Identity {
 
     /// <summary>
     /// A basic representation of an identity user from LDAP.

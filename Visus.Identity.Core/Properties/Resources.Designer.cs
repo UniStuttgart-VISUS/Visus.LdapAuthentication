@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Visus.DirectoryIdentity.Properties {
+namespace Visus.Identity.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Visus.DirectoryIdentity.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Visus.DirectoryIdentity.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Visus.Identity.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,33 @@ namespace Visus.DirectoryIdentity.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The LDAP attribute for the property &quot;{0}&quot; using the schema &quot;{1}&quot; could not be found..
+        /// </summary>
+        internal static string ErrorNoLdapAttribute {
+            get {
+                return ResourceManager.GetString("ErrorNoLdapAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This operation is not supported as the LDAP stores are read-only..
+        /// </summary>
+        internal static string ErrorReadOnlyStore {
+            get {
+                return ResourceManager.GetString("ErrorReadOnlyStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The mandatory mapping {0} is missing..
+        /// </summary>
+        internal static string ErrorRequiredPropertyMappingMissing {
+            get {
+                return ResourceManager.GetString("ErrorRequiredPropertyMappingMissing", resourceCulture);
             }
         }
         

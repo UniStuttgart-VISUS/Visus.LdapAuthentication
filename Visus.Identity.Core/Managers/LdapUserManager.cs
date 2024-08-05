@@ -7,14 +7,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Visus.Ldap;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryIdentity.Managers {
+namespace Visus.Identity.Managers {
 
     /// <summary>
     /// A specialisation of the default <see cref="UserManager{TUser}"/>, which
@@ -23,7 +20,7 @@ namespace Visus.DirectoryIdentity.Managers {
     /// <typeparam name="TUser">The class representing a user in memory.
     /// </typeparam>
     internal class LdapUserManager<TUser>(IUserStore<TUser> store,
-            IOptions<IdentityOptions> optionsAccessor,
+            IOptions<IdentityOptions> options,
             IPasswordHasher<TUser> passwordHasher,
             IEnumerable<IUserValidator<TUser>> userValidators,
             IEnumerable<IPasswordValidator<TUser>> passwordValidators,
@@ -34,7 +31,7 @@ namespace Visus.DirectoryIdentity.Managers {
             ILdapAttributeMap<TUser> userMap,
             ILogger<LdapUserManager<TUser>> logger)
         : UserManager<TUser>(store,
-            optionsAccessor,
+            options,
             passwordHasher,
             userValidators,
             passwordValidators,

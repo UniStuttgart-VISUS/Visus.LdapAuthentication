@@ -9,7 +9,7 @@ using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryIdentity {
+namespace Visus.Identity {
 
     /// <summary>
     /// The basic representation of a role, which is derived from an LDAP group.

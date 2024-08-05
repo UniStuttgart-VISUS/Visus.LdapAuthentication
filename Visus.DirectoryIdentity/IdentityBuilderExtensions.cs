@@ -11,9 +11,9 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
-using Visus.DirectoryIdentity.Managers;
 using Visus.DirectoryIdentity.Properties;
 using Visus.DirectoryIdentity.Stores;
+using Visus.Identity.Managers;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
@@ -69,7 +69,7 @@ namespace Visus.DirectoryIdentity {
                 where TRole : class, new() {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
-            builder.AddUserManager<LdapUserManager<TUser>>();
+            builder.AddLdapUserManager<TUser>();
 
             builder.Services.AddLdapAuthentication(options,
                 mapUser, mapRole,
@@ -132,7 +132,7 @@ namespace Visus.DirectoryIdentity {
                 where TRoleKey : IEquatable<TRoleKey> {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
-            builder.AddUserManager<LdapUserManager<TUser>>();
+            builder.AddLdapUserManager<TUser>();
 
             builder.Services.AddLdapAuthentication(options,
                 mapUser ?? MapWellKnownUser<TUser, TUserKey>,
