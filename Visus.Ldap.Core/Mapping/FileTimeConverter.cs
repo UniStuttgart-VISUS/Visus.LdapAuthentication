@@ -37,7 +37,21 @@ namespace Visus.Ldap.Mapping {
                 case Type _ when target == typeof(DateTime):
                     return DateTime.FromFileTime(ticks);
 
+                case Type _ when (target == typeof(DateTime?))
+                        && (value == null):
+                    return null;
+
+                case Type _ when target == typeof(DateTime?):
+                    return DateTime.FromFileTime(ticks);
+
                 case Type _ when target == typeof(DateTimeOffset):
+                    return DateTimeOffset.FromFileTime(ticks);
+
+                case Type _ when target == typeof(DateTimeOffset?)
+                        && (value == null):
+                    return null;
+
+                case Type _ when target == typeof(DateTimeOffset?):
                     return DateTimeOffset.FromFileTime(ticks);
 
                 default:

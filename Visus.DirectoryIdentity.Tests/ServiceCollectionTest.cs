@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Threading.Tasks;
 using Visus.DirectoryAuthentication;
 
 
@@ -18,16 +19,17 @@ namespace Visus.DirectoryIdentity.Tests {
     public class ServiceCollectionTest {
 
         [TestMethod]
-        public void TestDefaultIdentity() {
+        public async Task TestAddIdentityLdapStore() {
             if (this._testSecrets.CanRun) {
                 var configuration = TestExtensions.CreateConfiguration();
                 var collection = new ServiceCollection().AddMockLoggers();
 
                 collection.AddLdapUserManager<IdentityUser>();
-                collection.AddIdentityCore<IdentityUser>().AddLdapStore<IdentityUser, IdentityRole>(o => {
-                    var section = configuration.GetSection("LdapOptions");
-                    section.Bind(o);
-                });
+                collection.AddIdentityCore<IdentityUser>()
+                    .AddIdentityLdapStore(o => {
+                        var section = configuration.GetSection("LdapOptions");
+                        section.Bind(o);
+                    });
 
                 var services = collection.BuildServiceProvider();
 
@@ -40,6 +42,11 @@ namespace Visus.DirectoryIdentity.Tests {
                 var userStore = services.GetService<IQueryableUserStore<IdentityUser>>();
                 Assert.IsNotNull(userStore);
                 Assert.IsNotNull(userStore.Users.FirstOrDefault());
+
+                {
+                    var user = await userStore.FindByIdAsync(this._testSecrets.ExistingUserIdentity!, default);
+                    Assert.IsNotNull(user);
+                }
             }
         }
 

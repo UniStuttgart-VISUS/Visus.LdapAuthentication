@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
+using System.Security.Claims;
 using Visus.DirectoryAuthentication;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryIdentity.Properties;
@@ -24,6 +25,34 @@ namespace Visus.DirectoryIdentity {
     /// </summary>
     public static class IdentityBuilderExtensions {
 
+        /// <summary>
+        /// Adds an <see cref="LdapStore{TUser, TRole}"/> for obtaining users
+        /// and their roles (groups in the directory) from an LDAP server.
+        /// </summary>
+        /// <typeparam name="TUser">The type of the identity user.</typeparam>
+        /// <typeparam name="TRole">The type of the identity role (the groups).
+        /// </typeparam>
+        /// <param name="builder">The identity builder to add the store to.
+        /// </param>
+        /// <param name="options">The LDAP options determining the connection to
+        /// the LDAP server as well as basic mappings.</param>
+        /// <param name="mapUser">A callback for providing the property to
+        /// attribute maps for the user object. If this parameter is
+        /// <c>null</c>, the map will be build using reflection and annotations
+        /// on properties of <typeparamref name="TUser"/>.</param>
+        /// <param name="mapRole">A callback for providing the property to
+        /// attribute maps for the role object. If this parameter is
+        /// <c>null</c>, the map will be build using reflection and annotations
+        /// on properties of <typeparamref name="TRole"/>.</param>
+        /// <param name="mapUserClaims">A callback to provide custom mappings
+        /// from LDAP attributes to claims. If this parameter is <c>null</c>,
+        /// the map will be build using reflection an annotation son properties
+        /// of <typeparamref name="TUser"/>.</param>
+        /// <param name="mapRoleClaims">A callback to provide custom mappings
+        /// from LDAP attributes to claims. If this parameter is <c>null</c>,
+        /// the map will be build using reflection an annotation son properties
+        /// of <typeparamref name="TRole"/>.</param>
+        /// <returns><paramref name="builder"/>.</returns>
         public static IdentityBuilder AddLdapStore<TUser, TRole>(
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,
@@ -34,236 +63,348 @@ namespace Visus.DirectoryIdentity {
                 where TUser : class, new()
                 where TRole : class, new() {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+
             builder.Services.AddLdapAuthentication(options,
-                mapUser, mapRole, mapUserClaims, mapRoleClaims)
+                mapUser, mapRole,
+                mapUserClaims, mapRoleClaims);
+
+            builder.Services
                 .AddScoped<IUserStore<TUser>, LdapStore<TUser, TRole>>()
                 .AddScoped<IQueryableUserStore<TUser>, LdapStore<TUser, TRole>>()
+                .AddScoped<IUserClaimStore<TUser>, LdapStore<TUser, TRole>>()
                 .AddScoped<IRoleStore<TRole>, LdapStore<TUser, TRole>>()
-                .AddScoped<IQueryableRoleStore<TRole>, LdapStore<TUser, TRole>>();
+                .AddScoped<IQueryableRoleStore<TRole>, LdapStore<TUser, TRole>>()
+                .AddScoped<IRoleClaimStore<TRole>, LdapStore<TUser, TRole>>();
+
             return builder;
         }
 
-        //public static IdentityBuilder AddLdapStore(
-        //        this IdentityBuilder builder,
-        //        Action<LdapOptions> options) {
-        //    ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        //    builder.Services.AddLdapAuthentication<IdentityUser, IdentityRole>(
-        //        options, MapWellKnownSchema, MapWellKnownSchema)
-        //        .AddScoped<IQueryableUserStore<IdentityUser>, LdapUserStore>()
-        //        .AddScoped<IUserClaimStore<IdentityUser>, LdapUserStore>()
-        //        .AddScoped<IUserEmailStore<IdentityUser>, LdapUserStore>()
-        //        .AddScoped<IUserLockoutStore<IdentityUser>, LdapUserStore>()
-        //        .AddScoped<IUserPhoneNumberStore<IdentityUser>, LdapUserStore>()
-        //        .AddScoped<IUserStore<IdentityUser>, LdapUserStore>();
-        //    return builder;
-        //}
+        /// <summary>
+        /// Adds a store for retrieving <see cref="IdentityUser{TKey}"/>s and
+        /// their <see cref="IdentityRole{TKey}"/>s from an LDAP server.
+        /// </summary>
+        /// <typeparam name="TUser"></typeparam>
+        /// <typeparam name="TUserKey"></typeparam>
+        /// <typeparam name="TRole"></typeparam>
+        /// <typeparam name="TRoleKey"></typeparam>
+        /// <param name="builder"></param>
+        /// <param name="options"></param>
+        /// <param name="mapUser"></param>
+        /// <param name="mapRole"></param>
+        /// <param name="mapUserClaims"></param>
+        /// <param name="mapRoleClaims"></param>
+        /// <returns></returns>
+        public static IdentityBuilder AddIdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>(
+                this IdentityBuilder builder,
+                Action<LdapOptions> options,
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TRole>, LdapOptionsBase>? mapRole = null,
+                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptionsBase>? mapRoleClaims = null)
+                where TUser : IdentityUser<TUserKey>, new()
+                where TRole : IdentityRole<TRoleKey>, new()
+                where TUserKey : IEquatable<TUserKey>
+                where TRoleKey : IEquatable<TRoleKey> {
+            ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
-        //    /// <summary>
-        //    /// Adds an <see cref="LdapUserStore{TUser}"/> for the specified type of
-        //    /// user object.
-        //    /// </summary>
-        //    /// <remarks>
-        //    /// <see cref="ILdapOptions"/> must have been registered in the services
-        //    /// collection such that the user store can resolve these. The method
-        //    /// will register <see cref="ILdapAuthenticationService"/> and
-        //    /// <see cref="ILdapSearchService"/> for <typeparamref name="TUser"/>.
-        //    /// </remarks>
-        //    /// <typeparam name="TUser">The type of the user object to be used to
-        //    /// represent an identity user.</typeparam>
-        //    /// <param name="that">The builder used to add the store to.</param>
-        //    /// <param name="ldapOptions">A callback to configure the
-        //    /// <see cref="LdapOptions"/> used to connect to the directory server.
-        //    /// </param>
-        //    /// <returns><paramref name="that"/>.</returns>
-        //    /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        //    /// is <c>null</c>, or if <paramref name="ldapOptions"/> is <c>null</c>.
-        //    /// </exception>
-        //    public static IdentityBuilder AddLdapStore<TUser>(this IdentityBuilder that,
-        //            Action<LdapOptions> ldapOptions)
-        //            where TUser : class, ILdapIdentityUser, new() {
-        //        _ = that ?? throw new ArgumentNullException(nameof(that));
-        //        that.Services.AddLdapAuthentication<TUser, LdapGroup>(ldapOptions);
-        //        that.Services.AddScoped<IPasswordHasher<TUser>,
-        //            PasswordHasher<TUser>>();
-        //        that.Services.AddScoped<IUserStore<TUser>, LdapUserStore<TUser>>();
-        //        return that;
-        //    }
+            builder.Services.AddLdapAuthentication(options,
+                mapUser ?? MapWellKnownUser<TUser, TUserKey>,
+                mapRole ?? MapWellKnownRole<TRole, TRoleKey>,
+                mapUserClaims ?? MapWellKnownUserClaims,
+                mapRoleClaims ?? MapWellKnownRoleClaims);
 
-        //    /// <summary>
-        //    /// Adds an <see cref="LdapUserStore{TUser}"/> for the default
-        //    /// <see cref="LdapIdentityUser"/>.
-        //    /// </summary>
-        //    /// <remarks>
-        //    /// <see cref="ILdapOptions"/> must have been registered in the services
-        //    /// collection such that the user store can resolve these. Likewise, the
-        //    /// caller is responsible for registering both, the
-        //    /// <see cref="ILdapAuthenticationService"/> and the
-        //    /// <see cref="ILdapSearchService"/>.
-        //    /// </remarks>
-        //    /// <param name="that">The builder used to add the store to.</param>
-        //    /// <param name="ldapOptions">A callback to configure the
-        //    /// <see cref="LdapOptions"/> used to connect to the directory server.
-        //    /// </param>
-        //    /// <returns><paramref name="that"/>.</returns>
-        //    /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        //    /// is <c>null</c>, or if <paramref name="ldapOptions"/> is <c>null</c>.
-        //    /// </exception>
-        //    public static IdentityBuilder AddLdapStore(this IdentityBuilder that,
-        //            Action<LdapOptions> ldapOptions) {
-        //        //return that.AddLdapStore<LdapIdentityUser, LdapGroup>(ldapOptions);
-        //        throw new NotImplementedException();
-        //    }
+            builder.Services
+                .AddScoped<IUserStore<TUser>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IQueryableUserStore<TUser>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IUserClaimStore<TUser>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IUserEmailStore<TUser>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IUserLockoutStore<TUser>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IUserPhoneNumberStore<TUser>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IRoleStore<TRole>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IQueryableRoleStore<TRole>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()
+                .AddScoped<IRoleClaimStore<TRole>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>();
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a store for retrieving <see cref="IdentityUser"/>s and their
+        /// <see cref="IdentityRole"/>s from an LDAP server.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="options"></param>
+        /// <param name="mapUser"></param>
+        /// <param name="mapRole"></param>
+        /// <param name="mapUserClaims"></param>
+        /// <param name="mapRoleClaims"></param>
+        /// <returns></returns>
+        public static IdentityBuilder AddIdentityLdapStore(
+                this IdentityBuilder builder,
+                Action<LdapOptions> options,
+                Action<ILdapAttributeMapBuilder<IdentityUser>, LdapOptionsBase>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<IdentityRole>, LdapOptionsBase>? mapRole = null,
+                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptionsBase>? mapRoleClaims = null)
+            => builder.AddIdentityLdapStore<IdentityUser, string, IdentityRole, string>(
+                options, mapUser, mapRole, mapUserClaims, mapRoleClaims);
 
         #region Private methods
         /// <summary>
-        /// Maps <see cref="IdentityUser"/> to ADDS attributes.
+        /// Maps <typeparamref name="TRole"/> to ADDS attributes.
         /// </summary>
-        private static void MapActiveDirectory(
-                ILdapAttributeMapBuilder<IdentityUser> builder) {
+        private static void MapAddsRole<TRole, TKey>(
+                ILdapAttributeMapBuilder<TRole> builder)
+                where TRole : IdentityRole<TKey>
+                where TKey : IEquatable<TKey> {
             Debug.Assert(builder != null);
 
-            builder.MapProperty(nameof(IdentityUser.AccessFailedCount))
-                .ToAttribute("badPwdCount");
-
-            builder.MapProperty(nameof(IdentityUser.Email))
-                .ToAttribute("mail");
-
-            builder.MapProperty(nameof(IdentityUser.Id))
+            builder.MapProperty(nameof(IdentityRole<TKey>.Id))
                 .StoringIdentity()
                 .ToAttribute("objectSid")
                 .WithConverter<SidConverter>();
 
-            builder.MapProperty(nameof(IdentityUser.LockoutEnd))
+            builder.MapProperty(nameof(IdentityRole<TKey>.Name))
+                .StoringAccountName()
+                .ToAttribute("sAMAccountName");
+        }
+
+        /// <summary>
+        /// Maps group attributes to claims in an ADDS schema.
+        /// </summary>
+        /// <param name="builder"></param>
+        private static void MapAddsRoleClaims(
+                IClaimsMapBuilder builder) {
+            Debug.Assert(builder != null);
+
+            builder.MapAttribute("objectSid")
+                .WithConverter<SidConverter>()
+                .ToClaims(ClaimTypes.GroupSid);
+
+            builder.MapAttribute("sAMAccountName")
+                .ToClaim(ClaimTypes.Role);
+        }
+
+        /// <summary>
+        /// Maps <typeparamref name="TUser"/> to ADDS attributes.
+        /// </summary>
+        private static void MapAddsUser<TUser, TKey>(
+                ILdapAttributeMapBuilder<TUser> builder)
+                where TUser : IdentityUser<TKey>
+                where TKey : IEquatable<TKey> {
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.AccessFailedCount))
+                .ToAttribute("badPwdCount");
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.Email))
+                .ToAttribute("mail");
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.Id))
+                .StoringIdentity()
+                .ToAttribute("objectSid")
+                .WithConverter<SidConverter>();
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.LockoutEnd))
                 .ToAttribute("lockoutTime")
                 .WithConverter<FileTimeConverter>();
 
-            builder.MapProperty(nameof(IdentityUser.PhoneNumber))
+            builder.MapProperty(nameof(IdentityUser<TKey>.PhoneNumber))
                 .ToAttribute("telephoneNumber");
 
-            builder.MapProperty(nameof(IdentityUser.UserName))
+            builder.MapProperty(nameof(IdentityUser<TKey>.UserName))
                 .StoringAccountName()
                 .ToAttribute("sAMAccountName");
         }
 
         /// <summary>
-        /// Maps <see cref="IdentityRole"/> to ADDS attributes.
+        /// Maps user attributes to claims in an ADDS schema.
         /// </summary>
-        private static void MapActiveDirectory(
-                ILdapAttributeMapBuilder<IdentityRole> builder) {
+        private static void MapAddsUserClaims(
+                IClaimsMapBuilder builder) {
             Debug.Assert(builder != null);
 
-            builder.MapProperty(nameof(IdentityRole.Id))
+            builder.MapAttribute("objectSid")
+                .WithConverter<SidConverter>()
+                .ToClaims(ClaimTypes.NameIdentifier, ClaimTypes.Sid);
+
+            builder.MapAttribute("sAMAccountName")
+                .ToClaim(ClaimTypes.Name);
+        }
+
+        /// <summary>
+        /// Maps <typeparamref name="TRole"/> to IDMU attributes.
+        /// </summary>
+        private static void MapIdmuRole<TRole, TKey>(
+                ILdapAttributeMapBuilder<TRole> builder)
+                where TRole : IdentityRole<TKey>
+                where TKey : IEquatable<TKey> {
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityRole<TKey>.Id))
                 .StoringIdentity()
-                .ToAttribute("objectSid")
-                .WithConverter<SidConverter>();
+                .ToAttribute("gidNumber");
 
-            builder.MapProperty(nameof(IdentityRole.Name))
+            builder.MapProperty(nameof(IdentityRole<TKey>.Name))
                 .StoringAccountName()
                 .ToAttribute("sAMAccountName");
         }
 
         /// <summary>
-        /// Maps <see cref="IdentityUser"/> to IDMU attributes.
+        /// Maps group attributes to claims in an IDMU schema.
         /// </summary>
-        private static void MapIdmu(
-                ILdapAttributeMapBuilder<IdentityUser> builder) {
+        /// <param name="builder"></param>
+        private static void MapIdmuRoleClaims(
+                IClaimsMapBuilder builder) {
             Debug.Assert(builder != null);
 
-            builder.MapProperty(nameof(IdentityUser.AccessFailedCount))
+            builder.MapAttribute("objectSid")
+                .WithConverter<SidConverter>()
+                .ToClaims(ClaimTypes.GroupSid);
+
+            builder.MapAttribute("sAMAccountName")
+                .ToClaim(ClaimTypes.Role);
+        }
+
+        /// <summary>
+        /// Maps <typeparamref name="TUser"/> to IDMU attributes.
+        /// </summary>
+        private static void MapIdmuUser<TUser, TKey>(
+                ILdapAttributeMapBuilder<TUser> builder)
+                where TUser : IdentityUser<TKey>
+                where TKey : IEquatable<TKey> {
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.AccessFailedCount))
                 .ToAttribute("badPwdCount");
 
-            builder.MapProperty(nameof(IdentityUser.Email))
+            builder.MapProperty(nameof(IdentityUser<TKey>.Email))
                 .ToAttribute("mail");
 
-            builder.MapProperty(nameof(IdentityUser.Id))
+            builder.MapProperty(nameof(IdentityUser<TKey>.Id))
                 .StoringIdentity()
                 .ToAttribute("uidNumber")
                 .WithConverter<SidConverter>();
 
-            builder.MapProperty(nameof(IdentityUser.LockoutEnd))
+            builder.MapProperty(nameof(IdentityUser<TKey>.LockoutEnd))
                 .ToAttribute("lockoutTime")
                 .WithConverter<FileTimeConverter>();
 
-            builder.MapProperty(nameof(IdentityUser.PhoneNumber))
+            builder.MapProperty(nameof(IdentityUser<TKey>.PhoneNumber))
                 .ToAttribute("telephoneNumber");
 
-            builder.MapProperty(nameof(IdentityUser.UserName))
+            builder.MapProperty(nameof(IdentityUser<TKey>.UserName))
                 .StoringAccountName()
                 .ToAttribute("sAMAccountName");
         }
 
         /// <summary>
-        /// Maps <see cref="IdentityRole"/> to IDMU attributes.
+        /// Maps user attributes to claims in an IDMU schema.
         /// </summary>
-        private static void MapIdmu(
-                ILdapAttributeMapBuilder<IdentityRole> builder) {
+        private static void MapIdmuUserClaims(
+                IClaimsMapBuilder builder) {
             Debug.Assert(builder != null);
 
-            builder.MapProperty(nameof(IdentityRole.Id))
-                .StoringIdentity()
-                .ToAttribute("gidNumber");
+            builder.MapAttribute("objectSid")
+                .WithConverter<SidConverter>()
+                .ToClaim(ClaimTypes.Sid);
 
-            builder.MapProperty(nameof(IdentityRole.Name))
-                .StoringAccountName()
-                .ToAttribute("sAMAccountName");
+            builder.MapAttribute("uidNumber")
+                .ToClaim(ClaimTypes.NameIdentifier);
+
+            builder.MapAttribute("sAMAccountName")
+                .ToClaim(ClaimTypes.Name);
         }
 
         /// <summary>
-        /// Makes <see cref="IdentityUser"/> to RFC 2307 attributes.
+        /// Maps <typeparamref name="TRole"/> to RFC 2307 attributes.
         /// </summary>
-        private static void MapRfc2307(
-                ILdapAttributeMapBuilder<IdentityUser> builder) {
+        private static void MapRfc2307Role<TRole, TKey>(
+                ILdapAttributeMapBuilder<TRole> builder)
+                where TRole : IdentityRole<TKey>
+                where TKey : IEquatable<TKey> {
             Debug.Assert(builder != null);
 
-            builder.MapProperty(nameof(IdentityUser.Email))
-                .ToAttribute("mail");
-
-            builder.MapProperty(nameof(IdentityUser.Id))
-                .StoringIdentity()
-                .ToAttribute("uidNumber");
-
-            builder.MapProperty(nameof(IdentityUser.PhoneNumber))
-                .ToAttribute("telephoneNumber");
-
-            builder.MapProperty(nameof(IdentityUser.UserName))
-                .StoringAccountName()
-                .ToAttribute("uid");
-        }
-
-        /// <summary>
-        /// Maps <see cref="IdentityRole"/> to RFC 2307 attributes.
-        /// </summary>
-        private static void MapRfc2307(
-                ILdapAttributeMapBuilder<IdentityRole> builder) {
-            Debug.Assert(builder != null);
-
-            builder.MapProperty(nameof(IdentityRole.Id))
+            builder.MapProperty(nameof(IdentityRole<TKey>.Id))
                 .StoringIdentity()
                 .ToAttribute("gidNumber");
 
-            builder.MapProperty(nameof(IdentityRole.Name))
+            builder.MapProperty(nameof(IdentityRole<TKey>.Name))
                 .StoringAccountName()
                 .ToAttribute("gid");
         }
 
+
         /// <summary>
-        /// Creates a mapping for <see cref="IdentityUser"/> for one of the
-        /// well-known LDAP schemas.
+        /// Makes <typeparamref name="TUser"/> to RFC 2307 attributes.
         /// </summary>
-        private static void MapWellKnownSchema(
-                ILdapAttributeMapBuilder<IdentityUser> builder,
-                LdapOptionsBase options) {
+        private static void MapRfc2307User<TUser, TKey>(
+                ILdapAttributeMapBuilder<TUser> builder)
+                where TUser : IdentityUser<TKey>
+                where TKey : IEquatable<TKey> {
+            Debug.Assert(builder != null);
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.Email))
+                .ToAttribute("mail");
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.Id))
+                .StoringIdentity()
+                .ToAttribute("uidNumber");
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.PhoneNumber))
+                .ToAttribute("telephoneNumber");
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.UserName))
+                .StoringAccountName()
+                .ToAttribute("uid");
+        }
+
+
+        /// <summary>
+        /// Maps group attributes to claims in an RFC 2307 schema.
+        /// </summary>
+        /// <param name="builder"></param>
+        private static void MapRfc2307RoleClaims(
+                IClaimsMapBuilder builder) {
+            Debug.Assert(builder != null);
+
+            builder.MapAttribute("gid")
+                .ToClaim(ClaimTypes.Role);
+        }
+
+        /// <summary>
+        /// Maps user attributes to claims in an RFC 2307 schema.
+        /// </summary>
+        private static void MapRfc2307UserClaims(
+                IClaimsMapBuilder builder) {
+            Debug.Assert(builder != null);
+
+            builder.MapAttribute("uidNumber")
+                .ToClaim(ClaimTypes.NameIdentifier);
+
+            builder.MapAttribute("uid")
+                .ToClaim(ClaimTypes.Name);
+        }
+
+        /// <summary>
+        /// Creates a mapping for <typeparamref name="TRole"/> for one of
+        /// the well-known LDAP schemas.
+        /// </summary>
+        private static void MapWellKnownRole<TRole, TKey>(
+                ILdapAttributeMapBuilder<TRole> builder,
+                LdapOptionsBase options)
+                where TRole : IdentityRole<TKey>
+                where TKey : IEquatable<TKey> {
             switch (options.Schema) {
                 case Schema.ActiveDirectory:
-                    MapActiveDirectory(builder);
+                    MapAddsRole<TRole, TKey>(builder);
                     break;
 
                 case Schema.IdentityManagementForUnix:
-                    MapIdmu(builder);
+                    MapIdmuRole<TRole, TKey>(builder);
                     break;
 
                 case Schema.Rfc2307:
-                    MapRfc2307(builder);
+                    MapRfc2307Role<TRole, TKey>(builder);
                     break;
 
                 default:
@@ -274,23 +415,77 @@ namespace Visus.DirectoryIdentity {
         }
 
         /// <summary>
-        /// Creates a mapping for <see cref="IdentityRole"/> for one of the
-        /// well-known LDAP schemas.
+        /// Maps group claims for one of the well-known LDAP schemas.
         /// </summary>
-        private static void MapWellKnownSchema(
-                ILdapAttributeMapBuilder<IdentityRole> builder,
+        private static void MapWellKnownRoleClaims(
+                IClaimsMapBuilder builder,
                 LdapOptionsBase options) {
             switch (options.Schema) {
                 case Schema.ActiveDirectory:
-                    MapActiveDirectory(builder);
+                    MapAddsRoleClaims(builder);
                     break;
 
                 case Schema.IdentityManagementForUnix:
-                    MapIdmu(builder);
+                    MapIdmuRoleClaims(builder);
                     break;
 
                 case Schema.Rfc2307:
-                    MapRfc2307(builder);
+                    MapRfc2307RoleClaims(builder);
+                    break;
+
+                default:
+                    throw new ArgumentException(string.Format(
+                        Resources.ErrorSchemaNotWellKnown,
+                        options.Schema));
+            }
+        }
+
+        /// <summary>
+        /// Creates a mapping for <typeparamref name="TUser"/> for one of
+        /// the well-known LDAP schemas.
+        /// </summary>
+        private static void MapWellKnownUser<TUser, TKey>(
+                ILdapAttributeMapBuilder<TUser> builder,
+                LdapOptionsBase options)
+                where TUser : IdentityUser<TKey>
+                where TKey : IEquatable<TKey> {
+            switch (options.Schema) {
+                case Schema.ActiveDirectory:
+                    MapAddsUser<TUser, TKey>(builder);
+                    break;
+
+                case Schema.IdentityManagementForUnix:
+                    MapIdmuUser<TUser, TKey>(builder);
+                    break;
+
+                case Schema.Rfc2307:
+                    MapRfc2307User<TUser, TKey>(builder);
+                    break;
+
+                default:
+                    throw new ArgumentException(string.Format(
+                        Resources.ErrorSchemaNotWellKnown,
+                        options.Schema));
+            }
+        }
+
+        /// <summary>
+        /// Maps user claims for one of the well-known LDAP schemas.
+        /// </summary>
+        private static void MapWellKnownUserClaims(
+                IClaimsMapBuilder builder,
+                LdapOptionsBase options) {
+            switch (options.Schema) {
+                case Schema.ActiveDirectory:
+                    MapAddsUserClaims(builder);
+                    break;
+
+                case Schema.IdentityManagementForUnix:
+                    MapIdmuUserClaims(builder);
+                    break;
+
+                case Schema.Rfc2307:
+                    MapRfc2307UserClaims(builder);
                     break;
 
                 default:

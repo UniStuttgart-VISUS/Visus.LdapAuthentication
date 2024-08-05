@@ -16,7 +16,7 @@ namespace Visus.Ldap.Mapping {
     /// </summary>
     /// <typeparam name="TObject">The object to be mapped, which is typically
     /// the representation of a user or a group.</typeparam>
-    public interface ILdapAttributeMapBuilder<TObject> {
+    public interface ILdapAttributeMapBuilder<in TObject> {
 
         /// <summary>
         /// Begins mapping the given property of <typeparamref name="TObject"/>

@@ -4,10 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
-using System.Threading;
-using System.Threading.Tasks;
 using Visus.Ldap;
 
 
