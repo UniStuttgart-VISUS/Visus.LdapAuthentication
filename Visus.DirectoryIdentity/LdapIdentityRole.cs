@@ -32,8 +32,7 @@ namespace Visus.DirectoryIdentity {
         [LdapAttribute(Schema.ActiveDirectory, "sAMAccountName")]
         [LdapAttribute(Schema.IdentityManagementForUnix, "sAMAccountName")]
         [LdapAttribute(Schema.Rfc2307, "gid")]
-        [Claim(ClaimTypes.Name)]
-        [Claim(ClaimTypes.WindowsAccountName)]
+        [Claim(ClaimTypes.Role)]
         [AccountName]
         public string? Name { get; internal set; }
 
