@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,11 +31,15 @@ namespace Visus.DirectoryAuthentication.Services {
     /// of <typeparamref name="TUser"/>.</typeparam>
     /// <typeparam name="TSearchScope">The type used to represent the search
     /// scope in the underlying library.</typeparam>
-    public abstract class LdapSearchServiceBase<TUser, TGroup, TSearchScope>
-            : ILdapSearchServiceBase<TUser, TGroup, TSearchScope>
+    /// <typeparam name="TOptions">The actual type of the
+    /// <see cref="LdapOptionsBase"/> being used.</typeparam>
+    public abstract class LdapSearchServiceBase<TUser, TGroup, 
+            TSearchScope, TOptions>
+        : ILdapSearchServiceBase<TUser, TGroup, TSearchScope>
             where TUser : class, new()
             where TGroup : class, new()
-            where TSearchScope : struct, Enum {
+            where TSearchScope : struct, Enum
+            where TOptions : LdapOptionsBase {
 
         #region Public methods
         /// <inheritdoc />
@@ -218,25 +223,26 @@ namespace Visus.DirectoryAuthentication.Services {
         /// infromation about the group object.</param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
         /// <c>null</c>.</exception>
-        protected LdapSearchServiceBase(LdapOptionsBase options,
+        protected LdapSearchServiceBase(IOptions<TOptions> options,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap) {
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
             this.GroupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
+            this.Options = options?.Value
+                ?? throw new ArgumentNullException(nameof(options));
             this.UserMap = userMap
                 ?? throw new ArgumentNullException(nameof(userMap));
 
-            Debug.Assert(options.Mapping != null);
+            Debug.Assert(this.Options.Mapping != null);
             this.GroupAttributes = this.GroupMap.IsGroupMember
                 ? this.GroupMap.AttributeNames
-                    .Append(options.Mapping.GroupsAttribute)
+                    .Append(this.Options.Mapping.GroupsAttribute)
                     .ToArray()
                 : this.GroupMap.AttributeNames.ToArray();
             this.UserAttributes = this.UserMap.IsGroupMember
                 ? this.UserMap.AttributeNames
-                    .Append(options.Mapping.PrimaryGroupAttribute)
-                    .Append(options.Mapping.GroupsAttribute)
+                    .Append(this.Options.Mapping.PrimaryGroupAttribute)
+                    .Append(this.Options.Mapping.GroupsAttribute)
                     .ToArray()
                 : this.UserMap.AttributeNames.ToArray();
         }
@@ -258,7 +264,7 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <summary>
         /// Gets the LDAP server configuration.
         /// </summary>
-        protected abstract LdapOptionsBase Options { get; }
+        protected TOptions Options { get; }
 
         /// <summary>
         /// Gets the attributes that must be loaded for a user entry to

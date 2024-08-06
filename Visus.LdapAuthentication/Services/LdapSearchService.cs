@@ -35,7 +35,7 @@ namespace Visus.LdapAuthentication.Services {
     /// <typeparam name="TGroup">The type used to represent an LDAP group.
     /// </typeparam>
     public sealed class LdapSearchService<TUser, TGroup>
-            : LdapSearchServiceBase<TUser, TGroup, SearchScope>,
+            : LdapSearchServiceBase<TUser, TGroup, SearchScope, LdapOptions>,
             ILdapSearchService<TUser, TGroup>
             where TUser : class, new()
             where TGroup : class, new() {
@@ -67,7 +67,7 @@ namespace Visus.LdapAuthentication.Services {
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap,
                 ILogger<LdapSearchService<TUser, TGroup>> logger)
-                : base(options.Value, userMap, groupMap) {
+                : base(options, userMap, groupMap) {
             ArgumentNullException.ThrowIfNull(connectionService,
                 nameof(connectionService));
 
@@ -81,11 +81,6 @@ namespace Visus.LdapAuthentication.Services {
             this._connection = connectionService.Connect(
                 this._options.User, this._options.Password);
         }
-        #endregion
-
-        #region Protected properties
-        /// <inheritdoc />
-        protected override LdapOptionsBase Options => this._options;
         #endregion
 
         #region Private Properties
