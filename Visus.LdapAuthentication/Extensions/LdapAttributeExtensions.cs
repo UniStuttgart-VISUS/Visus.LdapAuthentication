@@ -128,7 +128,14 @@ namespace Visus.LdapAuthentication.Extensions {
                 // Note: Novell provides a string conversion for byte arrays in
                 // their entry, which is not what we want for SIDs or pictures,
                 // so we force the byte value here.
-                return converter.Convert(that.ByteValue,
+                var value = converter.PreferredSource switch {
+                    Type t when t == typeof(byte[][]) => that.ByteValueArray as object,
+                    Type u when u == typeof(byte[]) => that.ByteValue,
+                    Type v when v == typeof(string[]) => that.StringValueArray,
+                    _ => that.StringValue
+                };
+
+                return converter.Convert(value,
                     targetType,
                     parameter,
                     cultureInfo ?? CultureInfo.CurrentCulture);

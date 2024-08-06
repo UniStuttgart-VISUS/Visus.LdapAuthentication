@@ -17,6 +17,17 @@ namespace Visus.Ldap.Mapping {
     public interface IValueConverter {
 
         /// <summary>
+        /// Gets, if any, the preferred source type.
+        /// </summary>
+        /// <remarks>
+        /// The LDAP libraries have in some cases the ability to return values
+        /// as <see cref="string"/> or <see cref="byte[]"/> or arrays thereof.
+        /// Using this property, a converter can specify the preferred format
+        /// of the input.
+        /// </remarks>
+        Type? PreferredSource { get; }
+
+        /// <summary>
         /// Converts <paramref name="value"/> into a user-defined object,
         /// normally a string.
         /// </summary>

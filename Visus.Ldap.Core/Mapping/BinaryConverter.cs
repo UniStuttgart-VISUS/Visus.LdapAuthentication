@@ -24,6 +24,9 @@ namespace Visus.Ldap.Mapping {
     public sealed class BinaryConverter : IValueConverter {
 
         /// <inheritdoc />
+        public Type? PreferredSource => typeof(byte[]);
+
+        /// <inheritdoc />
         public object? Convert(object? value, Type target,
                 object? parameter, CultureInfo culture) {
             if (value is byte[] bytes) {

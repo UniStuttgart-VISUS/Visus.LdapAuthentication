@@ -78,6 +78,11 @@ namespace Visus.Ldap.Mapping {
         }
         #endregion
 
+        #region Public properties
+        /// <inheritdoc />
+        public Type? PreferredSource => typeof(byte[]);
+        #endregion
+
         #region Public methods
         /// <inheritdoc />
         public object? Convert(object? value, Type target, object? parameter,

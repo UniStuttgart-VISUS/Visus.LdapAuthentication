@@ -21,7 +21,9 @@ namespace Visus.Ldap.Mapping {
     /// </remarks>
     public sealed class FileTimeConverter : IValueConverter {
 
-        #region Public methods
+        /// <inheritdoc />
+        public Type? PreferredSource => typeof(string);
+
         /// <inheritdoc />
         public object? Convert(object? value, Type target, object? parameter,
                 CultureInfo culture) {
@@ -60,6 +62,5 @@ namespace Visus.Ldap.Mapping {
                         nameof(target));
             }
         }
-        #endregion
     }
 }
