@@ -1,4 +1,4 @@
-﻿// <copyright file="IdentityUserClaimsMap.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="IdentityRoleClaimsMap.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -14,8 +14,8 @@ using Visus.Ldap.Configuration;
 namespace Visus.Ldap.Claims {
 
     /// <summary>
-    /// Implements a <see cref="IUserClaimsMap"/> for
-    /// <see cref="IdentityUser{TKey}"/>.
+    /// Implements a <see cref="IGroupClaimsMap"/> for
+    /// <see cref="IdentityRole{TKey}"/>.
     /// </summary>
     /// <remarks>
     /// This special map is required, because we need to know the names of the
@@ -23,13 +23,13 @@ namespace Visus.Ldap.Claims {
     /// we can only obtain by dependency injection, so this does not work with
     /// the callback.
     /// </remarks>
-    public class IdentityUserClaimsMap<TUser, TKey, TOptions>(
+    public class IdentityRoleClaimsMap<TRole, TKey, TOptions>(
             IOptions<IdentityOptions> identityOptions,
             IOptions<TOptions> ldapOptions)
-        : ClaimsMapBase<TUser, TOptions>(
-            WellKnownMappings.MapUserClaims(ldapOptions, identityOptions),
+        : ClaimsMapBase<TRole, TOptions>(
+            WellKnownMappings.MapRoleClaims(ldapOptions, identityOptions),
             ldapOptions)
-            where TUser : IdentityUser<TKey>
+            where TRole : IdentityRole<TKey>
             where TKey : IEquatable<TKey>
             where TOptions : LdapOptionsBase;
 }

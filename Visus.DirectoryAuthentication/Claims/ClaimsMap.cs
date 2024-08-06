@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using System;
 using Visus.DirectoryAuthentication.Configuration;
 using Visus.Ldap.Claims;
-using Visus.Ldap.Configuration;
 
 
 namespace Visus.DirectoryAuthentication.Claims {

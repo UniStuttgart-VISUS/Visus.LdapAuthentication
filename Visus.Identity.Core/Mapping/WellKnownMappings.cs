@@ -5,13 +5,14 @@
 // <author>Christoph Müller</author>
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using Visus.Identity.Properties;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
+using Adds = Visus.Identity.Mapping.ActiveDirectory;
+using Idmu = Visus.Identity.Mapping.IdentityManagementForUnix;
 
 
 namespace Visus.Identity.Mapping {
@@ -22,27 +23,32 @@ namespace Visus.Identity.Mapping {
     /// </summary>
     public static class WellKnownMappings {
 
+        #region Public methods
         /// <summary>
         /// Creates a mapping for <typeparamref name="TRole"/> for one of the
         /// well-known LDAP schemas.
         /// </summary>
         /// <typeparam name="TRole"></typeparam>
         /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TOptions"></typeparam>
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <exception cref="ArgumentException"></exception>
-        public static void MapRole<TRole, TKey>(
+        public static void MapRole<TRole, TKey, TOptions>(
                 ILdapAttributeMapBuilder<TRole> builder,
-                LdapOptionsBase options)
+                TOptions options)
                 where TRole : IdentityRole<TKey>
-                where TKey : IEquatable<TKey> {
+                where TKey : IEquatable<TKey>
+                where TOptions : LdapOptionsBase {
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
             switch (options.Schema) {
                 case Schema.ActiveDirectory:
-                    ActiveDirectory.MapRole<TRole, TKey>(builder);
+                    Adds.MapRole<TRole, TKey>(builder);
                     break;
 
                 case Schema.IdentityManagementForUnix:
-                    IdentityManagementForUnix.MapRole<TRole, TKey>(builder);
+                    Idmu.MapRole<TRole, TKey>(builder);
                     break;
 
                 case Schema.Rfc2307:
@@ -57,54 +63,30 @@ namespace Visus.Identity.Mapping {
         }
 
         /// <summary>
-        /// Creates a mapper callback for the claims of a role.
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="ldapOptions"></param>
-        /// <param name="claimOptions"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        public static Action<IClaimsMapBuilder, LdapOptionsBase> MapRoleClaims(
-                IServiceProvider services,
-                ClaimsIdentityOptions claimOptions) {
-            var ldapOptions = services.GetRequiredService<IOptions<LdapOptionsBase>>();
-            var claims = services.GetRequiredService<IOptions<IdentityOptions>>();
-
-
-            return ldapOptions.Value.Schema switch {
-                Schema.ActiveDirectory => (b, _)
-                    => ActiveDirectory.MapRoleClaims(b, claimOptions),
-                Schema.IdentityManagementForUnix => (b, _)
-                    => IdentityManagementForUnix.MapRoleClaims(b, claimOptions),
-                Schema.Rfc2307 => (b, _)
-                    => Rfc2307.MapRoleClaims(b, claimOptions),
-                _ => throw new ArgumentException(string.Format(
-                    Resources.ErrorSchemaNotWellKnown,
-                    ldapOptions.Value.Schema))
-            };
-        }
-
-        /// <summary>
         /// Creates a mapping for <typeparamref name="TUser"/> for one of the
         /// well-known LDAP schemas.
         /// </summary>
         /// <typeparam name="TUser"></typeparam>
         /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TOptions"></typeparam>
         /// <param name="builder"></param>
         /// <param name="options"></param>
         /// <exception cref="ArgumentException"></exception>
-        public static void MapUser<TUser, TKey>(
+        public static void MapUser<TUser, TKey, TOptions>(
                 ILdapAttributeMapBuilder<TUser> builder,
-                LdapOptionsBase options)
+                TOptions options)
                 where TUser : IdentityUser<TKey>
-                where TKey : IEquatable<TKey> {
+                where TKey : IEquatable<TKey>
+                where TOptions : LdapOptionsBase {
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
             switch (options.Schema) {
                 case Schema.ActiveDirectory:
-                    ActiveDirectory.MapUser<TUser, TKey>(builder);
+                    Adds.MapUser<TUser, TKey>(builder);
                     break;
 
                 case Schema.IdentityManagementForUnix:
-                    IdentityManagementForUnix.MapUser<TUser, TKey>(builder);
+                    Idmu.MapUser<TUser, TKey>(builder);
                     break;
 
                 case Schema.Rfc2307:
@@ -117,29 +99,76 @@ namespace Visus.Identity.Mapping {
                         options.Schema));
             }
         }
+        #endregion
+
+        #region Internal methods
+        /// <summary>
+        /// Creates a mapper callback for the claims of a role.
+        /// </summary>
+        /// <remarks>
+        /// This method is intended only for use in
+        /// <see cref="IdentityRoleClaimsMap{TObject, TKey, TOptions}"/>.
+        /// </remarks>
+        /// <typeparam name="TOptions"></typeparam>
+        /// <param name="ldapOptions"></param>
+        /// <param name="identityOptions"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static Action<IClaimsMapBuilder, TOptions> MapRoleClaims<TOptions>(
+                IOptions<TOptions> ldapOptions,
+                IOptions<IdentityOptions> identityOptions)
+                where TOptions : LdapOptionsBase {
+            ArgumentNullException.ThrowIfNull(ldapOptions?.Value,
+                nameof(ldapOptions));
+            ArgumentNullException.ThrowIfNull(identityOptions?.Value,
+                nameof(identityOptions));
+
+            var o = identityOptions.Value.ClaimsIdentity;
+            ArgumentNullException.ThrowIfNull(o, nameof(identityOptions));
+
+            return ldapOptions.Value.Schema switch {
+                Schema.ActiveDirectory => (b, _) => Adds.MapRoleClaims(b, o),
+                Schema.IdentityManagementForUnix => (b, _) => Idmu.MapRoleClaims(b, o),
+                Schema.Rfc2307 => (b, _) => Rfc2307.MapRoleClaims(b, o),
+                _ => throw new ArgumentException(string.Format(
+                    Resources.ErrorSchemaNotWellKnown,
+                    ldapOptions.Value.Schema))
+            };
+        }
 
         /// <summary>
         /// Creates a mapper callback for the claims of a user.
         /// </summary>
-        /// <param name="builder"></param>
+        /// <remarks>
+        /// This method is intended only for use in
+        /// <see cref="IdentityUserClaimsMap{TObject, TKey, TOptions}"/>.
+        /// </remarks>
+        /// <typeparam name="TOptions"></typeparam>
         /// <param name="ldapOptions"></param>
-        /// <param name="claimOptions"></param>
+        /// <param name="identityOptions"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static Action<IClaimsMapBuilder, LdapOptionsBase> MapUserClaims(
-                LdapOptionsBase ldapOptions,
-                ClaimsIdentityOptions claimOptions) {
-            return ldapOptions.Schema switch {
-                Schema.ActiveDirectory => (b, _)
-                    => ActiveDirectory.MapUserClaims(b, claimOptions),
-                Schema.IdentityManagementForUnix => (b, _)
-                    => IdentityManagementForUnix.MapUserClaims(b, claimOptions),
-                Schema.Rfc2307 => (b, _)
-                    => Rfc2307.MapUserClaims(b, claimOptions),
+        public static Action<IClaimsMapBuilder, TOptions> MapUserClaims<TOptions>(
+                IOptions<TOptions> ldapOptions,
+                IOptions<IdentityOptions> identityOptions)
+                where TOptions : LdapOptionsBase {
+            ArgumentNullException.ThrowIfNull(ldapOptions?.Value,
+                nameof(ldapOptions));
+            ArgumentNullException.ThrowIfNull(identityOptions?.Value,
+                nameof(identityOptions));
+
+            var o = identityOptions.Value.ClaimsIdentity;
+            ArgumentNullException.ThrowIfNull(o, nameof(identityOptions));
+
+            return ldapOptions.Value.Schema switch {
+                Schema.ActiveDirectory => (b, _) => Adds.MapUserClaims(b, o),
+                Schema.IdentityManagementForUnix => (b, _) => Idmu.MapUserClaims(b, o),
+                Schema.Rfc2307 => (b, _) => Rfc2307.MapUserClaims(b, o),
                 _ => throw new ArgumentException(string.Format(
                     Resources.ErrorSchemaNotWellKnown,
-                    ldapOptions.Schema))
+                    ldapOptions.Value.Schema))
             };
         }
+        #endregion
     }
 }

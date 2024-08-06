@@ -125,10 +125,10 @@ namespace Visus.DirectoryIdentity {
         public static IdentityBuilder AddIdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>(
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<TRole>, LdapOptionsBase>? mapRole = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapRoleClaims = null)
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptions>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TRole>, LdapOptions>? mapRole = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapRoleClaims = null)
                 where TUser : IdentityUser<TUserKey>, new()
                 where TRole : IdentityRole<TRoleKey>, new()
                 where TUserKey : IEquatable<TUserKey>
@@ -137,7 +137,7 @@ namespace Visus.DirectoryIdentity {
 
             builder.AddLdapUserManager<TUser>();
 
-            builder.Services.AddLdapAuthentication/*<
+            builder.Services.AddLdapAuthentication<
                     TUser, TRole,
                     LdapMapper<TUser, TRole>,
                     LdapAttributeMap<TUser>,
@@ -145,10 +145,10 @@ namespace Visus.DirectoryIdentity {
                     ClaimsBuilder<TUser, TRole>,
                     ClaimsMapper,
                     IdentityUserClaimsMap<TUser, TUserKey, LdapOptions>,
-                    ClaimsMap<TRole>>*/(
+                    IdentityRoleClaimsMap<TRole, TRoleKey, LdapOptions>>(
                 options,
-                mapUser ?? WellKnownMappings.MapUser<TUser, TUserKey>,
-                mapRole ?? WellKnownMappings.MapRole<TRole, TRoleKey>,
+                mapUser ?? WellKnownMappings.MapUser<TUser, TUserKey, LdapOptions>,
+                mapRole ?? WellKnownMappings.MapRole<TRole, TRoleKey, LdapOptions>,
                 mapUserClaims,
                 mapRoleClaims);
 
@@ -194,10 +194,10 @@ namespace Visus.DirectoryIdentity {
         public static IdentityBuilder AddIdentityLdapStore(
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<IdentityUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<IdentityRole>, LdapOptionsBase>? mapRole = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapRoleClaims = null)
+                Action<ILdapAttributeMapBuilder<IdentityUser>, LdapOptions>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<IdentityRole>, LdapOptions>? mapRole = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapRoleClaims = null)
             => builder.AddIdentityLdapStore<IdentityUser, string, IdentityRole, string>(
                 options, mapUser, mapRole, mapUserClaims, mapRoleClaims);
 
