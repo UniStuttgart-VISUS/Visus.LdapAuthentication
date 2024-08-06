@@ -74,7 +74,8 @@ namespace Visus.Identity.Mapping {
             Debug.Assert(builder != null);
 
             builder.MapProperty(nameof(IdentityUser<TKey>.AccessFailedCount))
-                .ToAttribute("badPwdCount");
+                .ToAttribute("badPwdCount")
+                .WithConverter<NumberConverter>();
 
             builder.MapProperty(nameof(IdentityUser<TKey>.Email))
                 .ToAttribute("mail");

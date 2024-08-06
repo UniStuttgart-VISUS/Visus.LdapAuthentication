@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.Identity.Core", "Visu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.LdapIdentity", "Visus.LdapIdentity\Visus.LdapIdentity.csproj", "{2C2F82F7-4BAD-4686-857F-8DC509294B7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visus.LdapIdentity.Tests", "Visus.LdapIdentity.Tests\Visus.LdapIdentity.Tests.csproj", "{5998C12A-B54E-4302-B327-0C1093D61188}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{2C2F82F7-4BAD-4686-857F-8DC509294B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C2F82F7-4BAD-4686-857F-8DC509294B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C2F82F7-4BAD-4686-857F-8DC509294B7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5998C12A-B54E-4302-B327-0C1093D61188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5998C12A-B54E-4302-B327-0C1093D61188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5998C12A-B54E-4302-B327-0C1093D61188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5998C12A-B54E-4302-B327-0C1093D61188}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
