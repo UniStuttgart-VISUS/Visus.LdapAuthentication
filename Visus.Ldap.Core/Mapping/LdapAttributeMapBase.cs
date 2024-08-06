@@ -8,12 +8,9 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
-using System.Xml.Linq;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Properties;
 
@@ -28,8 +25,11 @@ namespace Visus.Ldap.Mapping {
     /// <see cref="LdapOptionsBase.Schema"/>.
     /// </summary>
     /// <typeparam name="TObject">The object to be reflected.</typeparam>
-    public abstract class LdapAttributeMapBase<TObject>
-            : ILdapAttributeMap<TObject> {
+    /// <typeparam name="TOptions">The actual type of the
+    /// <see cref="LdapOptionsBase"/><./typeparam>
+    public abstract class LdapAttributeMapBase<TObject, TOptions>
+            : ILdapAttributeMap<TObject>
+            where TOptions : LdapOptionsBase {
 
         #region Public properties
         /// <inheritdoc />
@@ -86,11 +86,11 @@ namespace Visus.Ldap.Mapping {
         /// LDAP schema to use.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected LdapAttributeMapBase(LdapOptionsBase options) {
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+        protected LdapAttributeMapBase(IOptions<TOptions> options) {
+            ArgumentNullException.ThrowIfNull(options?.Value, nameof(options));
             this._properties = (from p in typeof(TObject).GetProperties(PropertyFlags)
                                 let a = p.GetCustomAttributes<LdapAttributeAttribute>()
-                                    .Where(a => a.Schema == options.Schema)
+                                    .Where(a => a.Schema == options.Value.Schema)
                                     .FirstOrDefault()
                                 where a != null
                                 select new {
@@ -125,12 +125,12 @@ namespace Visus.Ldap.Mapping {
         /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
         /// </exception>
         protected LdapAttributeMapBase(Action<ILdapAttributeMapBuilder<TObject>,
-                LdapOptionsBase> mapper, LdapOptionsBase options) {
+                TOptions> mapper, IOptions<TOptions> options) {
             ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            ArgumentNullException.ThrowIfNull(options?.Value, nameof(options));
 
             this._properties = new();
-            mapper(new MapBuilder(this, options.Schema), options);
+            mapper(new MapBuilder(this, options.Value.Schema), options.Value);
 
             this.AttributeNames = this.Attributes.Select(a => a.Name)
                 .Distinct()
@@ -147,7 +147,7 @@ namespace Visus.Ldap.Mapping {
 
             #region Public constructors
             public EntryBuilder(
-                    LdapAttributeMapBase<TObject> map,
+                    LdapAttributeMapBase<TObject, TOptions> map,
                     string propertyName,
                     string schema) {
                 Debug.Assert(map != null);
@@ -277,7 +277,7 @@ namespace Visus.Ldap.Mapping {
 
             #region Private fields
             private LdapAttributeAttribute? _attribute;
-            private readonly LdapAttributeMapBase<TObject> _map;
+            private readonly LdapAttributeMapBase<TObject, TOptions> _map;
             private readonly PropertyInfo _property;
             private readonly string _schema;
             #endregion
@@ -292,7 +292,7 @@ namespace Visus.Ldap.Mapping {
         private class MapBuilder : ILdapAttributeMapBuilder<TObject> {
 
             #region Public constructors
-            public MapBuilder(LdapAttributeMapBase<TObject> map,
+            public MapBuilder(LdapAttributeMapBase<TObject, TOptions> map,
                     string schema) {
                 Debug.Assert(map != null);
                 Debug.Assert(schema != null);
@@ -307,7 +307,7 @@ namespace Visus.Ldap.Mapping {
             #endregion
 
             #region Private fields
-            private readonly LdapAttributeMapBase<TObject> _map;
+            private readonly LdapAttributeMapBase<TObject, TOptions> _map;
             private readonly string _schema;
             #endregion
         }

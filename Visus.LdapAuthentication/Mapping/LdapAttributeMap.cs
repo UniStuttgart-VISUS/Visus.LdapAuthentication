@@ -26,7 +26,7 @@ namespace Visus.LdapAuthentication.Mapping {
     /// <exception cref="ArgumentNullException">If
     /// <paramref name="options"/> is <c>null</c>.</exception>
     public sealed class LdapAttributeMap<TObject>
-            : LdapAttributeMapBase<TObject> {
+            : LdapAttributeMapBase<TObject, LdapOptions> {
 
         /// <summary>
         /// Initialises a new instance.
@@ -36,7 +36,7 @@ namespace Visus.LdapAuthentication.Mapping {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
         public LdapAttributeMap(IOptions<LdapOptions> options)
-            : base(options?.Value!) { }
+            : base(options) { }
 
         /// <summary>
         /// Initialises a new instance.
@@ -48,8 +48,9 @@ namespace Visus.LdapAuthentication.Mapping {
         /// <exception cref="ArgumentNullException">If <paramref name="mapper"/>
         /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
         /// </exception>
-        internal LdapAttributeMap(Action<ILdapAttributeMapBuilder<TObject>,
-                LdapOptionsBase> mapper, LdapOptionsBase options)
-                : base(mapper, options) { }
+        internal LdapAttributeMap(
+                Action<ILdapAttributeMapBuilder<TObject>, LdapOptions> mapper,
+                IOptions<LdapOptions> options)
+            : base(mapper, options) { }
     }
 }

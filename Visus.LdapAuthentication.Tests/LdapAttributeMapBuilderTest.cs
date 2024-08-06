@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using Visus.Ldap;
@@ -38,9 +39,9 @@ namespace Visus.LdapAuthentication.Tests {
 
                 builder.MapProperty(nameof(LdapGroup.IsPrimary))
                     .StoringPrimaryGroupFlag();
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
 
             Assert.IsNotNull(map);
             Assert.IsNotNull(map.AccountNameProperty);
@@ -96,9 +97,9 @@ namespace Visus.LdapAuthentication.Tests {
 
                 builder.MapProperty(nameof(LdapUser.Surname))
                     .ToAttribute("sn");
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
 
             Assert.IsNotNull(map);
             Assert.IsNotNull(map.AccountNameProperty);
@@ -140,9 +141,9 @@ namespace Visus.LdapAuthentication.Tests {
                     Assert.IsNotNull(prop.ToAttribute("sAMAccountName"));
                     Assert.ThrowsException<InvalidOperationException>(() => prop.ToAttribute("sAMAccountName"));
                 }
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
         }
 
         [TestMethod]
@@ -152,9 +153,9 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.ThrowsException<ArgumentNullException>(() => builder.MapProperty(null!));
                 Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
                 Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
         }
 
         [TestMethod]
@@ -173,9 +174,9 @@ namespace Visus.LdapAuthentication.Tests {
                     Assert.ThrowsException<ArgumentNullException>(() => prop.ToAttribute((LdapAttributeAttribute) null!));
                     Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(string.Empty));
                 }
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
         }
 
         [TestMethod]
@@ -190,9 +191,9 @@ namespace Visus.LdapAuthentication.Tests {
                     var prop = builder.MapProperty(nameof(LdapUser.AccountName));
                     Assert.ThrowsException<ArgumentException>(() => prop.ToAttribute(new LdapAttributeAttribute("hurz", "sAMAccountName")));
                 }
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
         }
     }
 }
