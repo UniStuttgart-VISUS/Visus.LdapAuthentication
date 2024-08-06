@@ -6,6 +6,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -29,10 +30,11 @@ namespace Visus.Identity.Stores {
     /// <typeparam name="TRole"></typeparam>
     /// <typeparam name="TRoleKey">The type used for the primray key for the
     /// roles.</typeparam>
-    /// <typeparam name="TSearchScope"></typeparam>
+    /// <typeparam name="TSearchScope">The type used to specify the search
+    /// scipe in the directory.</typeparam>
     public class IdentityLdapStoreBase<TUser, TUserKey,
-            TRole, TRoleKey, TSearchScope>
-        : LdapStoreBase<TUser, TRole, TSearchScope>,
+            TRole, TRoleKey, TSearchScope, TOptions>
+        : LdapStoreBase<TUser, TRole, TSearchScope, TOptions>,
             IUserEmailStore<TUser>,
             IUserLockoutStore<TUser>,
             IUserPhoneNumberStore<TUser>
@@ -40,7 +42,8 @@ namespace Visus.Identity.Stores {
             where TRole : IdentityRole<TRoleKey>, new()
             where TUserKey : IEquatable<TUserKey>
             where TRoleKey : IEquatable<TRoleKey>
-            where TSearchScope : struct, Enum {
+            where TSearchScope : struct, Enum
+            where TOptions : LdapOptionsBase {
 
         #region Public methods
         /// <inheritdoc />
@@ -254,13 +257,13 @@ namespace Visus.Identity.Stores {
         /// is <c>null</c>.</exception>
         protected IdentityLdapStoreBase(
                 ILdapSearchServiceBase<TUser, TRole, TSearchScope> searchService,
-                LdapOptionsBase ldapOptions,
+                IOptions<TOptions> ldapOptions,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TRole> roleMap,
                 IClaimsBuilder<TUser, TRole> claimsBuilder,
                 IUserClaimsMap userClaims,
                 IGroupClaimsMap roleClaims,
-                ILogger<IdentityLdapStoreBase<TUser, TUserKey, TRole, TRoleKey, TSearchScope>> logger)
+                ILogger logger)
             : base(searchService,
                   ldapOptions,
                   userMap,

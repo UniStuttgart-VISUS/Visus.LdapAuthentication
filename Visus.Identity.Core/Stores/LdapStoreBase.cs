@@ -6,6 +6,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,14 +31,16 @@ namespace Visus.Identity.Stores {
     /// <typeparam name="TUser"></typeparam>
     /// <typeparam name="TRole"></typeparam><
     /// <typeparam name="TSearchScope"></typeparam>
-    public class LdapStoreBase<TUser, TRole, TSearchScope>
+    /// <typeparam name="TOptions"></typeparam>
+    public class LdapStoreBase<TUser, TRole, TSearchScope, TOptions>
             : IQueryableUserStore<TUser>,
             IQueryableRoleStore<TRole>,
             IRoleClaimStore<TRole>,
             IUserClaimStore<TUser>
             where TUser : class, new()
             where TRole : class, new()
-            where TSearchScope : struct, Enum {
+            where TSearchScope : struct, Enum
+            where TOptions : LdapOptionsBase {
 
         #region Public properties
         /// <inheritdoc />
@@ -434,19 +437,19 @@ namespace Visus.Identity.Stores {
         /// is <c>null</c>.</exception>
         protected LdapStoreBase(
                 ILdapSearchServiceBase<TUser, TRole, TSearchScope> searchService,
-                LdapOptionsBase ldapOptions,
+                IOptions<TOptions> ldapOptions,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TRole> roleMap,
                 IClaimsBuilder<TUser, TRole> claimsBuilder,
                 IUserClaimsMap userClaims,
                 IGroupClaimsMap roleClaims,
-                ILogger<LdapStoreBase<TUser, TRole, TSearchScope>> logger) {
+                ILogger logger) {
             ArgumentNullException.ThrowIfNull(userClaims, nameof(userClaims));
             ArgumentNullException.ThrowIfNull(roleClaims, nameof(roleClaims));
 
             this._claimsBuilder = claimsBuilder
                 ?? throw new ArgumentNullException(nameof(claimsBuilder));
-            this._ldapOptions = ldapOptions
+            this._ldapOptions = ldapOptions?.Value
                 ?? throw new ArgumentNullException(nameof(ldapOptions));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
@@ -515,7 +518,7 @@ namespace Visus.Identity.Stores {
 
         #region Private fields
         private readonly IClaimsBuilder<TUser, TRole> _claimsBuilder;
-        private readonly LdapOptionsBase _ldapOptions;
+        private readonly TOptions _ldapOptions;
         private readonly ILogger _logger;
         private readonly Dictionary<string, string> _roleClaimAttributes = new();
         private readonly ILdapAttributeMap<TRole> _roleMap;

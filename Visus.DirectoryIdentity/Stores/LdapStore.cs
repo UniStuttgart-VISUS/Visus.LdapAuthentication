@@ -21,16 +21,27 @@ namespace Visus.DirectoryIdentity.Stores {
     /// The most basic read-only LDAP-backed user and role (group) store
     /// we can build.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    /// <typeparam name="TRole"></typeparam>
-    /// <param name="searchService"></param>
-    /// <param name="ldapOptions"></param>
-    /// <param name="userMap"></param>
-    /// <param name="roleMap"></param>
-    /// <param name="claimsBuilder"></param>
-    /// <param name="userClaims"></param>
-    /// <param name="roleClaims"></param>
-    /// <param name="logger"></param>
+    /// <typeparam name="TUser">The type used to represent a user.</typeparam>
+    /// <typeparam name="TRole">The type used to represent a role.</typeparam>
+    /// <param name="searchService">The search service used to look up users
+    /// and roles in the directory.</param>
+    /// <param name="ldapOptions">The LDAP configuration, which most importantly
+    /// defines the LDAP schema and thus how attributes are mapped to claims.
+    /// </param>
+    /// <param name="userMap">The map from LDAP attributes to properties
+    /// of <typeparamref name="TUser"/>.</param>
+    /// <param name="roleMap">The map from LDAP attributes to properties
+    /// of <typeparamref name="TRole"/>.</param>
+    /// <param name="claimsBuilder">A claims builder that generates claims
+    /// from <typeparamref name="TUser"/> and <typeparamref name="TRole"/>
+    /// objects.</param>
+    /// <param name="userClaims">The map from LDAP attributes to user
+    /// claims.</param>
+    /// <param name="roleClaims">The map from LDAP attributes to role
+    /// claims.</param>
+    /// <param name="logger">A logger for persisting messages.</param>
+    /// <exception cref="ArgumentNullException">If any of the parameters
+    /// is <c>null</c>.</exception>
     /// <exception cref="ArgumentNullException">If any of the parameters
     /// is <c>null</c>.</exception>
     public class LdapStore<TUser, TRole>(
@@ -42,9 +53,9 @@ namespace Visus.DirectoryIdentity.Stores {
             IUserClaimsMap userClaims,
             IGroupClaimsMap roleClaims,
             ILogger<LdapStore<TUser, TRole>> logger)
-        : LdapStoreBase<TUser, TRole, SearchScope>(
+        : LdapStoreBase<TUser, TRole, SearchScope, LdapOptions>(
             searchService,
-            ldapOptions?.Value!,
+            ldapOptions,
             userMap,
             roleMap,
             claimsBuilder,
