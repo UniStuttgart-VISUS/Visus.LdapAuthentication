@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
@@ -29,9 +30,9 @@ namespace Visus.DirectoryAuthentication.Tests {
                 builder.MapAttribute("objectSid")
                     .WithConverter<SidConverter>()
                     .ToClaim(ClaimTypes.Sid);
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
 
             Assert.IsNotNull(map);
             Assert.IsNotNull(map.AttributeNames);
@@ -73,9 +74,9 @@ namespace Visus.DirectoryAuthentication.Tests {
 
                 builder.MapProperty(nameof(LdapUser.Surname))
                     .ToClaim(ClaimTypes.Surname);
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
 
             Assert.IsNotNull(map);
             Assert.IsNotNull(map.AttributeNames);
@@ -132,9 +133,9 @@ namespace Visus.DirectoryAuthentication.Tests {
                 Assert.ThrowsException<ArgumentNullException>(() => builder.MapProperty(null!));
                 Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
                 Assert.ThrowsException<ArgumentException>(() => builder.MapProperty("hurz"));
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
         }
 
         [TestMethod]
@@ -142,18 +143,18 @@ namespace Visus.DirectoryAuthentication.Tests {
             _ = new ClaimsMap<LdapUser>((builder, _) => {
                 Assert.ThrowsException<ArgumentNullException>(() => builder.MapAttribute((LdapAttributeAttribute) null!));
                 Assert.ThrowsException<ArgumentNullException>(() => builder.MapAttribute((string) null!));
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
         }
 
         [TestMethod]
         public void TestPreventSchemaMismatch() {
             _ = new ClaimsMap<LdapUser>((builder, _) => {
                  Assert.ThrowsException<ArgumentException>(() => builder.MapAttribute(new LdapAttributeAttribute("hurz", "sAMAccountName")));
-            }, new LdapOptions() {
+            }, Options.Create(new LdapOptions() {
                 Schema = Schema.ActiveDirectory
-            });
+            }));
         }
     }
 }

@@ -117,7 +117,7 @@ namespace Visus.LdapAuthentication {
             if (mapUserClaims != null) {
                 services.TryAddSingleton<IUserClaimsMap>(s => {
                     var o = s.GetRequiredService<IOptions<LdapOptions>>();
-                    return new ClaimsMap<TUser>(mapUserClaims, o.Value);
+                    return new ClaimsMap<TUser>(mapUserClaims, o);
                 });
             }
 
@@ -127,7 +127,7 @@ namespace Visus.LdapAuthentication {
             if (mapGroupClaims != null) {
                 services.TryAddSingleton<IGroupClaimsMap>(s => {
                     var o = s.GetRequiredService<IOptions<LdapOptions>>();
-                    return new ClaimsMap<TGroup>(mapGroupClaims, o.Value);
+                    return new ClaimsMap<TGroup>(mapGroupClaims, o);
                 });
             }
 

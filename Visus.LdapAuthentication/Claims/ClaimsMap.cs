@@ -23,7 +23,8 @@ namespace Visus.LdapAuthentication.Claims {
     /// which must be annotated with <see cref="LdapAttribute"/> and
     /// <see cref="ClaimAttribute"/> in order to automatically derive the claim
     /// mapping.</typeparam>
-    public sealed class ClaimsMap<TObject> : ClaimsMapBase<TObject> {
+    public sealed class ClaimsMap<TObject>
+            : ClaimsMapBase<TObject, LdapOptions> {
 
         /// <summary>
         /// Initialises a new instance.
@@ -32,8 +33,7 @@ namespace Visus.LdapAuthentication.Claims {
         /// be used for reflecting LDAP attributes.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        public ClaimsMap(IOptions<LdapOptions> options)
-            : base(options?.Value!) { }
+        public ClaimsMap(IOptions<LdapOptions> options) : base(options) { }
 
         /// <summary>
         /// Initialises a new instance.
@@ -45,8 +45,7 @@ namespace Visus.LdapAuthentication.Claims {
         /// <exception cref="ArgumentNullException">If <paramref name="mapper"/>
         /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
         /// </exception>
-        internal ClaimsMap(Action<IClaimsMapBuilder, LdapOptionsBase> mapper,
-                LdapOptions options)
-            : base(mapper, options) { }
+        internal ClaimsMap(Action<IClaimsMapBuilder, LdapOptions> mapper,
+            IOptions<LdapOptions> options) : base(mapper, options) { }
     }
 }

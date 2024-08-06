@@ -10,10 +10,13 @@ using System;
 using System.Diagnostics;
 using System.Security.Claims;
 using Visus.DirectoryAuthentication;
+using Visus.DirectoryAuthentication.Claims;
 using Visus.DirectoryAuthentication.Configuration;
+using Visus.DirectoryAuthentication.Mapping;
 using Visus.DirectoryIdentity.Properties;
 using Visus.DirectoryIdentity.Stores;
 using Visus.Identity.Managers;
+using Visus.Identity.Mapping;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
@@ -134,11 +137,20 @@ namespace Visus.DirectoryIdentity {
 
             builder.AddLdapUserManager<TUser>();
 
-            builder.Services.AddLdapAuthentication(options,
-                mapUser ?? MapWellKnownUser<TUser, TUserKey>,
-                mapRole ?? MapWellKnownRole<TRole, TRoleKey>,
-                mapUserClaims ?? MapWellKnownUserClaims,
-                mapRoleClaims ?? MapWellKnownRoleClaims);
+            builder.Services.AddLdapAuthentication/*<
+                    TUser, TRole,
+                    LdapMapper<TUser, TRole>,
+                    LdapAttributeMap<TUser>,
+                    LdapAttributeMap<TRole>,
+                    ClaimsBuilder<TUser, TRole>,
+                    ClaimsMapper,
+                    IdentityUserClaimsMap<TUser, TUserKey, LdapOptions>,
+                    ClaimsMap<TRole>>*/(
+                options,
+                mapUser ?? WellKnownMappings.MapUser<TUser, TUserKey>,
+                mapRole ?? WellKnownMappings.MapRole<TRole, TRoleKey>,
+                mapUserClaims,
+                mapRoleClaims);
 
             builder.Services
                 .AddScoped<IUserStore<TUser>, IdentityLdapStore<TUser, TUserKey, TRole, TRoleKey>>()

@@ -1,4 +1,4 @@
-﻿// <copyright file="ClaimsMap.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="ClaimsMapBase.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Security.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Properties;
 using LdapAttribute = Visus.Ldap.Mapping.LdapAttributeAttribute;
@@ -28,8 +27,11 @@ namespace Visus.Ldap.Claims {
     /// which must be annotated with <see cref="LdapAttribute"/> and
     /// <see cref="ClaimAttribute"/> in order to automatically derive the claim
     /// mapping.</typeparam>
-    public abstract class ClaimsMapBase<TObject>
-            : IUserClaimsMap, IGroupClaimsMap {
+    /// <typeparam name="TOptions">The type of the actual
+    /// <see cref="LdapOptionsBase"/>.</typeparam>
+    public abstract class ClaimsMapBase<TObject, TOptions>
+            : IUserClaimsMap, IGroupClaimsMap
+            where TOptions : LdapOptionsBase {
 
         #region Public properties
         /// <inheritdoc />
@@ -65,11 +67,11 @@ namespace Visus.Ldap.Claims {
         /// be used for reflecting LDAP attributes.</param>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="options"/> is <c>null</c>.</exception>
-        protected ClaimsMapBase(LdapOptionsBase options) {
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+        protected ClaimsMapBase(IOptions<TOptions> options) {
+            ArgumentNullException.ThrowIfNull(options?.Value, nameof(options));
             this._claims = (from p in typeof(TObject).GetProperties(PropertyFlags)
                             let a = p.GetCustomAttributes<LdapAttribute>()
-                                    .Where(a => a.Schema == options.Schema)
+                                    .Where(a => a.Schema == options.Value.Schema)
                                     .FirstOrDefault()
                             let c = p.GetCustomAttributes<ClaimAttribute>()
                             where (a != null) && (c != null) && c.Any()
@@ -94,13 +96,13 @@ namespace Visus.Ldap.Claims {
         /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
         /// </exception>
         protected ClaimsMapBase(
-                Action<IClaimsMapBuilder, LdapOptionsBase> mapper,
-                LdapOptionsBase options) {
+                Action<IClaimsMapBuilder, TOptions> mapper,
+                IOptions<TOptions> options) {
             ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            ArgumentNullException.ThrowIfNull(options?.Value, nameof(options));
 
             this._claims = new();
-            mapper(new MapBuilder(this, options.Schema), options);
+            mapper(new MapBuilder(this, options.Value.Schema), options.Value);
 
             this.AttributeNames = this.Attributes.Select(a => a.Name)
                 .Distinct()
@@ -112,7 +114,7 @@ namespace Visus.Ldap.Claims {
         /// <summary>
         /// Builder to adding the claims to an attribute.
         /// </summary>
-        private class EntryBuilder(ClaimsMapBase<TObject> map,
+        private class EntryBuilder(ClaimsMapBase<TObject, TOptions> map,
                 LdapAttribute attribute)
                 : INewAttributeClaimsMapBuilder {
 
@@ -158,7 +160,7 @@ namespace Visus.Ldap.Claims {
             #region Private fields
             private readonly LdapAttribute _attribute = attribute
                 ?? throw new ArgumentNullException(nameof(attribute));
-            private readonly ClaimsMapBase<TObject> _map = map;
+            private readonly ClaimsMapBase<TObject, TOptions> _map = map;
             #endregion
         }
         #endregion
@@ -171,7 +173,8 @@ namespace Visus.Ldap.Claims {
         private class MapBuilder : IClaimsMapBuilder {
 
             #region Public constructors
-            public MapBuilder(ClaimsMapBase<TObject> map, string schema) {
+            public MapBuilder(ClaimsMapBase<TObject, TOptions> map,
+                    string schema) {
                 Debug.Assert(map != null);
                 Debug.Assert(schema != null);
                 this._map = map;
@@ -241,7 +244,7 @@ namespace Visus.Ldap.Claims {
             #endregion
 
             #region Private fields
-            private readonly ClaimsMapBase<TObject> _map;
+            private readonly ClaimsMapBase<TObject, TOptions> _map;
             private readonly string _schema;
             #endregion
         }

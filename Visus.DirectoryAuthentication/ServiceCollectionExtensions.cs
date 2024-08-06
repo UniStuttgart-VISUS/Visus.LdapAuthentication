@@ -70,8 +70,8 @@ namespace Visus.DirectoryAuthentication {
                 Action<LdapOptions> options,
                 Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
                 Action<ILdapAttributeMapBuilder<TGroup>, LdapOptionsBase>? mapGroup = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapGroupClaims = null)
+                Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null)
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TLdapMapper : class, ILdapMapper<SearchResultEntry, TUser, TGroup>
@@ -118,7 +118,7 @@ namespace Visus.DirectoryAuthentication {
             if (mapUserClaims != null) {
                 services.TryAddSingleton<IUserClaimsMap>(s => {
                     var o = s.GetRequiredService<IOptions<LdapOptions>>();
-                    return new ClaimsMap<TUser>(mapUserClaims, o.Value);
+                    return new ClaimsMap<TUser>(mapUserClaims, o);
                 });
             }
 
@@ -128,7 +128,7 @@ namespace Visus.DirectoryAuthentication {
             if (mapGroupClaims != null) {
                 services.TryAddSingleton<IGroupClaimsMap>(s => {
                     var o = s.GetRequiredService<IOptions<LdapOptions>>();
-                    return new ClaimsMap<TGroup>(mapGroupClaims, o.Value);
+                    return new ClaimsMap<TGroup>(mapGroupClaims, o);
                 });
             }
 
