@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title></Title>
+    <Version>0.4.0-beta</Version>
+    <Authors>Christoph Müller</Authors>
+    <Product>ASP.NET Core LDAP Authentication Middleware</Product>
+    <Company>Visualisierunginstitut der Universität Stuttgart</Company>
+    <Description>This library implements an identity store backed by LDAP.  The library uses Novell's C# LDAP library and is running on Windows and Linux.</Description>
+    <Copyright>Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart</Copyright>
+    <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
+    <PackageTags>directoryservices ldap aspnet identity net8</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Visus.Identity.Core\Visus.Identity.Core.csproj" />
+    <ProjectReference Include="..\Visus.LdapAuthentication\Visus.LdapAuthentication.csproj" />
+  </ItemGroup>
+
+</Project>

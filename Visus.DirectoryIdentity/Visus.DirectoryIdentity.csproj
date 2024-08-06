@@ -6,8 +6,8 @@
     <Version>0.4.0-beta</Version>
     <Authors>Christoph Müller</Authors>
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
-    <Product>ASP.NET Core Identity from LDAP</Product>
-    <Description>This library implements an identity store backed by LDAP.  The library uses .NET  Core'sSystem.DirectoryServices.Protocols and is running on Windows and Linux, but requires native LDAP libraries being installed.</Description>
+    <Product>ASP.NET Core LDAP Authentication Middleware</Product>
+    <Description>This library implements an identity store backed by LDAP.  The library uses .NET  Core's System.DirectoryServices.Protocols and is running on Windows and Linux, but requires native LDAP libraries being installed.</Description>
     <Copyright>Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
@@ -16,6 +16,7 @@
     <NeutralLanguage>en</NeutralLanguage>
     <AssemblyVersion>0.3.0.0</AssemblyVersion>
     <Nullable>enable</Nullable>
+    <Title></Title>
   </PropertyGroup>
 
   <ItemGroup>

@@ -67,10 +67,10 @@ namespace Visus.LdapAuthentication {
                 TClaimsBuilder, TClaimsMapper, TUserClaimsMap, TGroupClaimsMap>(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<TGroup>, LdapOptionsBase>? mapGroup = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapGroupClaims = null)
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptions>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TGroup>, LdapOptions>? mapGroup = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null)
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TLdapMapper : class, ILdapMapper<LdapEntry, TUser, TGroup>
@@ -173,10 +173,10 @@ namespace Visus.LdapAuthentication {
         public static IServiceCollection AddLdapAuthentication<TUser, TGroup>(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<TGroup>, LdapOptionsBase>? mapGroup = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapGroupClaims = null)
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptions>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TGroup>, LdapOptions>? mapGroup = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null)
                 where TUser : class, new()
                 where TGroup : class, new()
             => services.AddLdapAuthentication<TUser,
@@ -218,10 +218,10 @@ namespace Visus.LdapAuthentication {
         public static IServiceCollection AddLdapAuthentication(
                 this IServiceCollection services,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptionsBase>? mapGroup = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapGroupClaims = null)
+                Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptions>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptions>? mapGroup = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null)
             => services.AddLdapAuthentication<LdapUser, LdapGroup>(options,
                 mapUser, mapGroup, mapUserClaims, mapGroupClaims);
 

@@ -7,11 +7,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Visus.DirectoryAuthentication;
-using Visus.DirectoryAuthentication.Claims;
-using Visus.DirectoryAuthentication.Configuration;
-using Visus.DirectoryAuthentication.Mapping;
-using Visus.DirectoryIdentity.Stores;
+using Visus.LdapAuthentication;
+using Visus.LdapAuthentication.Claims;
+using Visus.LdapAuthentication.Configuration;
+using Visus.LdapAuthentication.Mapping;
+using Visus.LdapIdentity.Stores;
 using Visus.Identity;
 using Visus.Identity.Managers;
 using Visus.Identity.Mapping;
@@ -20,7 +20,7 @@ using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 
 
-namespace Visus.DirectoryIdentity {
+namespace Visus.LdapIdentity {
 
     /// <summary>
     /// Extension methods for <see cref="IdentityBuilder"/>.
@@ -62,10 +62,10 @@ namespace Visus.DirectoryIdentity {
         public static IdentityBuilder AddLdapStore<TUser, TRole>(
                 this IdentityBuilder builder,
                 Action<LdapOptions> options,
-                Action<ILdapAttributeMapBuilder<TUser>, LdapOptionsBase>? mapUser = null,
-                Action<ILdapAttributeMapBuilder<TRole>, LdapOptionsBase>? mapRole = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptionsBase>? mapRoleClaims = null)
+                Action<ILdapAttributeMapBuilder<TUser>, LdapOptions>? mapUser = null,
+                Action<ILdapAttributeMapBuilder<TRole>, LdapOptions>? mapRole = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
+                Action<IClaimsMapBuilder, LdapOptions>? mapRoleClaims = null)
                 where TUser : class, new()
                 where TRole : class, new() {
             ArgumentNullException.ThrowIfNull(builder, nameof(builder));

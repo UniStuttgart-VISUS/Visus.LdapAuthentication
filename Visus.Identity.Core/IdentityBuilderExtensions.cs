@@ -9,7 +9,7 @@ using System;
 using Visus.Identity.Managers;
 
 
-namespace Visus.DirectoryIdentity {
+namespace Visus.Identity {
 
     /// <summary>
     /// Extension methods for <see cref="IdentityBuilder"/>.
