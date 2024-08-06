@@ -2,9 +2,20 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Visus.Identity</RootNamespace>
+    <Title>LDAP identity base classes</Title>
+    <Version>0.4.0-beta</Version>
+    <Authors>Christoph Müller</Authors>
+    <Company>Visualisierunginstitut der Universität Stuttgart</Company>
+    <Product>ASP.NET Core LDAP Authentication Middleware</Product>
+    <Description>This library implements shared functionality used in Visus.DirectoryIdentity and Visus.LdapIdentity. There should be little need for including this package directly.</Description>
+    <Copyright>Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart</Copyright>
+    <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +40,13 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <PackagePath>\</PackagePath>
+      <Pack>True</Pack>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -6,9 +6,13 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using Visus.Identity.Properties;
 using Visus.Ldap;
 using Visus.Ldap.Claims;

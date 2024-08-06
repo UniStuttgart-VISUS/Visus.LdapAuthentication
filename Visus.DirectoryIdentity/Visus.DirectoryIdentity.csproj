@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.3.0-alpha</Version>
+    <Version>0.4.0-beta</Version>
     <Authors>Christoph Müller</Authors>
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
     <Product>ASP.NET Core Identity from LDAP</Product>

@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Mapping;
 using Microsoft.AspNetCore.Identity;
+using System;
 
 
 namespace Visus.Identity {
