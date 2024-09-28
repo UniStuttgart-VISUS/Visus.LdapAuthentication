@@ -19,6 +19,7 @@ using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
+using Visus.Ldap.Services;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
 using Visus.LdapAuthentication.Properties;
@@ -199,6 +200,7 @@ namespace Visus.LdapAuthentication.Services {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
                         this._mapper,
+                        NoGroupCacheService<TGroup>.Default,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -243,6 +245,7 @@ namespace Visus.LdapAuthentication.Services {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
                         this._mapper,
+                        NoGroupCacheService<TGroup>.Default,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;

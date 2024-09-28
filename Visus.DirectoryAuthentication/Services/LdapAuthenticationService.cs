@@ -22,6 +22,7 @@ using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
+using Visus.Ldap.Services;
 
 
 namespace Visus.DirectoryAuthentication.Services {
@@ -205,6 +206,7 @@ namespace Visus.DirectoryAuthentication.Services {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
+                        NoGroupCacheService<TGroup>.Default,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -252,6 +254,7 @@ namespace Visus.DirectoryAuthentication.Services {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
+                        NoGroupCacheService<TGroup>.Default,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;

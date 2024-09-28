@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Visus.Ldap;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Configuration;
@@ -101,12 +102,14 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <param name="that"></param>
         /// <param name="connection"></param>
         /// <param name="mapper"></param>
+        /// <param name="groupCache"></param>
         /// <param name="options"></param>
         /// <returns></returns>
         internal static IEnumerable<TGroup> GetGroups<TUser, TGroup>(
                 this LdapEntry that,
                 LdapConnection connection,
                 ILdapMapper<LdapEntry, TUser, TGroup> mapper,
+                ILdapGroupCache<TGroup> groupCache,
                 LdapOptions options)
                 where TGroup : new() {
             ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
@@ -148,7 +151,8 @@ namespace Visus.LdapAuthentication.Extensions {
                 // Recursively reconstruct the hierarchy itself.
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, mapper, options);
+                    var parents = g.GetGroups(connection, mapper, groupCache,
+                        options);
                     yield return mapper.SetGroups(group, parents);
                 }
 

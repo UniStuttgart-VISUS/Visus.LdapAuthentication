@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Visus.Ldap;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Extensions;
@@ -50,59 +51,47 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <inheritdoc />
-        public TGroup? GetGroupByDistinguishedName(string distinguishedName)
-            => this.GroupCache.GetGroupByDistinguishedName(distinguishedName,
-                value => {
-                    var att = this.GroupMap.DistinguishedNameAttribute!.Name;
-                    var filter = $"({att}={value})";
-                    return this.GetGroupEntry($"({att}={filter})", null);
-                });
+        public TGroup? GetGroupByDistinguishedName(string distinguishedName) {
+            var att = this.GroupMap.DistinguishedNameAttribute!.Name;
+            var filter = $"({att}={distinguishedName})";
+            return this.GetGroupEntry($"({att}={filter})", null);
+        }
 
         /// <inheritdoc />
         public Task<TGroup?> GetGroupByDistinguishedNameAsync(
-                string distinguishedName)
-            => this.GroupCache.GetGroupByDistinguishedName(distinguishedName,
-                value => {
-                    var att = this.GroupMap.DistinguishedNameAttribute!.Name;
-                    var filter = $"({att}={value})";
-                    return this.GetGroupEntryAsync($"({att}={filter})", null);
-                });
+                string distinguishedName) {
+            var att = this.GroupMap.DistinguishedNameAttribute!.Name;
+            var filter = $"({att}={distinguishedName})";
+            return this.GetGroupEntryAsync($"({att}={filter})", null);
+        }
 
         /// <inheritdoc />
-        public TGroup? GetGroupByIdentity(string identity)
-            => this.GroupCache.GetGroupByIdentity(identity,
-                value => {
-                    var att = this.GroupMap.IdentityAttribute!.Name;
-                    var filter = value.EscapeLdapFilterExpression();
-                    return this.GetGroupEntry($"({att}={filter})", null);
-                });
+        public TGroup? GetGroupByIdentity(string identity) {
+            var att = this.GroupMap.IdentityAttribute!.Name;
+            var filter = identity.EscapeLdapFilterExpression();
+            return this.GetGroupEntry($"({att}={filter})", null);
+        }
 
         /// <inheritdoc />
-        public Task<TGroup?> GetGroupByIdentityAsync(string identity)
-            => this.GroupCache.GetGroupByIdentity(identity,
-                value => {
-                    var att = this.GroupMap.IdentityAttribute!.Name;
-                    var filter = value.EscapeLdapFilterExpression();
-                    return this.GetGroupEntryAsync($"({att}={filter})", null);
-                });
+        public Task<TGroup?> GetGroupByIdentityAsync(string identity) {
+            var att = this.GroupMap.IdentityAttribute!.Name;
+            var filter = identity.EscapeLdapFilterExpression();
+            return this.GetGroupEntryAsync($"({att}={filter})", null);
+        }
 
         /// <inheritdoc />
-        public TGroup? GetGroupByName(string name)
-             => this.GroupCache.GetGroupByName(name,
-                 value => {
-                     var att = this.GroupMap.AccountNameAttribute?.Name;
-                     var filter = value.EscapeLdapFilterExpression();
-                     return this.GetGroupEntry($"({att}={filter})", null);
-                 });
+        public TGroup? GetGroupByName(string name) {
+            var att = this.GroupMap.AccountNameAttribute?.Name;
+            var filter = name.EscapeLdapFilterExpression();
+            return this.GetGroupEntry($"({att}={filter})", null);
+        }
 
         /// <inheritdoc />
-        public Task<TGroup?> GetGroupByNameAsync(string name)
-            => this.GroupCache.GetGroupByName(name,
-                 value => {
-                     var att = this.GroupMap.AccountNameAttribute?.Name;
-                     var filter = value.EscapeLdapFilterExpression();
-                     return this.GetGroupEntryAsync($"({att}={filter})", null);
-                 });
+        public Task<TGroup?> GetGroupByNameAsync(string name) {
+            var att = this.GroupMap.AccountNameAttribute?.Name;
+            var filter = name.EscapeLdapFilterExpression();
+            return this.GetGroupEntryAsync($"({att}={filter})", null);
+        }
 
         /// <inheritdoc />
         public TUser? GetUserByAccountName(string accountName) {
@@ -349,6 +338,10 @@ namespace Visus.DirectoryAuthentication.Services {
         /// Gets a single group matching the given <paramref name="filter"/>
         /// expression.
         /// </summary>
+        /// <remarks>
+        /// Implementors should make use of the <see cref="GroupCache"/> before
+        /// performing this lookup.
+        /// </remarks>
         /// <param name="filter">The filter uniquely identifying the group we
         /// are looking for.</param>
         /// <param name="searchBases">The search bases to look in. If this
@@ -363,6 +356,10 @@ namespace Visus.DirectoryAuthentication.Services {
         /// Gets a single group matching the given <paramref name="filter"/>
         /// expression.
         /// </summary>
+        /// <remarks>
+        /// Implementors should make use of the <see cref="GroupCache"/> before
+        /// performing this lookup.
+        /// </remarks>
         /// <param name="filter">The filter uniquely identifying the group we
         /// are looking for.</param>
         /// <param name="searchBases">The search bases to look in. If this

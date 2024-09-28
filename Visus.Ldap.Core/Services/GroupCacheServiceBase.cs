@@ -31,46 +31,44 @@ namespace Visus.Ldap.Services {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
 
             if (this._options.GroupCaching != GroupCaching.None) {
-                if (this._map.DistinguishedNameProperty != null) {
-                    var k = this._map.DistinguishedNameProperty.GetValue(group)
-                        as string;
-                    if (!string.IsNullOrEmpty(k)) {
-                        this.Add(nameof(this.GetGroupByDistinguishedName),
-                            k, group);
+                {
+                    var att = this._map.DistinguishedNameAttribute;
+                    var prop = this._map.DistinguishedNameProperty;
+
+                    if ((att != null) && (prop != null)) {
+                        var value = prop.GetValue(group) as string;
+                        var filter = $"({att.Name}={value})";
+                        this.Add(filter, group);
                     }
                 }
 
                 if (this._map.IdentityProperty != null) {
-                    var k = this._map.IdentityProperty.GetValue(group)
-                        as string;
-                    if (!string.IsNullOrEmpty(k)) {
-                        this.Add(nameof(this.GetGroupByIdentity),
-                            k, group);
+                    var att = this._map.IdentityAttribute;
+                    var prop = this._map.IdentityProperty;
+
+                    if ((att != null) && (prop != null)) {
+                        var value = prop.GetValue(group) as string;
+                        var filter = $"({att.Name}={value})";
+                        this.Add(filter, group);
                     }
                 }
 
                 if (this._map.AccountNameProperty != null) {
-                    var k = this._map.AccountNameProperty.GetValue(group)
-                        as string;
-                    if (!string.IsNullOrEmpty(k)) {
-                        this.Add(nameof(this.GetGroupByName),
-                            k, group);
+                    var att = this._map.AccountNameAttribute;
+                    var prop = this._map.AccountNameProperty;
+
+                    if ((att != null) && (prop != null)) {
+                        var value = prop.GetValue(group) as string;
+                        var filter = $"({att.Name}={value})";
+                        this.Add(filter, group);
                     }
                 }
             }
         }
 
         /// <inheritdoc />
-        public TGroup? GetGroupByDistinguishedName(string distinguishedName)
-            => this._cache.Get<TGroup>(CreateKey(distinguishedName));
-
-        /// <inheritdoc />
-        public TGroup? GetGroupByIdentity(string identity)
-            => this._cache.Get<TGroup>(CreateKey(identity));
-
-        /// <inheritdoc />
-        public TGroup? GetGroupByName(string name)
-            => this._cache.Get<TGroup>(CreateKey(name));
+        public TGroup? GetGroup(string filter)
+            => this._cache.Get<TGroup>(CreateKey(filter));
         #endregion
 
         #region Protected constructors
@@ -98,24 +96,19 @@ namespace Visus.Ldap.Services {
 
         #region Private class methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static CacheKey<ILdapAttributeMap<TGroup>> CreateKey(string key,
-                [CallerMemberName] string attribute = null!) {
-            Debug.Assert(!string.IsNullOrEmpty(attribute));
-            Debug.Assert(!string.IsNullOrEmpty(key));
-            return CacheKey.Create<ILdapAttributeMap<TGroup>, TGroup>(
-                $"{attribute}:{key}");
-        }
+        private static CacheKey<ILdapAttributeMap<TGroup>> CreateKey(
+                string filter)
+            => CacheKey.Create<ILdapAttributeMap<TGroup>, TGroup>(filter);
         #endregion
 
         #region Private methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Add(string attribute, string key, TGroup value) {
-            Debug.Assert(!string.IsNullOrEmpty(attribute));
-            Debug.Assert(!string.IsNullOrEmpty(key));
+        private void Add(string filter, TGroup value) {
+            Debug.Assert(!string.IsNullOrEmpty(filter));
             Debug.Assert(value != null);
 
-            this._logger.LogTrace("Caching group with key {Key} for "
-                + "attribute {Attribute}.", key, attribute);
+            this._logger.LogTrace("Caching group for LDAP filter {Filter}.",
+                filter);
 
             var duration = this._options.GroupCacheDuration;
             var opts = this._options.GroupCaching switch {
@@ -131,7 +124,7 @@ namespace Visus.Ldap.Services {
                         + "the GroupCaching enumeration.")
             };
 
-            this._cache.Set(CreateKey(key, attribute), value, opts);
+            this._cache.Set(CreateKey(filter), value, opts);
         }
         #endregion
 

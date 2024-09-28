@@ -128,20 +128,28 @@ namespace Visus.LdapAuthentication.Services {
         protected override TGroup? GetGroupEntry(
                 string filter,
                 IDictionary<string, SearchScope>? searchBases)
-            => this.GetEntry<TGroup>(filter,
-                searchBases,
-                this.GroupAttributes,
-                this.MapGroup);
+            => this.GroupCache.GetGroup(filter, f => {
+                this._logger.LogTrace("Cache miss for group identified by "
+                    + "filter {Filter}.", f);
+                return this.GetEntry<TGroup>(f,
+                    searchBases,
+                    this.GroupAttributes,
+                    this.MapGroup);
+            });
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override Task<TGroup?> GetGroupEntryAsync(
                 string filter,
                 IDictionary<string, SearchScope>? searchBases)
-            => this.GetEntryAsync<TGroup>(filter,
-                searchBases,
-                this.GroupAttributes,
-                this.MapGroup);
+            => this.GroupCache.GetGroup(filter, f => {
+                this._logger.LogTrace("Cache miss for group identified by "
+                    + "filter {Filter}.", f);
+                return this.GetEntryAsync<TGroup>(f,
+                    searchBases,
+                    this.GroupAttributes,
+                    this.MapGroup);
+            });
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -310,6 +318,7 @@ namespace Visus.LdapAuthentication.Services {
             if (this._mapper.GroupIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
                     this._mapper,
+                    this.GroupCache,
                     this._options);
                 this._mapper.SetGroups(group, groups);
             }
@@ -331,6 +340,7 @@ namespace Visus.LdapAuthentication.Services {
             if (this._mapper.UserIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
                     this._mapper,
+                    this.GroupCache,
                     this._options);
                 this._mapper.SetGroups(user, groups);
             }

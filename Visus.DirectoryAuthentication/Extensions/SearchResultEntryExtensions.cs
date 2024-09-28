@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Configuration;
+using Visus.Ldap;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
 
@@ -128,6 +129,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 this SearchResultEntry that,
                 LdapConnection connection,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
+                ILdapGroupCache<TGroup> groupCache,
                 LdapOptions options)
                 where TGroup : new() {
             ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
@@ -169,7 +171,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 // Recursively reconstruct the hierarchy itself.
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, mapper, options);
+                    var parents = g.GetGroups(connection, mapper, groupCache,
+                        options);
                     yield return mapper.SetGroups(group, parents);
                 }
 
