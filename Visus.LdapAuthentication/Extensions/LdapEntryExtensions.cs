@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Visus.Ldap;
 using Visus.Ldap.Extensions;
@@ -24,6 +25,22 @@ namespace Visus.LdapAuthentication.Extensions {
     internal static class LdapEntryExtensions {
 
         #region Internal methods
+        /// <summary>
+        /// Gets an LDAP filter that selects the given entry via its DN.
+        /// </summary>
+        /// <param name="that">The entry to get the filter for.</param>
+        /// <param name="options">The <see cref="LdapOptions"/> that provide the
+        /// information what the name of the DN attribute is.</param>
+        /// <returns>A filter for the given entry.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static string GetFilter(this LdapEntry that,
+                LdapOptions options) {
+            Debug.Assert(that != null);
+            Debug.Assert(options != null);
+            Debug.Assert(options.Mapping != null);
+            return $"({options.Mapping.DistinguishedNameAttribute}={that.Dn})";
+        }
+
         /// <summary>
         /// Gets the DNs of all groups <paramref name="that"/> is directly
         /// member of.
