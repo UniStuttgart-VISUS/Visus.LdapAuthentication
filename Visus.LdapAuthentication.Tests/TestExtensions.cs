@@ -54,7 +54,7 @@ namespace Visus.LdapAuthentication.Tests {
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser1, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser2, LdapGroup>>>());
-            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<LdapEntry, LdapUser, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<LdapGroup>>>());
             return services;
         }
     }

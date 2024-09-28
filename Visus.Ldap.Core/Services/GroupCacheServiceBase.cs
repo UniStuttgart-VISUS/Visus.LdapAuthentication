@@ -1,4 +1,4 @@
-﻿// <copyright file="GroupCacheBase.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="GroupCacheServiceBase.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -20,15 +20,9 @@ namespace Visus.Ldap.Services {
     /// <see cref="IMemoryCache"/> to provide group objects from memory in order
     /// to bypass the LDAP server.
     /// </summary>
-    /// <typeparam name="TEntry">The type of the LDAP entry, which is required
-    /// to instantiate a <see cref="ILdapMapper{TEntry, TUser, TGroup}"/>.
-    /// </typeparam>
-    /// <typeparam name="TUser">The type of the LDAP user objects, which is
-    /// required to instantiate a
-    /// <see cref="ILdapMapper{TEntry, TUser, TGroup}"/>.</typeparam>
     /// <typeparam name="TGroup">The type of the group objects cached by the
     /// service.</typeparam>
-    public abstract class GroupCacheServiceBase<TEntry, TUser, TGroup>
+    public abstract class GroupCacheServiceBase<TGroup>
             : ILdapGroupCache<TGroup> {
 
         #region Public methods
@@ -36,24 +30,27 @@ namespace Visus.Ldap.Services {
         public void Add(TGroup group) {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
 
-            {
-                var key = this._mapper.GetDistinguishedName(group);
+            if (this._map.DistinguishedNameProperty != null) {
+                var key = this._map.DistinguishedNameProperty.GetValue(group)
+                    as string;
                 if (!string.IsNullOrEmpty(key)) {
                     this.Add(nameof(this.GetGroupByDistinguishedName),
                         key, group);
                 }
             }
 
-            {
-                var key = this._mapper.GetIdentity(group);
+            if (this._map.IdentityProperty != null) {
+                var key = this._map.IdentityProperty.GetValue(group)
+                    as string;
                 if (!string.IsNullOrEmpty(key)) {
                     this.Add(nameof(this.GetGroupByIdentity),
                         key, group);
                 }
             }
 
-            {
-                var key = this._mapper.GetAccountName(group);
+            if (this._map.AccountNameProperty != null) {
+                var key = this._map.AccountNameProperty.GetValue(group)
+                    as string;
                 if (!string.IsNullOrEmpty(key)) {
                     this.Add(nameof(this.GetGroupByName),
                         key, group);
@@ -84,14 +81,14 @@ namespace Visus.Ldap.Services {
         /// <exception cref="ArgumentNullException"></exception>
         protected GroupCacheServiceBase(IMemoryCache cache,
                 LdapOptionsBase options,
-                ILdapMapper<TEntry, TUser, TGroup> mapper,
+                ILdapAttributeMap<TGroup> map,
                 ILogger logger) {
             this._cache = cache
                 ?? throw new ArgumentNullException(nameof(cache));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._mapper = mapper
-                ?? throw new ArgumentNullException(nameof(mapper));
+            this._map = map
+                ?? throw new ArgumentNullException(nameof(map));
             this._options = options
                 ?? throw new ArgumentNullException(nameof(options));
         }
@@ -99,13 +96,12 @@ namespace Visus.Ldap.Services {
 
         #region Private class methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static CacheKey<GroupCacheServiceBase<TEntry, TUser, TGroup>>
-        CreateKey(string key,
+        private static CacheKey<ILdapAttributeMap<TGroup>> CreateKey(string key,
                 [CallerMemberName] string attribute = null!) {
             Debug.Assert(!string.IsNullOrEmpty(attribute));
             Debug.Assert(!string.IsNullOrEmpty(key));
-            return CacheKey.Create<GroupCacheServiceBase<TEntry, TUser, TGroup>,
-                TGroup>($"{attribute}:{key}");
+            return CacheKey.Create<ILdapAttributeMap<TGroup>, TGroup>(
+                $"{attribute}:{key}");
         }
         #endregion
 
@@ -145,7 +141,7 @@ namespace Visus.Ldap.Services {
         #region Private fields
         private readonly IMemoryCache _cache;
         private readonly ILogger _logger;
-        private readonly ILdapMapper<TEntry, TUser, TGroup> _mapper;
+        private readonly ILdapAttributeMap<TGroup> _map;
         private readonly LdapOptionsBase _options;
         #endregion
     }

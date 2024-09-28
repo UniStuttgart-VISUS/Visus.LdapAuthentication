@@ -149,8 +149,8 @@ namespace Visus.DirectoryAuthentication {
             services.TryAddSingleton<ILdapConnectionService, LdapConnectionService>();
 
             // Add the group cache.
-            services.AddMemoryCache().TryAddSingleton<ILdapGroupCache<TGroup>,
-                GroupCacheService<SearchResultEntry, TUser, TGroup>>();
+            services.AddMemoryCache()
+                .TryAddSingleton<ILdapGroupCache<TGroup>, GroupCacheService<TGroup>>();
 
             return services.AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>()

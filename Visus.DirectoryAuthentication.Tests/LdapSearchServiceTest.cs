@@ -7,9 +7,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Visus.Ldap;
+using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 
 
@@ -96,12 +98,20 @@ namespace Visus.DirectoryAuthentication.Tests {
             }
         }
 
-
         [TestMethod]
-        public void TestGetUsers() {
+        public void TestGetUsersCached() {
             if (this._testSecrets.CanRun) {
-                Assert.IsNotNull(this._services);
-                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                var configuration = TestExtensions.CreateConfiguration();
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                    o.GroupCacheDuration = TimeSpan.FromMinutes(5);
+                    o.GroupCaching = GroupCaching.SlidingExpiration;
+                });
+                var services = collection.BuildServiceProvider();
+
+                var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
                 var users = service.GetUsers();
@@ -114,10 +124,39 @@ namespace Visus.DirectoryAuthentication.Tests {
         }
 
         [TestMethod]
-        public async Task TestGetUsersAsync() {
+        public void TestGetUsersNonCached() {
             if (this._testSecrets.CanRun) {
-                Assert.IsNotNull(this._services);
-                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                var configuration = TestExtensions.CreateConfiguration();
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                    o.GroupCaching = GroupCaching.None;
+                });
+                var services = collection.BuildServiceProvider();
+
+                var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var users = service.GetUsers();
+                Assert.IsTrue(users.Any(), "Directory search returns any user.");
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetUsersAsyncCached() {
+            if (this._testSecrets.CanRun) {
+                var configuration = TestExtensions.CreateConfiguration();
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                    o.GroupCacheDuration = TimeSpan.FromMinutes(5);
+                    o.GroupCaching = GroupCaching.SlidingExpiration;
+                });
+                var services = collection.BuildServiceProvider();
+
+                var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
                 var users = await service.GetUsersAsync();
@@ -126,6 +165,26 @@ namespace Visus.DirectoryAuthentication.Tests {
                 foreach (var user in users) {
                     Assert.IsNotNull(user);
                 }
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetUsersAsyncNonCached() {
+            if (this._testSecrets.CanRun) {
+                var configuration = TestExtensions.CreateConfiguration();
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                    o.GroupCaching = GroupCaching.None;
+                });
+                var services = collection.BuildServiceProvider();
+
+                var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var users = await service.GetUsersAsync();
+                Assert.IsTrue(users.Any(), "Directory search returns any user.");
             }
         }
 

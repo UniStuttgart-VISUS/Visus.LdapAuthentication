@@ -55,9 +55,7 @@ namespace Visus.DirectoryAuthentication.Tests {
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser1, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser2, LdapGroup>>>());
-            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<SearchResultEntry, LdapUser, LdapGroup>>>());
-            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<SearchResultEntry, TestUser1, LdapGroup>>>());
-            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<SearchResultEntry, TestUser2, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<LdapGroup>>>());
             return services;
         }
     }

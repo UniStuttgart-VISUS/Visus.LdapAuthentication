@@ -148,8 +148,8 @@ namespace Visus.LdapAuthentication {
             services.TryAddSingleton<ILdapConnectionService, LdapConnectionService>();
 
             // Add the group cache.
-            services.AddMemoryCache().TryAddSingleton<ILdapGroupCache<TGroup>,
-                GroupCacheService<LdapEntry, TUser, TGroup>>();
+            services.AddMemoryCache()
+                .TryAddSingleton<ILdapGroupCache<TGroup>, GroupCacheService<TGroup>>();
 
             return services.AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>()
