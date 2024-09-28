@@ -142,14 +142,14 @@ namespace Visus.LdapAuthentication.Tests {
 
             var provider = collection.BuildServiceProvider();
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<ILdapAttributeMap<LdapUser>>();
                 Assert.IsNotNull(service, "User attribute map resolved");
                 Assert.AreEqual(1, service.Attributes.Count());
                 Assert.IsTrue(service.Attributes.Any(a => a.Name == "objectSid"));
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<ILdapAttributeMap<LdapGroup>>();
                 Assert.IsNotNull(service, "Group attribute map resolved");
                 Assert.AreEqual(1, service.Attributes.Count());
@@ -178,13 +178,13 @@ namespace Visus.LdapAuthentication.Tests {
                 Converter = typeof(SidConverter)
             };
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<IUserClaimsMap>();
                 Assert.IsNotNull(service, "User claims map resolved");
                 Assert.AreEqual("id", service[attribute].Single().Name);
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<IGroupClaimsMap>();
                 Assert.IsNotNull(service, "Group claims map resolved");
                 Assert.AreEqual("id", service[attribute].Single().Name);
