@@ -34,42 +34,42 @@ namespace Visus.DirectoryAuthentication.Tests {
 
             var provider = collection.BuildServiceProvider();
 
-            {
+            if (this._testSecrets.CanRun) {
                 var options = provider.GetService<IOptions<LdapOptions>>();
                 Assert.IsNotNull(options?.Value, "Options resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<ILdapAttributeMap<LdapUser>>();
                 Assert.IsNotNull(service, "User attribute map resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<ILdapAttributeMap<LdapGroup>>();
                 Assert.IsNotNull(service, "Group attribute map resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<ILdapMapper<SearchResultEntry, LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service, "Mapper resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<IUserClaimsMap>();
                 Assert.IsNotNull(service, "User claims map resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<IGroupClaimsMap>();
                 Assert.IsNotNull(service, "Group claims map resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<IClaimsBuilder<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service, "Claims builder resolved");
             }
 
-            {
+            if (this._testSecrets.CanRun) {
                 var service = provider.GetService<IClaimsMapper<SearchResultEntry>>();
                 Assert.IsNotNull(service, "Claims mapper resolved");
             }
