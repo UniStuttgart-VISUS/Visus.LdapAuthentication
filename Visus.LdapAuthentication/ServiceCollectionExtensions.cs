@@ -141,8 +141,12 @@ namespace Visus.LdapAuthentication {
             services.TryAddSingleton<ILdapAttributeMap<TUser>, TUserMap>();
             services.TryAddSingleton<ILdapAttributeMap<TGroup>, TGroupMap>();
 
-            return services.AddSingleton<ILdapConnectionService, LdapConnectionService>()
-                .AddScoped<ILdapAuthenticationService<TUser>, LdapAuthenticationService<TUser, TGroup>>()
+            // Try adding the connection service, which allows users to register
+            // multiple users and group types. This would otherwise conflict as
+            // the connection service is not typed.
+            services.TryAddSingleton<ILdapConnectionService, LdapConnectionService>();
+
+            return services.AddScoped<ILdapAuthenticationService<TUser>, LdapAuthenticationService<TUser, TGroup>>()
                 .AddScoped<ILdapSearchService<TUser, TGroup>, LdapSearchService<TUser, TGroup>>();
         }
 
