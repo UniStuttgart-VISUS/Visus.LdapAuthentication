@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.Ldap;
@@ -49,47 +50,59 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <inheritdoc />
-        public TGroup? GetGroupByDistinguishedName(string distinguishedName) {
-            var att = this.GroupMap.DistinguishedNameAttribute!.Name;
-            var filter = $"({att}={distinguishedName})";
-            return this.GetGroupEntry($"({att}={filter})", null);
-        }
+        public TGroup? GetGroupByDistinguishedName(string distinguishedName)
+            => this.GroupCache.GetGroupByDistinguishedName(distinguishedName,
+                value => {
+                    var att = this.GroupMap.DistinguishedNameAttribute!.Name;
+                    var filter = $"({att}={value})";
+                    return this.GetGroupEntry($"({att}={filter})", null);
+                });
 
         /// <inheritdoc />
         public Task<TGroup?> GetGroupByDistinguishedNameAsync(
-                string distinguishedName) {
-            var att = this.GroupMap.DistinguishedNameAttribute!.Name;
-            var filter = $"({att}={distinguishedName})";
-            return this.GetGroupEntryAsync($"({att}={filter})", null);
-        }
+                string distinguishedName)
+            => this.GroupCache.GetGroupByDistinguishedName(distinguishedName,
+                value => {
+                    var att = this.GroupMap.DistinguishedNameAttribute!.Name;
+                    var filter = $"({att}={value})";
+                    return this.GetGroupEntryAsync($"({att}={filter})", null);
+                });
 
         /// <inheritdoc />
-        public TGroup? GetGroupByIdentity(string identity) {
-            var att = this.GroupMap.IdentityAttribute!.Name;
-            var filter = identity.EscapeLdapFilterExpression();
-            return this.GetGroupEntry($"({att}={filter})", null);
-        }
+        public TGroup? GetGroupByIdentity(string identity)
+            => this.GroupCache.GetGroupByIdentity(identity,
+                value => {
+                    var att = this.GroupMap.IdentityAttribute!.Name;
+                    var filter = value.EscapeLdapFilterExpression();
+                    return this.GetGroupEntry($"({att}={filter})", null);
+                });
 
         /// <inheritdoc />
-        public Task<TGroup?> GetGroupByIdentityAsync(string identity) {
-            var att = this.GroupMap.IdentityAttribute!.Name;
-            var filter = identity.EscapeLdapFilterExpression();
-            return this.GetGroupEntryAsync($"({att}={filter})", null);
-        }
+        public Task<TGroup?> GetGroupByIdentityAsync(string identity)
+            => this.GroupCache.GetGroupByIdentity(identity,
+                value => {
+                    var att = this.GroupMap.IdentityAttribute!.Name;
+                    var filter = value.EscapeLdapFilterExpression();
+                    return this.GetGroupEntryAsync($"({att}={filter})", null);
+                });
 
         /// <inheritdoc />
-        public TGroup? GetGroupByName(string name) {
-            var att = this.GroupMap.AccountNameAttribute?.Name;
-            var filter = name.EscapeLdapFilterExpression();
-            return this.GetGroupEntry($"({att}={filter})", null);
-        }
+        public TGroup? GetGroupByName(string name)
+             => this.GroupCache.GetGroupByName(name,
+                 value => {
+                     var att = this.GroupMap.AccountNameAttribute?.Name;
+                     var filter = value.EscapeLdapFilterExpression();
+                     return this.GetGroupEntry($"({att}={filter})", null);
+                 });
 
         /// <inheritdoc />
-        public Task<TGroup?> GetGroupByNameAsync(string name) {
-            var att = this.GroupMap.AccountNameAttribute?.Name;
-            var filter = name.EscapeLdapFilterExpression();
-            return this.GetGroupEntryAsync($"({att}={filter})", null);
-        }
+        public Task<TGroup?> GetGroupByNameAsync(string name)
+            => this.GroupCache.GetGroupByName(name,
+                 value => {
+                     var att = this.GroupMap.AccountNameAttribute?.Name;
+                     var filter = value.EscapeLdapFilterExpression();
+                     return this.GetGroupEntryAsync($"({att}={filter})", null);
+                 });
 
         /// <inheritdoc />
         public TUser? GetUserByAccountName(string accountName) {
@@ -221,11 +234,16 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="groupMap">An LDAP property map for
         /// <typeparamref name="TGroup"/> that allows the service to retrieve
         /// infromation about the group object.</param>
+        /// <param name="groupCache">An in-memory cache for
+        /// <see cref="TGroup"/>.</param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
         /// <c>null</c>.</exception>
         protected LdapSearchServiceBase(IOptions<TOptions> options,
                 ILdapAttributeMap<TUser> userMap,
-                ILdapAttributeMap<TGroup> groupMap) {
+                ILdapAttributeMap<TGroup> groupMap,
+                ILdapGroupCache<TGroup> groupCache) {
+            this.GroupCache = groupCache
+                ?? throw new ArgumentNullException(nameof(groupCache));
             this.GroupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
             this.Options = options?.Value
@@ -254,6 +272,11 @@ namespace Visus.DirectoryAuthentication.Services {
         /// populate all properties of <typeparamref name="TGroup"/>.
         /// </summary>
         protected string[] GroupAttributes { get; }
+
+        /// <summary>
+        /// Gets an in-memory cache for <see cref="TGroup"/> objects.
+        /// </summary>
+        protected ILdapGroupCache<TGroup> GroupCache { get; }
 
         /// <summary>
         /// Gets the mapping between LDAP attributes and the properties of
@@ -441,5 +464,6 @@ namespace Visus.DirectoryAuthentication.Services {
             }
         }
         #endregion
+
     }
 }
