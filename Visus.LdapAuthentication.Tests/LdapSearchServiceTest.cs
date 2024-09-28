@@ -106,6 +106,10 @@ namespace Visus.LdapAuthentication.Tests {
 
                 var users = service.GetUsers();
                 Assert.IsTrue(users.Any(), "Directory search returns any user.");
+
+                foreach (var user in users) {
+                    Assert.IsNotNull(user);
+                }
             }
         }
 
@@ -118,6 +122,10 @@ namespace Visus.LdapAuthentication.Tests {
 
                 var users = await service.GetUsersAsync();
                 Assert.IsTrue(users.Any(), "Directory search returns any user.");
+
+                foreach (var user in users) {
+                    Assert.IsNotNull(user);
+                }
             }
         }
 

@@ -8,11 +8,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.DirectoryServices.Protocols;
+using System.Text.RegularExpressions;
 using Visus.DirectoryAuthentication.Claims;
+using Visus.DirectoryAuthentication.Configuration;
 using Visus.DirectoryAuthentication.Mapping;
 using Visus.DirectoryAuthentication.Services;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
+using Visus.Ldap.Services;
 
 
 namespace Visus.DirectoryAuthentication.Tests {
@@ -51,6 +55,9 @@ namespace Visus.DirectoryAuthentication.Tests {
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser1, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser2, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<SearchResultEntry, LdapUser, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<SearchResultEntry, TestUser1, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<SearchResultEntry, TestUser2, LdapGroup>>>());
             return services;
         }
     }

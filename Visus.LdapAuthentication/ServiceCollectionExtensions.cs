@@ -13,6 +13,7 @@ using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
+using Visus.Ldap.Services;
 using Visus.LdapAuthentication.Claims;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Mapping;
@@ -146,8 +147,14 @@ namespace Visus.LdapAuthentication {
             // the connection service is not typed.
             services.TryAddSingleton<ILdapConnectionService, LdapConnectionService>();
 
-            return services.AddScoped<ILdapAuthenticationService<TUser>, LdapAuthenticationService<TUser, TGroup>>()
-                .AddScoped<ILdapSearchService<TUser, TGroup>, LdapSearchService<TUser, TGroup>>();
+            // Add the group cache.
+            services.AddMemoryCache().TryAddSingleton<ILdapGroupCache<TGroup>,
+                GroupCacheService<LdapEntry, TUser, TGroup>>();
+
+            return services.AddScoped<ILdapAuthenticationService<TUser>,
+                    LdapAuthenticationService<TUser, TGroup>>()
+                .AddScoped<ILdapSearchService<TUser, TGroup>,
+                    LdapSearchService<TUser, TGroup>>();
         }
 
         /// <summary>

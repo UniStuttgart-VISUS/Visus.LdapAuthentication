@@ -19,7 +19,6 @@ using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
-using Visus.LdapAuthentication.Claims;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
 using Visus.LdapAuthentication.Properties;

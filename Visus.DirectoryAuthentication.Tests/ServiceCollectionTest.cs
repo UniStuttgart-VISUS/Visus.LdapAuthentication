@@ -30,12 +30,6 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
-
-                o.Servers = ["127.0.0.1"];
-                o.SearchBases = new Dictionary<string, SearchScope> {
-                    { "DC=domain", SearchScope.Base }
-                };
-                o.Schema = Schema.ActiveDirectory;
             });
 
             var provider = collection.BuildServiceProvider();
@@ -108,6 +102,11 @@ namespace Visus.DirectoryAuthentication.Tests {
                     var service = provider.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                     Assert.IsNotNull(service, "Search service resolved");
                 }
+
+                {
+                    var service = provider.GetService<ILdapGroupCache<LdapGroup>>();
+                    Assert.IsNotNull(service, "Group cache resolved");
+                }
             }
         }
 
@@ -133,12 +132,6 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
-
-                o.Servers = ["127.0.0.1"];
-                o.SearchBases = new Dictionary<string, SearchScope> {
-                    { "DC=domain", SearchScope.Base }
-                };
-                o.Schema = Schema.ActiveDirectory;
             }, (u, _) => {
                 u.MapProperty(nameof(LdapUser.Identity)).ToAttribute("objectSid");
 
@@ -171,12 +164,6 @@ namespace Visus.DirectoryAuthentication.Tests {
             collection.AddLdapAuthentication(o => {
                 var section = configuration.GetSection("LdapOptions");
                 section.Bind(o);
-
-                o.Servers = ["127.0.0.1"];
-                o.SearchBases = new Dictionary<string, SearchScope> {
-                    { "DC=domain", SearchScope.Base }
-                };
-                o.Schema = Schema.ActiveDirectory;
             }, null, null,(u, _) => {
                 u.MapProperty(nameof(LdapUser.Identity)).ToClaim("id");
 

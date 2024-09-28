@@ -13,6 +13,9 @@ using Visus.LdapAuthentication.Mapping;
 using Visus.LdapAuthentication.Services;
 using Visus.Ldap;
 using Visus.Ldap.Claims;
+using Novell.Directory.Ldap;
+using Visus.Ldap.Services;
+using Visus.LdapAuthentication.Configuration;
 
 
 namespace Visus.LdapAuthentication.Tests {
@@ -51,6 +54,7 @@ namespace Visus.LdapAuthentication.Tests {
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<LdapUser, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser1, LdapGroup>>>());
             services.AddSingleton(s => Mock.Of<ILogger<LdapMapper<TestUser2, LdapGroup>>>());
+            services.AddSingleton(s => Mock.Of<ILogger<GroupCacheService<LdapEntry, LdapUser, LdapGroup>>>());
             return services;
         }
     }
