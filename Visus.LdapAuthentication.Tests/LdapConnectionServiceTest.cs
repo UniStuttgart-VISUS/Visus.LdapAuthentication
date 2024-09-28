@@ -49,12 +49,6 @@ namespace Visus.LdapAuthentication.Tests {
                 collection.AddLdapAuthentication(o => {
                     var section = configuration.GetSection("LdapOptions");
                     section.Bind(o);
-
-                    o.Servers = ["127.0.0.1", "127.0.0.2"];
-                    o.SearchBases = new Dictionary<string, SearchScope> {
-                    { "DC=domain", SearchScope.Base }
-                };
-
                     Assert.IsTrue(o.Servers.Count() >= 2, "This test requires two servers.");
                     Assert.AreNotEqual(o.Servers.First(), o.Servers.Skip(1).First(), "The two servers must be distinct for this test.");
                     o.ServerSelectionPolicy = ServerSelectionPolicy.RoundRobin;
