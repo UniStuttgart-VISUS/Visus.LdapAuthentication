@@ -237,6 +237,9 @@ In some cases, you might want to search user entries without authenticating the 
 > [!NOTE]
 > The LDAP search service has the credentials of the service account configured in the options, not of a user of your application. If you need to perform actions on behalf of a user, use `ILdapConnectionService` to obtain a connection as the user.
 
+> [!WARNING]
+> If you do not specifiy a `User` and `Password` of a service account in your `LdapOptions`, the search service will perform an anonymous bind. While this anonymous bind might succeed, depending on your server configuration, anonymous users typically do not have access to the information you are looking for, wherefore the results of your search options will be most likely empty or incomplete.
+
 Assuming that you have the embedded the user SID in the claims of an authentication cookie, you then can restore the user object from the cookie as follows:
 
 ```C#
