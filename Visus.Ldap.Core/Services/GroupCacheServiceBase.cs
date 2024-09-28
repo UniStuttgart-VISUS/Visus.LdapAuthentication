@@ -30,30 +30,32 @@ namespace Visus.Ldap.Services {
         public void Add(TGroup group) {
             ArgumentNullException.ThrowIfNull(group, nameof(group));
 
-            if (this._map.DistinguishedNameProperty != null) {
-                var key = this._map.DistinguishedNameProperty.GetValue(group)
-                    as string;
-                if (!string.IsNullOrEmpty(key)) {
-                    this.Add(nameof(this.GetGroupByDistinguishedName),
-                        key, group);
+            if (this._options.GroupCaching != GroupCaching.None) {
+                if (this._map.DistinguishedNameProperty != null) {
+                    var k = this._map.DistinguishedNameProperty.GetValue(group)
+                        as string;
+                    if (!string.IsNullOrEmpty(k)) {
+                        this.Add(nameof(this.GetGroupByDistinguishedName),
+                            k, group);
+                    }
                 }
-            }
 
-            if (this._map.IdentityProperty != null) {
-                var key = this._map.IdentityProperty.GetValue(group)
-                    as string;
-                if (!string.IsNullOrEmpty(key)) {
-                    this.Add(nameof(this.GetGroupByIdentity),
-                        key, group);
+                if (this._map.IdentityProperty != null) {
+                    var k = this._map.IdentityProperty.GetValue(group)
+                        as string;
+                    if (!string.IsNullOrEmpty(k)) {
+                        this.Add(nameof(this.GetGroupByIdentity),
+                            k, group);
+                    }
                 }
-            }
 
-            if (this._map.AccountNameProperty != null) {
-                var key = this._map.AccountNameProperty.GetValue(group)
-                    as string;
-                if (!string.IsNullOrEmpty(key)) {
-                    this.Add(nameof(this.GetGroupByName),
-                        key, group);
+                if (this._map.AccountNameProperty != null) {
+                    var k = this._map.AccountNameProperty.GetValue(group)
+                        as string;
+                    if (!string.IsNullOrEmpty(k)) {
+                        this.Add(nameof(this.GetGroupByName),
+                            k, group);
+                    }
                 }
             }
         }
@@ -112,29 +114,24 @@ namespace Visus.Ldap.Services {
             Debug.Assert(!string.IsNullOrEmpty(key));
             Debug.Assert(value != null);
 
-            if (this._options.GroupCaching != GroupCaching.None) {
-                this._logger.LogTrace("Caching group with key {Key} for "
-                    + "attribute {Attribute}.", key, attribute);
+            this._logger.LogTrace("Caching group with key {Key} for "
+                + "attribute {Attribute}.", key, attribute);
 
-                var entry = this._cache.CreateEntry(CreateKey(key, attribute));
-                entry.Value = key;
+            var duration = this._options.GroupCacheDuration;
+            var opts = this._options.GroupCaching switch {
+                GroupCaching.FixedExpiration => new MemoryCacheEntryOptions() {
+                    AbsoluteExpirationRelativeToNow = duration
+                },
+                GroupCaching.SlidingExpiration => new() {
+                    SlidingExpiration = duration
+                },
+                _ => throw new InvalidOperationException("This should be "
+                        + "unreachable. Make sure that all valid cache options "
+                        + "are handled above, specifically when extending "
+                        + "the GroupCaching enumeration.")
+            };
 
-                switch (this._options.GroupCaching) {
-                    case GroupCaching.FixedExpiration:
-                        entry.AbsoluteExpirationRelativeToNow
-                            = this._options.GroupCacheDuration;
-                        break;
-
-                    case GroupCaching.SlidingExpiration:
-                        entry.SlidingExpiration
-                            = this._options.GroupCacheDuration;
-                        break;
-
-                    default:
-                        throw new InvalidOperationException(
-                            "This should be unreachable.");
-                }
-            }
+            this._cache.Set(CreateKey(key, attribute), value, opts);
         }
         #endregion
 

@@ -44,6 +44,9 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.AreEqual(GroupCaching.None, this._testSecrets.LdapOptions.GroupCaching, "Caching disabled.");
                 var group = service.GetGroupByName(this._testSecrets.ExistingGroupAccount!);
                 Assert.IsNotNull(group, "Search returned existing group account.");
+
+                var cached = service.GetGroupByName(this._testSecrets.ExistingGroupAccount!);
+                Assert.AreNotSame(group, cached, "Search did not return cached group.");
             }
         }
 
@@ -57,6 +60,57 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.AreEqual(GroupCaching.None, this._testSecrets.LdapOptions.GroupCaching, "Caching disabled.");
                 var group = await service.GetGroupByNameAsync(this._testSecrets.ExistingGroupAccount!);
                 Assert.IsNotNull(group, "Search returned existing group account.");
+
+                var cached = await service.GetGroupByNameAsync(this._testSecrets.ExistingGroupAccount!);
+                Assert.AreNotSame(group, cached, "Search did not return cached group.");
+            }
+        }
+
+        [TestMethod]
+        public void TestGetGroupByAccountNameCached() {
+            if (this._testSecrets.CanRun) {
+                var configuration = TestExtensions.CreateConfiguration();
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                    o.GroupCacheDuration = TimeSpan.FromMinutes(5);
+                    o.GroupCaching = GroupCaching.SlidingExpiration;
+                });
+                var services = collection.BuildServiceProvider();
+
+                var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var group = service.GetGroupByName(this._testSecrets.ExistingGroupAccount!);
+                Assert.IsNotNull(group, "Search returned existing group account.");
+
+                var cached = service.GetGroupByName(this._testSecrets.ExistingGroupAccount!);
+                Assert.AreSame(group, cached, "Search returned cached group.");
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetGroupByAccountNameAsyncCached() {
+            if (this._testSecrets.CanRun) {
+                var configuration = TestExtensions.CreateConfiguration();
+                var collection = new ServiceCollection().AddMockLoggers();
+                collection.AddLdapAuthentication(o => {
+                    var section = configuration.GetSection("LdapOptions");
+                    section.Bind(o);
+                    o.GroupCacheDuration = TimeSpan.FromMinutes(5);
+                    o.GroupCaching = GroupCaching.SlidingExpiration;
+                });
+                var services = collection.BuildServiceProvider();
+
+                var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var group = await service.GetGroupByNameAsync(this._testSecrets.ExistingGroupAccount!);
+                Assert.IsNotNull(group, "Search returned existing group account.");
+
+                var cached = await service.GetGroupByNameAsync(this._testSecrets.ExistingGroupAccount!);
+                Assert.AreSame(group, cached, "Search returned cached group.");
             }
         }
 
