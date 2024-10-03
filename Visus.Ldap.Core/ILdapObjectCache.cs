@@ -49,17 +49,6 @@ namespace Visus.Ldap {
         TGroup? GetGroup(string filter);
 
         /// <summary>
-        /// Gets a cached user which matches the given filter.
-        /// </summary>
-        /// <param name="filter">The LDAP filter selecting the user to look
-        /// for.</param>
-        /// <returns>The user or <c>null</c> if no user matching the query was
-        /// cached.</returns>
-        /// <exception cref="ArgumentNullException">If
-        /// <paramref name="filter"/> is <c>null</c>.</exception>
-        TUser? GetUser(string filter);
-
-        /// <summary>
         /// Gets a cached group which matches the given filter or obtains a new 
         /// group from <paramref name="fallback"/> and caches it for future use.
         /// </summary>
@@ -73,7 +62,7 @@ namespace Visus.Ldap {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="filter"/> is <c>null</c>, or if
         /// <paramref name="fallback"/> is <c>null</c>.</exception>
-        public TGroup? GetGroup( string filter,
+        public TGroup? GetGroup(string filter,
                 Func<string, TGroup?> fallback) {
             ArgumentNullException.ThrowIfNull(fallback, nameof(fallback));
 
@@ -109,6 +98,79 @@ namespace Visus.Ldap {
             ArgumentNullException.ThrowIfNull(fallback, nameof(fallback));
 
             var retval = this.GetGroup(filter);
+            if (retval != null) {
+                return retval;
+            }
+
+            retval = await fallback(filter);
+            if (retval != null) {
+                this.Add(retval);
+            }
+
+            return retval;
+        }
+
+        /// <summary>
+        /// Gets a cached user which matches the given filter.
+        /// </summary>
+        /// <param name="filter">The LDAP filter selecting the user to look
+        /// for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query was
+        /// cached.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="filter"/> is <c>null</c>.</exception>
+        TUser? GetUser(string filter);
+
+        /// <summary>
+        /// Gets a cached user which matches the given filter or obtains a new
+        /// user from <paramref name="fallback"/> and caches it for future use.
+        /// </summary>
+        /// <param name="filter">The LDAP filter selecting the user to look
+        /// for.</param>
+        /// <param name="fallback">A function to produce the user from
+        /// <parmref name="filter" /> if it was not found in the cache.</param>
+        /// <param name="name">The name of the user to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// was found.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="filter"/> is <c>null</c>, or if
+        /// <paramref name="fallback"/> is <c>null</c>.</exception>
+        public TUser? GetUser(string filter,
+                Func<string, TUser?> fallback) {
+            ArgumentNullException.ThrowIfNull(fallback, nameof(fallback));
+
+            var retval = this.GetUser(filter);
+            if (retval != null) {
+                return retval;
+            }
+
+            retval = fallback(filter);
+            if (retval != null) {
+                this.Add(retval);
+            }
+
+            return retval;
+        }
+
+        /// <summary>
+        /// Gets a cached user which matches the given filter or obtains a new
+        /// user from <paramref name="fallback"/> and caches it for future use.
+        /// </summary>
+        /// <param name="filter">The LDAP filter selecting the user to look
+        /// for.</param>
+        /// <param name="fallback">A function to produce the user from
+        /// <parmref name="filter" /> if it was not found in the cache.</param>
+        /// <param name="name">The name of the user to look for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query
+        /// was found.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="filter"/> is <c>null</c>, or if
+        /// <paramref name="fallback"/> is <c>null</c>.</exception>
+        public async Task<TUser?> GetUser(string filter,
+                Func<string, Task<TUser?>> fallback) {
+            ArgumentNullException.ThrowIfNull(fallback, nameof(fallback));
+
+            var retval = this.GetUser(filter);
             if (retval != null) {
                 return retval;
             }

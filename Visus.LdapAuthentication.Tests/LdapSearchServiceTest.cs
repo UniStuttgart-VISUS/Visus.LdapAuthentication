@@ -41,6 +41,7 @@ namespace Visus.LdapAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = service.GetGroupByName(this._testSecrets.ExistingGroupAccount!);
                 Assert.IsNotNull(group, "Search returned existing group account.");
@@ -57,6 +58,7 @@ namespace Visus.LdapAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = await service.GetGroupByNameAsync(this._testSecrets.ExistingGroupAccount!);
                 Assert.IsNotNull(group, "Search returned existing group account.");
@@ -121,6 +123,7 @@ namespace Visus.LdapAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = service.GetGroupByIdentity(this._testSecrets.ExistingGroupIdentity!);
                 Assert.IsNotNull(group, "Search returned existing group identity.");
@@ -134,6 +137,7 @@ namespace Visus.LdapAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
                 Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = await service.GetGroupByIdentityAsync(this._testSecrets.ExistingGroupIdentity!);
                 Assert.IsNotNull(group, "Search returned existing group identity.");
