@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
@@ -23,9 +24,13 @@ namespace Visus.Ldap {
         /// Adds the given <paramref name="entry"/> to the cache.
         /// </summary>
         /// <param name="entry">The group to be cached.</param>
+        /// <param name="filters">A list of additional filters that should be
+        /// registered for looking up the <paramref name="entry"/>. It is safe
+        /// to pass <c>null</c> or an empty enumeration, in which case only
+        /// the distinguished name will be registered.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="entry"/>
         /// is <c>null</c>.</exception>
-        void Add(TEntry entry);
+        void Add(TEntry entry, IEnumerable<string>? filters = null);
 
         /// <summary>
         /// Gets a cached LDAP entry which matches the given filter.

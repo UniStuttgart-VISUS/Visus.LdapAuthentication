@@ -7,6 +7,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Visus.Ldap.Configuration;
@@ -32,47 +33,11 @@ namespace Visus.Ldap.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public void Add(TEntry entry) {
-            ArgumentNullException.ThrowIfNull(entry, nameof(entry));
-
-            if (this._options.Caching != LdapCaching.None) {
-                //{
-                //    var att = map.DistinguishedNameAttribute?.Name;
-                //    var value = this._mapper.GetDistinguishedName(entry);
-
-                //    if ((att != null) && (value != null)) {
-                //        var filter = $"({att}={value})";
-                //        this.Add(filter, entry);
-                //    }
-                //}
-
-                //{
-                //    var att = map.IdentityAttribute?.Name;
-                //    var value = this._mapper.GetIdentity(entry);
-
-                //    if ((att != null) && (value != null)) {
-                //        var filter = $"({att}={value})";
-                //        this.Add(filter, entry);
-                //    }
-                //}
-
-                //{
-                //    var att = map.AccountNameAttribute?.Name;
-                //    var value = this._mapper.GetAccountName(entry);
-
-                //    if ((att != null) && (value != null)) {
-                //        var filter = $"({att}={value})";
-                //        this.Add(filter, entry);
-                //    }
-                //}
-            }
-        }
+        public abstract void Add(TEntry entry, IEnumerable<string>? filters);
 
         /// <inheritdoc />
         public void Add(TGroup group) {
-            ArgumentNullException.ThrowIfNull(group, nameof(group));
-
-            if (this._options.Caching != LdapCaching.None) {
+            if (this.Options.Caching != LdapCaching.None) {
                 var map = this._mapper.GroupMap;
 
                 {
@@ -109,9 +74,7 @@ namespace Visus.Ldap.Services {
 
         /// <inheritdoc />
         public void Add(TUser user) {
-            ArgumentNullException.ThrowIfNull(user, nameof(user));
-
-            if (this._options.Caching != LdapCaching.None) {
+            if (this.Options.Caching != LdapCaching.None) {
                 var map = this._mapper.UserMap;
 
                 {
@@ -184,7 +147,7 @@ namespace Visus.Ldap.Services {
                 ?? throw new ArgumentNullException(nameof(logger));
             this._mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
-            this._options = options
+            this.Options = options
                 ?? throw new ArgumentNullException(nameof(options));
         }
         #endregion
@@ -204,17 +167,39 @@ namespace Visus.Ldap.Services {
             LdapCacheServiceBase<TEntry, TUser, TGroup>, TObject>(filter);
         #endregion
 
-        #region Private methods
+        #region Protected properties
+        /// <summary>
+        /// Gets the LDAP configuration that defines the caching behaviour,
+        /// which enables skipping any caching if it is disabled.
+        /// </summary>
+        protected LdapOptionsBase Options { get; }
+        #endregion
+
+        #region Protected methods
+        /// <summary>
+        /// Caches the given <typeparamref name="TObject"/> for lookup via the
+        /// specified <paramref name="filter"/>.
+        /// </summary>
+        /// <typeparam name="TObject">The type of the object being cached.
+        /// </typeparam>
+        /// <param name="filter">The filter for retrieving the object.</param>
+        /// <param name="value">The object to be cached.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="value"/>
+        /// is <c>null</c>.</exception>
+        /// <exception cref="InvalidOperationException">If the cache
+        /// configuration is invalid. This indicates a bug in the implementation
+        /// of the method. Please inform the developers when encountering this
+        /// exception.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Add<TObject>(string filter, TObject value) {
+        protected void Add<TObject>(string filter, TObject value) {
             Debug.Assert(!string.IsNullOrEmpty(filter));
-            Debug.Assert(value != null);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             this._logger.LogTrace("Caching {Type} for LDAP filter {Filter}.",
                 typeof(TObject).Name, filter);
 
-            var duration = this._options.CacheDuration;
-            var opts = this._options.Caching switch {
+            var duration = this.Options.CacheDuration;
+            var opts = this.Options.Caching switch {
                 LdapCaching.FixedExpiration => new MemoryCacheEntryOptions() {
                     AbsoluteExpirationRelativeToNow = duration
                 },
@@ -235,7 +220,6 @@ namespace Visus.Ldap.Services {
         private readonly IMemoryCache _cache;
         private readonly ILogger _logger;
         private readonly ILdapMapper<TEntry, TUser, TGroup> _mapper;
-        private readonly LdapOptionsBase _options;
         #endregion
     }
 }

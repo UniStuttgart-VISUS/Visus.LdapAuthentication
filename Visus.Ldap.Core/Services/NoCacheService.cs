@@ -5,6 +5,8 @@
 // <author>Christoph Müller</author>
 
 
+using System.Collections.Generic;
+
 namespace Visus.Ldap.Services {
 
     /// <summary>
@@ -34,7 +36,7 @@ namespace Visus.Ldap.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public void Add(TEntry entry) { }
+        public void Add(TEntry entry, IEnumerable<string>? filters) { }
 
         /// <inheritdoc />
         public void Add(TGroup group) { }

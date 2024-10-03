@@ -8,6 +8,11 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Novell.Directory.Ldap;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Formats.Tar;
+using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
 using Visus.Ldap.Services;
 using Visus.LdapAuthentication.Configuration;
@@ -37,5 +42,32 @@ namespace Visus.LdapAuthentication.Services {
             ILdapMapper<LdapEntry, TUser, TGroup> map,
             ILogger<LdapCacheService<TUser, TGroup>> logger)
         : LdapCacheServiceBase<LdapEntry, TUser, TGroup>(
-            cache, options.Value, map, logger) { }
+            cache, options.Value, map, logger) {
+
+        /// <inheritdoc />
+        public override void Add(LdapEntry entry,
+                IEnumerable<string>? filters) {
+            ArgumentNullException.ThrowIfNull(entry, nameof(entry));
+
+            if (this.Options.Caching != LdapCaching.None) {
+                {
+                    Debug.Assert(this.Options.Mapping != null);
+                    var att = this.Options.Mapping.DistinguishedNameAttribute;
+                    var value = entry.Dn;
+
+                    if ((att != null) && (value != null)) {
+                        var filter = $"({att}={value})";
+                        this.Add(filter, entry);
+                    }
+                }
+
+                if (filters != null) {
+                    foreach (var filter in filters) {
+                        this.Add(filter, entry);
+                    }
+                }
+            }
+        }
+
+    }
 }

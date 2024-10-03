@@ -11,6 +11,10 @@ using Visus.Ldap.Mapping;
 using Visus.Ldap.Services;
 using Visus.DirectoryAuthentication.Configuration;
 using System.DirectoryServices.Protocols;
+using Visus.Ldap.Configuration;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 
 namespace Visus.DirectoryAuthentication.Services {
@@ -37,5 +41,32 @@ namespace Visus.DirectoryAuthentication.Services {
             ILdapMapper<SearchResultEntry, TUser, TGroup> map,
             ILogger<LdapCacheService<TUser, TGroup>> logger)
         : LdapCacheServiceBase<SearchResultEntry, TUser, TGroup>(
-            cache, options.Value, map, logger) { }
+            cache, options.Value, map, logger) {
+
+        /// <inheritdoc />
+        public override void Add(SearchResultEntry entry,
+                IEnumerable<string>? filters) {
+            ArgumentNullException.ThrowIfNull(entry, nameof(entry));
+
+            if (this.Options.Caching != LdapCaching.None) {
+                {
+                    Debug.Assert(this.Options.Mapping != null);
+                    var att = this.Options.Mapping.DistinguishedNameAttribute;
+                    var value = entry.DistinguishedName;
+
+                    if ((att != null) && (value != null)) {
+                        var filter = $"({att}={value})";
+                        this.Add(filter, entry);
+                    }
+                }
+
+                if (filters != null) {
+                    foreach (var filter in filters) {
+                        this.Add(filter, entry);
+                    }
+                }
+            }
+        }
+
+    }
 }
