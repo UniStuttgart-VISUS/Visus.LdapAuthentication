@@ -41,7 +41,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
-                Assert.AreEqual(GroupCaching.None, this._testSecrets.LdapOptions.GroupCaching, "Caching disabled.");
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
+                Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = service.GetGroupByName(this._testSecrets.ExistingGroupAccount!);
                 Assert.IsNotNull(group, "Search returned existing group account.");
             }
@@ -54,7 +55,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
-                Assert.AreEqual(GroupCaching.None, this._testSecrets.LdapOptions.GroupCaching, "Caching disabled.");
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
+                Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = await service.GetGroupByNameAsync(this._testSecrets.ExistingGroupAccount!);
                 Assert.IsNotNull(group, "Search returned existing group account.");
             }
@@ -67,7 +69,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
-                Assert.AreEqual(GroupCaching.None, this._testSecrets.LdapOptions.GroupCaching, "Caching disabled.");
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
+                Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = service.GetGroupByIdentity(this._testSecrets.ExistingGroupIdentity!);
                 Assert.IsNotNull(group, "Search returned existing group identity.");
             }
@@ -80,7 +83,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
-                Assert.AreEqual(GroupCaching.None, this._testSecrets.LdapOptions.GroupCaching, "Caching disabled.");
+                Assert.IsNotNull(this._testSecrets.LdapOptions);
+                Assert.AreEqual(LdapCaching.None, this._testSecrets.LdapOptions.Caching, "Caching disabled.");
                 var group = await service.GetGroupByIdentityAsync(this._testSecrets.ExistingGroupIdentity!);
                 Assert.IsNotNull(group, "Search returned existing group identity.");
             }
@@ -158,8 +162,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 collection.AddLdapAuthentication(o => {
                     var section = configuration.GetSection("LdapOptions");
                     section.Bind(o);
-                    o.GroupCacheDuration = TimeSpan.FromMinutes(5);
-                    o.GroupCaching = GroupCaching.SlidingExpiration;
+                    o.CacheDuration = TimeSpan.FromMinutes(5);
+                    o.Caching = LdapCaching.SlidingExpiration;
                 });
                 var services = collection.BuildServiceProvider();
 
@@ -183,7 +187,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 collection.AddLdapAuthentication(o => {
                     var section = configuration.GetSection("LdapOptions");
                     section.Bind(o);
-                    o.GroupCaching = GroupCaching.None;
+                    o.Caching = LdapCaching.None;
                 });
                 var services = collection.BuildServiceProvider();
 
@@ -203,8 +207,8 @@ namespace Visus.DirectoryAuthentication.Tests {
                 collection.AddLdapAuthentication(o => {
                     var section = configuration.GetSection("LdapOptions");
                     section.Bind(o);
-                    o.GroupCacheDuration = TimeSpan.FromMinutes(5);
-                    o.GroupCaching = GroupCaching.SlidingExpiration;
+                    o.CacheDuration = TimeSpan.FromMinutes(5);
+                    o.Caching = LdapCaching.SlidingExpiration;
                 });
                 var services = collection.BuildServiceProvider();
 
@@ -228,7 +232,7 @@ namespace Visus.DirectoryAuthentication.Tests {
                 collection.AddLdapAuthentication(o => {
                     var section = configuration.GetSection("LdapOptions");
                     section.Bind(o);
-                    o.GroupCaching = GroupCaching.None;
+                    o.Caching = LdapCaching.None;
                 });
                 var services = collection.BuildServiceProvider();
 

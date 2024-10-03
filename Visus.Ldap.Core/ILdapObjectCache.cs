@@ -1,25 +1,25 @@
-﻿// <copyright file="ILdapGroupCache.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="ILdapObjectCache.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
-
 using System;
-using System.Security.Principal;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+
 
 namespace Visus.Ldap {
 
     /// <summary>
     /// The interface of a caching service that allows the library to hold
-    /// group objects in memory for reuse without querying the LDAP server
-    /// every time.
+    /// mapped LDAP objects in memory for reuse without querying the LDAP
+    /// server every time.
     /// </summary>
+    /// <typeparam name="TUser">The type of the user objects cached by the
+    /// service.</typeparam>
     /// <typeparam name="TGroup">The type of the group objects cached by the
     /// service.</typeparam>
-    public interface ILdapGroupCache<TGroup> {
+    public interface ILdapObjectCache<TUser, TGroup> {
 
         /// <summary>
         /// Adds the given <paramref name="group"/> to the cache.
@@ -28,6 +28,14 @@ namespace Visus.Ldap {
         /// <exception cref="ArgumentNullException">If <paramref name="group"/>
         /// is <c>null</c>.</exception>
         void Add(TGroup group);
+
+        /// <summary>
+        /// Adds the given <paramref name="user"/> to the cache.
+        /// </summary>
+        /// <param name="user">The grouserup to be cached.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="user"/>
+        /// is <c>null</c>.</exception>
+        void Add(TUser user);
 
         /// <summary>
         /// Gets a cached group which matches the given filter.
@@ -39,6 +47,17 @@ namespace Visus.Ldap {
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="filter"/> is <c>null</c>.</exception>
         TGroup? GetGroup(string filter);
+
+        /// <summary>
+        /// Gets a cached user which matches the given filter.
+        /// </summary>
+        /// <param name="filter">The LDAP filter selecting the user to look
+        /// for.</param>
+        /// <returns>The user or <c>null</c> if no user matching the query was
+        /// cached.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="filter"/> is <c>null</c>.</exception>
+        TUser? GetUser(string filter);
 
         /// <summary>
         /// Gets a cached group which matches the given filter or obtains a new 

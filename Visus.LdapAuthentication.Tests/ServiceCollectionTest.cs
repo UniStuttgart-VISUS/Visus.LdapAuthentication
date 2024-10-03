@@ -104,7 +104,7 @@ namespace Visus.LdapAuthentication.Tests {
                 }
 
                 {
-                    var service = provider.GetService<ILdapGroupCache<LdapGroup>>();
+                    var service = provider.GetService<ILdapObjectCache<LdapUser, LdapGroup>>();
                     Assert.IsNotNull(service, "Group cache resolved");
                 }
             }

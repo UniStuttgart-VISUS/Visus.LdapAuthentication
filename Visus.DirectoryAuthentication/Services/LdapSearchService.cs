@@ -56,8 +56,9 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="groupMap">An LDAP property map for
         /// <typeparamref name="TGroup"/> that allows the service to retrieve
         /// infromation about the group object.</param>
-        /// <param name="groupCache">An in-memory cache for
-        /// <see cref="TGroup"/>.</param>
+        /// <param name="objectCache">An in-memory cache for
+        /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>.
+        /// </param>
         /// <param name="logger">A logger for persisting important messages like
         /// failed search requests.</param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
@@ -67,9 +68,9 @@ namespace Visus.DirectoryAuthentication.Services {
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap,
-                ILdapGroupCache<TGroup> groupCache,
+                ILdapObjectCache<TUser, TGroup> objectCache,
                 ILogger<LdapSearchService<TUser, TGroup>> logger)
-                : base(options, userMap, groupMap, groupCache) {
+                : base(options, userMap, groupMap, objectCache) {
             ArgumentNullException.ThrowIfNull(connectionService,
                 nameof(connectionService));
 

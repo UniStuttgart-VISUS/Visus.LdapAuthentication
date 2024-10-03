@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Visus.Ldap;
 using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
@@ -119,14 +121,14 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <param name="that"></param>
         /// <param name="connection"></param>
         /// <param name="mapper"></param>
-        /// <param name="groupCache"></param>
+        /// <param name="objectCache"></param>
         /// <param name="options"></param>
         /// <returns></returns>
         internal static IEnumerable<TGroup> GetGroups<TUser, TGroup>(
                 this LdapEntry that,
                 LdapConnection connection,
                 ILdapMapper<LdapEntry, TUser, TGroup> mapper,
-                ILdapGroupCache<TGroup> groupCache,
+                ILdapObjectCache<TUser, TGroup> objectCache,
                 LdapOptions options)
                 where TGroup : new() {
             ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
@@ -168,7 +170,7 @@ namespace Visus.LdapAuthentication.Extensions {
                 // Recursively reconstruct the hierarchy itself.
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, mapper, groupCache,
+                    var parents = g.GetGroups(connection, mapper, objectCache,
                         options);
                     yield return mapper.SetGroups(group, parents);
                 }
@@ -316,19 +318,43 @@ namespace Visus.LdapAuthentication.Extensions {
                 string[] attributes,
                 LdapOptions options) {
             ArgumentNullException.ThrowIfNull(connection, nameof(connection));
-            var id = that.GetPrimaryGroup(options);
-            if (id == null) {
+            var filter = that.GetPrimaryGroupFilter(options);
+            if (filter == null) {
                 return null;
             }
 
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
-            var retval = await connection.SearchAsync(
-                $"({options.Mapping.PrimaryGroupIdentityAttribute}={id})",
-                attributes,
+            var retval = await connection.SearchAsync(filter, attributes,
                 options);
 
             return retval.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets an LDAP filter for the primary group of <paramref name="that"/>.
+        /// </summary>
+        /// <param name="that"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
+        /// </exception>
+        internal static string? GetPrimaryGroupFilter(
+                this LdapEntry that,
+                LdapOptions options) {
+            var retval = that.GetPrimaryGroup(options);
+            Debug.Assert(that != null);
+            Debug.Assert(options != null);
+            Debug.Assert(options.Mapping != null);
+
+            if (retval != null) {
+                var att = options.Mapping.PrimaryGroupIdentityAttribute;
+                Debug.Assert(att != null);
+                retval = $"({att}={retval})";
+            }
+
+            return retval;
         }
         #endregion
 

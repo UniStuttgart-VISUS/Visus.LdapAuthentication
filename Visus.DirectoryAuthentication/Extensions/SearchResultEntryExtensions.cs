@@ -146,7 +146,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 this SearchResultEntry that,
                 LdapConnection connection,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
-                ILdapGroupCache<TGroup> groupCache,
+                ILdapObjectCache<TUser, TGroup> objectCache,
                 LdapOptions options)
                 where TGroup : new() {
             ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
@@ -188,7 +188,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 // Recursively reconstruct the hierarchy itself.
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, mapper, groupCache,
+                    var parents = g.GetGroups(connection, mapper, objectCache,
                         options);
                     yield return mapper.SetGroups(group, parents);
                 }
@@ -336,19 +336,43 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 string[] attributes,
                 LdapOptions options) {
             ArgumentNullException.ThrowIfNull(connection, nameof(connection));
-            var id = that.GetPrimaryGroup(options);
-            if (id == null) {
+            var filter = that.GetPrimaryGroupFilter(options);
+            if (filter == null) {
                 return null;
             }
 
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
-            var retval = await connection.SearchAsync(
-                $"({options.Mapping.PrimaryGroupIdentityAttribute}={id})",
-                attributes,
+            var retval = await connection.SearchAsync(filter, attributes,
                 options);
 
             return retval.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets an LDAP filter for the primary group of <paramref name="that"/>.
+        /// </summary>
+        /// <param name="that"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
+        /// </exception>
+        internal static string? GetPrimaryGroupFilter(
+                this SearchResultEntry that,
+                LdapOptions options) {
+            var retval = that.GetPrimaryGroup(options);
+            Debug.Assert(that != null);
+            Debug.Assert(options != null);
+            Debug.Assert(options.Mapping != null);
+
+            if (retval != null) {
+                var att = options.Mapping.PrimaryGroupIdentityAttribute;
+                Debug.Assert(att != null);
+                retval = $"({att}={retval})";
+            }
+
+            return retval;
         }
         #endregion
 

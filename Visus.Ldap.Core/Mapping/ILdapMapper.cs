@@ -36,6 +36,11 @@ namespace Visus.Ldap.Mapping {
         bool GroupIsGroupMember { get; }
 
         /// <summary>
+        /// Gets the attribute map for <typeparamref name="TGroup"/>.
+        /// </summary>
+        ILdapAttributeMap<TGroup> GroupMap { get; }
+
+        /// <summary>
         /// Gets the attributes that must be loaded for each LDAP entry in order
         /// to fill all properties of a <typeparamref name="TGroup"/> object.
         /// </summary>
@@ -57,6 +62,11 @@ namespace Visus.Ldap.Mapping {
         /// group membership before doing so.
         /// </remarks>
         bool UserIsGroupMember { get; }
+
+        /// <summary>
+        /// Gets the attribute map for <typeparamref name="TUser"/>.
+        /// </summary>
+        ILdapAttributeMap<TUser> UserMap { get; }
         #endregion
 
         #region Public methods

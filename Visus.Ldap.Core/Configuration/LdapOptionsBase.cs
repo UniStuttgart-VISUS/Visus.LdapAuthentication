@@ -28,6 +28,37 @@ namespace Visus.Ldap.Configuration {
 
         #region Public properties
         /// <summary>
+        /// Gets or sets the time span for which users and groups are cached in
+        /// memory.
+        /// </summary>
+        /// <remarks>
+        /// The semantics of this options depend on the value of
+        /// <see cref="Caching"/>.
+        /// </remarks>
+        public TimeSpan CacheDuration {
+            get;
+            set;
+        } = TimeSpan.FromSeconds(30);
+
+        /// <summary>
+        /// Gets or sets whether user and group objects can be cached by the
+        /// application.
+        /// </summary>
+        /// <remarks>
+        /// <para>The caching option is mainly intended for use with the
+        /// <see cref="ILdapSearchServiceBase{TUser, TGroup, TSearchScope}"/>,
+        /// which might enumerate over large amounts of user objects that in turn
+        /// may required group objects. Without caching, the mapper must go to
+        /// the directory to create group objects for every user, possibly
+        /// recursively expanding group memberships. Caching these group objects
+        /// can reduce the load on the directory server, but it may cause the
+        /// application to use out-of-date information if the cache is using
+        /// a sliding window or the <see cref="CacheDuration"/> is too
+        /// long.</para>
+        /// </remarks>
+        public LdapCaching Caching { get; set; } = LdapCaching.None;
+
+        /// <summary>
         /// Gets the default domain appended to a user name.
         /// </summary>
         /// <remarks>
@@ -39,35 +70,6 @@ namespace Visus.Ldap.Configuration {
         /// names will be passed to the server as they are.
         /// </remarks>
         public string? DefaultDomain { get; set; }
-
-        /// <summary>
-        /// Gets or sets the time span for which groups are cached.
-        /// </summary>
-        /// <remarks>
-        /// The semantics of this options depend on the value of
-        /// <see cref="GroupCaching"/>.
-        /// </remarks>
-        public TimeSpan GroupCacheDuration {
-            get;
-            set;
-        } = TimeSpan.FromSeconds(30);
-
-        /// <summary>
-        /// Gets or sets whether group objects can be cached by the application.
-        /// </summary>
-        /// <remarks>
-        /// <para>The caching option is mainly intended for use with the
-        /// <see cref="ILdapSearchServiceBase{TUser, TGroup, TSearchScope}"/>,
-        /// which might enumerate over large amounts of user objects that in turn
-        /// may required group objects. Without caching, the mapper must go to
-        /// the directory to create group objects for every user, possibly
-        /// recursively expanding group memberships. Caching these group objects
-        /// can reduce the load on the directory server, but it may cause the
-        /// application to use out-of-date information if the cache is using
-        /// a sliding window or the <see cref="GroupCacheDuration"/> is too
-        /// long.</para>
-        /// </remarks>
-        public GroupCaching GroupCaching { get; set; } = GroupCaching.None;
 
         /// <summary>
         /// Gets whether the certificate check is disabled for accessing the

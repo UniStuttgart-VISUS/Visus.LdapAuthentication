@@ -31,6 +31,9 @@ namespace Visus.Ldap.Mapping {
         public virtual bool GroupIsGroupMember => this._groupMap.IsGroupMember;
 
         /// <inheritdoc />
+        public ILdapAttributeMap<TGroup> GroupMap => this._groupMap;
+
+        /// <inheritdoc />
         public virtual IEnumerable<string> RequiredGroupAttributes
             => this._groupMap.AttributeNames;
 
@@ -40,6 +43,9 @@ namespace Visus.Ldap.Mapping {
 
         /// <inheritdoc />
         public virtual bool UserIsGroupMember => this._userMap.IsGroupMember;
+
+        /// <inheritdoc />
+        public ILdapAttributeMap<TUser> UserMap => this._userMap;
         #endregion
 
         #region Public methods

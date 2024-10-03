@@ -1,4 +1,4 @@
-﻿// <copyright file="GroupCacheService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="LdapCacheService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -10,26 +10,32 @@ using Microsoft.Extensions.Options;
 using Visus.Ldap.Mapping;
 using Visus.Ldap.Services;
 using Visus.DirectoryAuthentication.Configuration;
+using System.DirectoryServices.Protocols;
 
 
 namespace Visus.DirectoryAuthentication.Services {
 
     /// <summary>
-    /// Implementation of <see cref="Ldap.ILdapGroupCache{TGroup}"/> that uses
-    /// <see cref="IMemoryCache"/> to provide group objects from memory in order
-    /// to bypass the LDAP server.
+    /// Implementation of <see cref="Ldap.ILdapObjectCache{TUser, TGroup}"/> and
+    /// <see cref="Ldap.ILdapEntryCache{TEntry}"/> that uses
+    /// <see cref="IMemoryCache"/> to provide group objects from memory in
+    /// order to bypass the LDAP server.
     /// </summary>
+    /// <typeparam name="TEntry">The type of raw LDAP entries cached by the
+    /// service.</typeparam>
+    /// <typeparam name="TUser">The type of the user objects cached by the
+    /// service.</typeparam>
     /// <typeparam name="TGroup">The type of the group objects cached by the
     /// service.</typeparam>
     /// <param name="cache"></param>
     /// <param name="options"></param>
     /// <param name="map"></param>
     /// <param name="logger"></param>
-    public sealed class GroupCacheService<TGroup>(
+    public sealed class LdapCacheService<TUser, TGroup>(
             IMemoryCache cache,
             IOptions<LdapOptions> options,
-            ILdapAttributeMap<TGroup> map,
-            ILogger<GroupCacheService<TGroup>> logger)
-        : GroupCacheServiceBase<TGroup>(
+            ILdapMapper<SearchResultEntry, TUser, TGroup> map,
+            ILogger<LdapCacheService<TUser, TGroup>> logger)
+        : LdapCacheServiceBase<SearchResultEntry, TUser, TGroup>(
             cache, options.Value, map, logger) { }
 }

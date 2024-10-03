@@ -194,6 +194,9 @@ namespace Visus.DirectoryAuthentication.Services {
                 username ?? string.Empty,
                 password ?? string.Empty);
 
+            // A cache that does nothing.
+            var cache = NoCacheService<SearchResultEntry, TUser, TGroup>.Default;
+
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
@@ -206,7 +209,7 @@ namespace Visus.DirectoryAuthentication.Services {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
-                        NoGroupCacheService<TGroup>.Default,
+                        cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -238,6 +241,9 @@ namespace Visus.DirectoryAuthentication.Services {
                 username ?? string.Empty,
                 password ?? string.Empty);
 
+            // A cache that does nothing.
+            var cache = NoCacheService<SearchResultEntry, TUser, TGroup>.Default;
+
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
@@ -254,7 +260,7 @@ namespace Visus.DirectoryAuthentication.Services {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
-                        NoGroupCacheService<TGroup>.Default,
+                        cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;

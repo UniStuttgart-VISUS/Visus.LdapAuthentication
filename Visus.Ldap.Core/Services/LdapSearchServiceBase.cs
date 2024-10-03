@@ -35,7 +35,7 @@ namespace Visus.DirectoryAuthentication.Services {
     /// scope in the underlying library.</typeparam>
     /// <typeparam name="TOptions">The actual type of the
     /// <see cref="LdapOptionsBase"/> being used.</typeparam>
-    public abstract class LdapSearchServiceBase<TUser, TGroup, 
+    public abstract class LdapSearchServiceBase<TUser, TGroup,
             TSearchScope, TOptions>
         : ILdapSearchServiceBase<TUser, TGroup, TSearchScope>
             where TUser : class, new()
@@ -223,16 +223,17 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="groupMap">An LDAP property map for
         /// <typeparamref name="TGroup"/> that allows the service to retrieve
         /// infromation about the group object.</param>
-        /// <param name="groupCache">An in-memory cache for
-        /// <see cref="TGroup"/>.</param>
+        /// <param name="objectCache">An in-memory cache for
+        /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>.
+        /// </param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
         /// <c>null</c>.</exception>
         protected LdapSearchServiceBase(IOptions<TOptions> options,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap,
-                ILdapGroupCache<TGroup> groupCache) {
-            this.GroupCache = groupCache
-                ?? throw new ArgumentNullException(nameof(groupCache));
+                ILdapObjectCache<TUser, TGroup> objectCache) {
+            this.GroupCache = objectCache
+                ?? throw new ArgumentNullException(nameof(objectCache));
             this.GroupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
             this.Options = options?.Value
@@ -265,7 +266,7 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <summary>
         /// Gets an in-memory cache for <see cref="TGroup"/> objects.
         /// </summary>
-        protected ILdapGroupCache<TGroup> GroupCache { get; }
+        protected ILdapObjectCache<TUser, TGroup> GroupCache { get; }
 
         /// <summary>
         /// Gets the mapping between LDAP attributes and the properties of

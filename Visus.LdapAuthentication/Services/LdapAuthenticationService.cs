@@ -200,7 +200,7 @@ namespace Visus.LdapAuthentication.Services {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
                         this._mapper,
-                        NoGroupCacheService<TGroup>.Default,
+                        NoCacheService<LdapEntry, TUser, TGroup>.Default,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -245,7 +245,7 @@ namespace Visus.LdapAuthentication.Services {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
                         this._mapper,
-                        NoGroupCacheService<TGroup>.Default,
+                        NoCacheService<LdapEntry, TUser, TGroup>.Default,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
