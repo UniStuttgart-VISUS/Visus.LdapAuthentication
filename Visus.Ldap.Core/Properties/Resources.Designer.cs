@@ -88,6 +88,15 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The identity of a cache key must not be empty..
+        /// </summary>
+        internal static string ErrorEmptyCacheKey {
+            get {
+                return ResourceManager.GetString("ErrorEmptyCacheKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The password for the LDAP service account must be specified unless no service user is specified..
         /// </summary>
         internal static string ErrorEmptyPassword {

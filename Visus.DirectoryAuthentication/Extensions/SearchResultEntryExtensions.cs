@@ -168,19 +168,24 @@ namespace Visus.DirectoryAuthentication.Extensions {
 
             // Obtain the primary group first.
             var primaryGroupFilter = that.GetPrimaryGroupFilter(options);
-            if (primaryGroupFilter != null) {
-                var primaryGroup = objectCache.GetGroup(primaryGroupFilter,
+            var primaryGroup = (primaryGroupFilter != null)
+                ? objectCache.GetGroup(primaryGroupFilter,
                     f => {
-                        var e = connection.Search(f, attributes, options)
-                            .FirstOrDefault();
+                        // Note: using the GetPrimaryGroup method here instead
+                        // of performing a search on 'connection' ensures that
+                        // the entry will be cached, too.
+                        var e = that.GetPrimaryGroup(connection,
+                            entryCache,
+                            attributes,
+                            options);
                         return (e != null)
                             ? mapper.MapPrimaryGroup(e, new TGroup())
                             : default;
-                    });
+                    })
+                : default;
 
-                if (primaryGroup != null) {
-                    yield return primaryGroup;
-                }
+            if (primaryGroup != null) {
+                yield return primaryGroup;
             }
 
             var groups = that.GetGroups(connection, attributes, options);

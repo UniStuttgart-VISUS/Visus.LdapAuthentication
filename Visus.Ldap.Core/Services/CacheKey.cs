@@ -4,9 +4,10 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using Visus.Ldap.Properties;
 
 
 namespace Visus.Ldap.Services {
@@ -27,11 +28,15 @@ namespace Visus.Ldap.Services {
         /// <param name="type">The type of the item encoded.</param>
         /// <param name="identity">The identity of the item, which must be
         /// unique for the <paramref name="type"/>.</param>
-        public CacheKey(Type type, string identity) {
+        public CacheKey(Type type, HashSet<string> identity) {
             this._identity = identity
                 ?? throw new ArgumentNullException(nameof(identity));
             this._type = type
                 ?? throw new ArgumentNullException(nameof(identity));
+
+            if (identity.Count == 0) {
+                throw new ArgumentException(Resources.ErrorEmptyCacheKey);
+            }
         }
         #endregion
 
@@ -40,7 +45,7 @@ namespace Visus.Ldap.Services {
         public bool Equals(CacheKey<TOwner>? other) {
             return (other != null)
                 && (other._type == this._type)
-                && (other._identity == this._identity);
+                && other._identity.SetEquals(this._identity);
         }
 
         /// <inheritdoc />
@@ -50,14 +55,19 @@ namespace Visus.Ldap.Services {
 
         /// <inheritdoc />
         public override int GetHashCode() {
-            return this.GetType().GetHashCode()
-                ^ this._type.GetHashCode()
-                ^ this._identity.GetHashCode();
+            var retval = this.GetType().GetHashCode()
+                ^ (this._type.GetHashCode() >> 1);
+
+            foreach (var i in this._identity) {
+                retval ^= i.GetHashCode();
+            }
+
+            return retval;
         }
         #endregion
 
         #region Private fields
-        private readonly string _identity;
+        private readonly HashSet<string> _identity;
         private readonly Type _type;
         #endregion
     }
@@ -81,7 +91,23 @@ namespace Visus.Ldap.Services {
         /// by <typeparamref name="TOwner"/>.</param>
         /// <returns>A new cache key.</returns>
         public static CacheKey<TOwner> Create<TOwner>(Type type,
-                string identity) => new CacheKey<TOwner>(type, identity);
+            string identity) => new CacheKey<TOwner>(type, new([identity]));
+
+        /// <summary>
+        /// Creates a new key for the object identified by
+        /// <paramref name="identity"/> and owned by the given
+        /// <typeparamref name="TOwner"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of the class owning the cached
+        /// object.</typeparam>
+        /// <param name="type">The type of the object being cached.</param>
+        /// <param name="identity">A set of strings uniquely identifying the
+        /// cached object among the objects of type <paramref name="type"/>
+        /// cached by <typeparamref name="TOwner"/>.</param>
+        /// <returns>A new cache key.</returns>
+        public static CacheKey<TOwner> Create<TOwner>(Type type,
+                IEnumerable<string> identity)
+            => new CacheKey<TOwner>(type, new(identity));
 
         /// <summary>
         /// Creates a new key for the object identified by
@@ -97,6 +123,23 @@ namespace Visus.Ldap.Services {
         /// by <typeparamref name="TOwner"/>.</param>
         /// <returns>A new cache key.</returns>
         public static CacheKey<TOwner> Create<TOwner, TType>(string identity)
-            => new CacheKey<TOwner>(typeof(TType), identity);
+            => new CacheKey<TOwner>(typeof(TType), new([identity]));
+
+        /// <summary>
+        /// Creates a new key for the object identified by
+        /// <paramref name="identity"/> and owned by the given
+        /// <typeparamref name="TOwner"/>.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of the class owning the cached
+        /// object.</typeparam>
+        /// <typeparam name="TType">The type of the object being cached.
+        /// </typeparam>
+        /// <param name="identity">A set of strings uniquely identifying the
+        /// cached object among the objects of type <typeparamref name="TType"/>
+        /// cached by <typeparamref name="TOwner"/>.</param>
+        /// <returns>A new cache key.</returns>
+        public static CacheKey<TOwner> Create<TOwner, TType>(
+                IEnumerable<string> identity)
+            => new CacheKey<TOwner>(typeof(TType), new(identity));
     }
 }

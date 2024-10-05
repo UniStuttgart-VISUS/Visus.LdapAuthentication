@@ -126,6 +126,9 @@
   <data name="ErrorDistinguishedNamePropertyAlreadySet" xml:space="preserve">
     <value>The property storing the distinguished name was already configured.</value>
   </data>
+  <data name="ErrorEmptyCacheKey" xml:space="preserve">
+    <value>The identity of a cache key must not be empty.</value>
+  </data>
   <data name="ErrorEmptyPassword" xml:space="preserve">
     <value>The password for the LDAP service account must be specified unless no service user is specified.</value>
   </data>
