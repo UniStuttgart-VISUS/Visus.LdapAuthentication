@@ -5,6 +5,7 @@
 // <author>Christoph Müller</author>
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 
 namespace Visus.Ldap.Mapping {
@@ -164,6 +165,23 @@ namespace Visus.Ldap.Mapping {
         TGroup MapGroup(TEntry entry, TGroup group);
 
         /// <summary>
+        /// Combines <see cref="MapGroup(TEntry, TGroup)"/> and
+        /// <see cref="SetPrimary(TGroup, bool)"/> to map <paramref name="entry"/>
+        /// as a primary group.
+        /// </summary>
+        /// <param name="entry">The LDAP entry to retrieve the attribute values
+        /// from.</param>
+        /// <param name="group">The group object to assign the LDAP attributes
+        /// to.</param>
+        /// <returns><paramref name="group"/>.</returns>
+        /// <exception cref="System.ArgumentNullException">If
+        /// <paramref name="group"/> is <c>null</c>,
+        /// or if <paramref name="entry"/> is <c>null</c>.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        TGroup MapPrimaryGroup(TEntry entry, TGroup group)
+            => this.SetPrimary(this.MapGroup(entry, group), true);
+
+        /// <summary>
         /// Assign the properties of the given LDAP <paramref name="entry"/>
         /// and its group claims to the given <paramref name="user"/> object.
         /// </summary>
@@ -216,7 +234,7 @@ namespace Visus.Ldap.Mapping {
         /// available.
         /// </summary>
         /// <remarks>
-        /// Not to implementors: The method should do nothing if
+        /// Note to implementors: The method should do nothing if
         /// <paramref name="group"/> does not have a flag indicating whether it
         /// is the primary group.
         /// </remarks>

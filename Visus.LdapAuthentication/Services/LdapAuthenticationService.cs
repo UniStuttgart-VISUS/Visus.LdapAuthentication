@@ -109,6 +109,7 @@ namespace Visus.LdapAuthentication.Services {
 
                 if (user != null) {
                     var primary = user.GetPrimaryGroup(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
                     var groups = user.GetGroups(connection,
@@ -158,6 +159,7 @@ namespace Visus.LdapAuthentication.Services {
                 if (res.Any()) {
                     var user = res.First();
                     var primary = user.GetPrimaryGroup(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
                     var groups = user.GetGroups(connection,
@@ -200,7 +202,8 @@ namespace Visus.LdapAuthentication.Services {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
                         this._mapper,
-                        NoCacheService<LdapEntry, TUser, TGroup>.Default,
+                        this.Cache,
+                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -245,7 +248,8 @@ namespace Visus.LdapAuthentication.Services {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
                         this._mapper,
-                        NoCacheService<LdapEntry, TUser, TGroup>.Default,
+                        this.Cache,
+                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -271,6 +275,11 @@ namespace Visus.LdapAuthentication.Services {
                 .Distinct(ClaimEqualityComparer.Instance);
             return (user, claims);
         }
+        #endregion
+
+        #region Private properties
+        private NoCacheService<LdapEntry, TUser, TGroup> Cache
+            => NoCacheService<LdapEntry, TUser, TGroup>.Default;
         #endregion
 
         #region Private methods

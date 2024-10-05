@@ -112,6 +112,7 @@ namespace Visus.DirectoryAuthentication.Services {
                 if (res is SearchResponse s && s.Any()) {
                     var user = s.Entries[0];
                     var primary = user.GetPrimaryGroup(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
                     var groups = user.GetGroups(connection,
@@ -162,6 +163,7 @@ namespace Visus.DirectoryAuthentication.Services {
                 if (res is SearchResponse s && s.Any()) {
                     var user = s.Entries[0];
                     var primary = user.GetPrimaryGroup(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
                     var groups = user.GetGroups(connection,
@@ -194,9 +196,6 @@ namespace Visus.DirectoryAuthentication.Services {
                 username ?? string.Empty,
                 password ?? string.Empty);
 
-            // A cache that does nothing.
-            var cache = NoCacheService<SearchResultEntry, TUser, TGroup>.Default;
-
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
@@ -209,7 +208,8 @@ namespace Visus.DirectoryAuthentication.Services {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
-                        cache,
+                        this.Cache,
+                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -241,9 +241,6 @@ namespace Visus.DirectoryAuthentication.Services {
                 username ?? string.Empty,
                 password ?? string.Empty);
 
-            // A cache that does nothing.
-            var cache = NoCacheService<SearchResultEntry, TUser, TGroup>.Default;
-
             var retval = new TUser();
 
             foreach (var b in this._options.SearchBases) {
@@ -260,7 +257,8 @@ namespace Visus.DirectoryAuthentication.Services {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
-                        cache,
+                        this.Cache,
+                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -285,6 +283,11 @@ namespace Visus.DirectoryAuthentication.Services {
                 .Distinct(ClaimEqualityComparer.Instance);
             return (user, claims);
         }
+        #endregion
+
+        #region Private properties
+        private NoCacheService<SearchResultEntry, TUser, TGroup> Cache
+            => NoCacheService<SearchResultEntry, TUser, TGroup>.Default;
         #endregion
 
         #region Private methods

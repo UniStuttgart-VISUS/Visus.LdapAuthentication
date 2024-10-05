@@ -232,10 +232,10 @@ namespace Visus.DirectoryAuthentication.Services {
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap,
                 ILdapObjectCache<TUser, TGroup> objectCache) {
-            this.GroupCache = objectCache
-                ?? throw new ArgumentNullException(nameof(objectCache));
             this.GroupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
+            this.ObjectCache = objectCache
+                ?? throw new ArgumentNullException(nameof(objectCache));
             this.Options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
             this.UserMap = userMap
@@ -264,15 +264,16 @@ namespace Visus.DirectoryAuthentication.Services {
         protected string[] GroupAttributes { get; }
 
         /// <summary>
-        /// Gets an in-memory cache for <see cref="TGroup"/> objects.
-        /// </summary>
-        protected ILdapObjectCache<TUser, TGroup> GroupCache { get; }
-
-        /// <summary>
         /// Gets the mapping between LDAP attributes and the properties of
         /// <typeparamref name="TGroup"/>.
         /// </summary>
         protected ILdapAttributeMap<TGroup> GroupMap { get; }
+
+        /// <summary>
+        /// Gets an in-memory cache for <typeparamref name="TUser"/> and
+        /// <typeparamref name="TGroup"/> objects.
+        /// </summary>
+        protected ILdapObjectCache<TUser, TGroup> ObjectCache { get; }
 
         /// <summary>
         /// Gets the LDAP server configuration.
@@ -340,7 +341,7 @@ namespace Visus.DirectoryAuthentication.Services {
         /// expression.
         /// </summary>
         /// <remarks>
-        /// Implementors should make use of the <see cref="GroupCache"/> before
+        /// Implementors should make use of the <see cref="ObjectCache"/> before
         /// performing this lookup.
         /// </remarks>
         /// <param name="filter">The filter uniquely identifying the group we
@@ -358,7 +359,7 @@ namespace Visus.DirectoryAuthentication.Services {
         /// expression.
         /// </summary>
         /// <remarks>
-        /// Implementors should make use of the <see cref="GroupCache"/> before
+        /// Implementors should make use of the <see cref="ObjectCache"/> before
         /// performing this lookup.
         /// </remarks>
         /// <param name="filter">The filter uniquely identifying the group we

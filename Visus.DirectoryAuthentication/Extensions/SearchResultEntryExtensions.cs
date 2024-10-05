@@ -140,6 +140,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="that"></param>
         /// <param name="connection"></param>
         /// <param name="mapper"></param>
+        /// <param name="objectCache"></param>
+        /// <param name="entryCache"></param>
         /// <param name="options"></param>
         /// <returns></returns>
         internal static IEnumerable<TGroup> GetGroups<TUser, TGroup>(
@@ -147,11 +149,17 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 LdapConnection connection,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
                 ILdapObjectCache<TUser, TGroup> objectCache,
+                ILdapEntryCache<SearchResultEntry> entryCache,
                 LdapOptions options)
                 where TGroup : new() {
-            ArgumentNullException.ThrowIfNull(mapper, nameof(mapper));
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            Debug.Assert(that != null);
+            Debug.Assert(connection != null);
+            Debug.Assert(mapper != null);
+            Debug.Assert(objectCache != null);
+            Debug.Assert(entryCache != null);
+            Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
+
             var attributes = mapper.RequiredGroupAttributes
                 .Append(options.Mapping.PrimaryGroupAttribute)
                 .Append(options.Mapping.PrimaryGroupIdentityAttribute)
@@ -159,12 +167,20 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 .ToArray();
 
             // Obtain the primary group first.
-            var primaryGroup = that.GetPrimaryGroup(connection,
-                attributes,
-                options);
-            if (primaryGroup != null) {
-                yield return mapper.SetPrimary(mapper.MapGroup(primaryGroup,
-                    new TGroup()), true);
+            var primaryGroupFilter = that.GetPrimaryGroupFilter(options);
+            if (primaryGroupFilter != null) {
+                var primaryGroup = objectCache.GetGroup(primaryGroupFilter,
+                    f => {
+                        var e = connection.Search(f, attributes, options)
+                            .FirstOrDefault();
+                        return (e != null)
+                            ? mapper.MapPrimaryGroup(e, new TGroup())
+                            : default;
+                    });
+
+                if (primaryGroup != null) {
+                    yield return primaryGroup;
+                }
             }
 
             var groups = that.GetGroups(connection, attributes, options);
@@ -189,7 +205,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
                     var parents = g.GetGroups(connection, mapper, objectCache,
-                        options);
+                        entryCache, options);
                     yield return mapper.SetGroups(group, parents);
                 }
 
@@ -210,46 +226,59 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="connection">The LDAP connection used to retrieve the
         /// entry representing the groups obtained from <paramref name="that"/>.
         /// </param>
-        /// <param name="connection">The LDAP connection used to retrieve the
-        /// entry of the group.</param>
+        /// <param name="cache">A cache for the LDAP entries which potentially
+        /// prevents the method from performing an actual LDAP lookup.</param>
         /// <param name="attributes">The attributes to load for the entry of the
         /// group.</param>
         /// <param name="options">The LDAP options determining the search scope
         /// and the attribute mapping.</param>
         /// <returns>The LDAP entries of all groups except for the primary one.
         /// </returns>
-        internal static Task<IEnumerable<SearchResultEntry>> GetGroupsAsync(
+        internal static async Task<IEnumerable<SearchResultEntry>> GetGroupsAsync(
                 this SearchResultEntry that,
                 LdapConnection connection,
+                ILdapEntryCache<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
-            ArgumentNullException.ThrowIfNull(connection, nameof(connection));
-            var groups = that.GetGroups(options);
-
+            Debug.Assert(that != null);
+            Debug.Assert(connection != null);
+            Debug.Assert(cache != null);
+            Debug.Assert(attributes != null);
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
-            groups = groups.Select(
-                g => $"({options.Mapping.DistinguishedNameAttribute}={g})");
 
-            return connection.SearchAsync($"(|{string.Join("", groups)})",
-                attributes, options);
+            var groups = that.GetGroups(options);
+
+            var retval = new List<SearchResultEntry>();
+            retval.Capacity = groups.Count();
+
+            foreach (var g in groups) {
+                var gg = $"({options.Mapping.DistinguishedNameAttribute}={g})";
+                var e = await cache.GetEntry(gg, async f =>
+                    (await connection.SearchAsync(f, attributes, options))
+                    .SingleOrDefault());
+                if (e != null) {
+                    retval.Add(e);
+                }
+            }
+
+            return retval;
         }
 
         /// <summary>
         /// Gets the identifier for the primary group <paramref name="that"/> is
         /// member of.
         /// </summary>
-        /// <param name="that"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
-        /// </exception>
+        /// <param name="that">The entry to get the primary group of.</param>
+        /// <param name="options">The LDAP options specifying the attribute to
+        /// look for the primary group identifier.</param>
+        /// <returns>The primary group ID, which is typically a SID or a
+        /// GID number, depending on the type of directory.</returns>
         internal static string? GetPrimaryGroup(
                 this SearchResultEntry that,
                 LdapOptions options) {
-            ArgumentNullException.ThrowIfNull(that, nameof(that));
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            Debug.Assert(that != null);
+            Debug.Assert(options != null);
             var mapping = options.Mapping;
             Debug.Assert(mapping != null);
 
@@ -283,10 +312,11 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="connection">The LDAP connection used to retrieve the
         /// entry representing the primary group obtained from
         /// <paramref name="that"/>.</param>
-        /// <param name="connection">The LDAP connection used to retrieve the
-        /// entry of the group.</param>
+        /// <param name="cache">A cache for the LDAP entries which potentially
+        /// prevents the method from performing an actual LDAP lookup.</param>
         /// <param name="attributes">The attributes to load for the entry of the
-        /// group.</param>
+        /// group. Note that this parameter has no effect on the result if the
+        /// group was previously cached.</param>
         /// <param name="options">The LDAP options determining the search scope
         /// and the attribute mapping.</param>
         /// <returns>The LDAP entry of the primary group, or <c>null</c> if the
@@ -295,22 +325,24 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static SearchResultEntry? GetPrimaryGroup(
                 this SearchResultEntry that,
                 LdapConnection connection,
+                ILdapEntryCache<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
-            ArgumentNullException.ThrowIfNull(connection, nameof(connection));
-            var id = that.GetPrimaryGroup(options);
-            if (id == null) {
+            Debug.Assert(that != null);
+            Debug.Assert(connection != null);
+            Debug.Assert(cache != null);
+            Debug.Assert(attributes != null);
+            Debug.Assert(options != null);
+            Debug.Assert(options.Mapping != null);
+
+            var filter = that.GetPrimaryGroupFilter(options);
+            if (filter == null) {
                 return null;
             }
 
-            Debug.Assert(options != null);
-            Debug.Assert(options.Mapping != null);
-            var retval = connection.Search(
-                $"({options.Mapping.PrimaryGroupIdentityAttribute}={id})",
-                attributes,
-                options);
-
-            return retval.FirstOrDefault();
+            return cache.GetEntry(filter,
+                f => connection.Search(f, attributes, options)
+                .FirstOrDefault());
         }
 
         /// <summary>
@@ -321,10 +353,11 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="connection">The LDAP connection used to retrieve the
         /// entry representing the primary group obtained from
         /// <paramref name="that"/>.</param>
-        /// <param name="connection">The LDAP connection used to retrieve the
-        /// entry of the group.</param>
+        /// <param name="cache">A cache for the LDAP entries which potentially
+        /// prevents the method from performing an actual LDAP lookup.</param>
         /// <param name="attributes">The attributes to load for the entry of the
-        /// group.</param>
+        /// group. Note that this parameter has no effect on the result if the
+        /// group was previously cached.</param>
         /// <param name="options">The LDAP options determining the search scope
         /// and the attribute mapping.</param>
         /// <returns>The LDAP entry of the primary group, or <c>null</c> if the
@@ -333,38 +366,42 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static async Task<SearchResultEntry?> GetPrimaryGroupAsync(
                 this SearchResultEntry that,
                 LdapConnection connection,
+                ILdapEntryCache<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
-            ArgumentNullException.ThrowIfNull(connection, nameof(connection));
+            Debug.Assert(that != null);
+            Debug.Assert(connection != null);
+            Debug.Assert(cache != null);
+            Debug.Assert(attributes != null);
+            Debug.Assert(options != null);
+            Debug.Assert(options.Mapping != null);
+
             var filter = that.GetPrimaryGroupFilter(options);
             if (filter == null) {
                 return null;
             }
 
-            Debug.Assert(options != null);
-            Debug.Assert(options.Mapping != null);
-            var retval = await connection.SearchAsync(filter, attributes,
-                options);
-
-            return retval.FirstOrDefault();
+            return await cache.GetEntry(filter, async f => {
+                return (await connection.SearchAsync(f, attributes, options))
+                    .FirstOrDefault();
+            });
         }
 
         /// <summary>
         /// Gets an LDAP filter for the primary group of <paramref name="that"/>.
         /// </summary>
-        /// <param name="that"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
-        /// is <c>null</c>, or if <paramref name="options"/> is <c>null</c>.
-        /// </exception>
+        /// <param name="that">The entry to get the primary group of.</param>
+        /// <param name="options">The LDAP options specifying the attribute to
+        /// look for the primary group identifier.</param>
+        /// <returns>An LDAP filter to retrieve the primary group of
+        /// <paramref name="that"/>.</returns>
         internal static string? GetPrimaryGroupFilter(
                 this SearchResultEntry that,
                 LdapOptions options) {
-            var retval = that.GetPrimaryGroup(options);
             Debug.Assert(that != null);
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
+            var retval = that.GetPrimaryGroup(options);
 
             if (retval != null) {
                 var att = options.Mapping.PrimaryGroupIdentityAttribute;

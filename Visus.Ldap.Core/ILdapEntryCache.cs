@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 
@@ -51,19 +52,22 @@ namespace Visus.Ldap {
         /// for.</param>
         /// <param name="fallback">A function to produce the entry from
         /// <parmref name="filter" /> if it was not found in the cache.</param>
-        /// <param name="name">The name of the entry to look for.</param>
-        /// <returns>The entry or <c>null</c> if no entry matching the query
-        /// was found.</returns>
+        /// <param name="retval">Receives the cached or newly created group.
+        /// </param>
+        /// <returns><c>true</c> if <paramref name="retval"/> is from the cache,
+        /// <c>false</c> if it was obtained from <paramref name="fallback"/>.
+        /// </returns>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="filter"/> is <c>null</c>, or if
         /// <paramref name="fallback"/> is <c>null</c>.</exception>
-        public TEntry? GetEntry(string filter,
-                Func<string, TEntry?> fallback) {
+        public bool GetEntry(string filter,
+                Func<string, TEntry?> fallback,
+                out TEntry? retval) {
             ArgumentNullException.ThrowIfNull(fallback, nameof(fallback));
 
-            var retval = this.GetEntry(filter);
+            retval = this.GetEntry(filter);
             if (retval != null) {
-                return retval;
+                return true;
             }
 
             retval = fallback(filter);
@@ -71,6 +75,26 @@ namespace Visus.Ldap {
                 this.Add(retval);
             }
 
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a cached entry which matches the given filter or obtains a new
+        /// entry from <paramref name="fallback"/> and caches it for future use.
+        /// </summary>
+        /// <param name="filter">The LDAP filter selecting the entry to look
+        /// for.</param>
+        /// <param name="fallback">A function to produce the entry from
+        /// <parmref name="filter" /> if it was not found in the cache.</param>
+        /// <returns>The entry or <c>null</c> if no entry matching the query
+        /// was found.</returns>
+        /// <exception cref="ArgumentNullException">If
+        /// <paramref name="filter"/> is <c>null</c>, or if
+        /// <paramref name="fallback"/> is <c>null</c>.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TEntry? GetEntry(string filter,
+                Func<string, TEntry?> fallback) {
+            this.GetEntry(filter, fallback, out var retval);
             return retval;
         }
 
