@@ -1,8 +1,8 @@
 # ASP.NET Core LDAP Authentication Middleware
 
 [![Build Status](https://visualisierungsinstitut.visualstudio.com/Visus.LdapAuthentication/_apis/build/status/UniStuttgart-VISUS.Visus.LdapAuthentication?branchName=main)](https://visualisierungsinstitut.visualstudio.com/Visus.LdapAuthentication/_build/latest?definitionId=6&branchName=main)
-[![Visus.LdapAuthenticationVersion](https://buildstats.info/nuget/Visus.LdapAuthentication)](https://www.nuget.org/packages/Visus.LdapAuthentication)
-[![Visus.DirectoryAuthenticationVersion](https://buildstats.info/nuget/Visus.DirectoryAuthentication)](https://www.nuget.org/packages/Visus.DirectoryAuthentication)
+[![Visus.LdapAuthenticationVersion](https://img.shields.io/nuget/v/Visus.LdapAuthentication.svg)](https://www.nuget.org/packages/Visus.LdapAuthentication)
+[![Visus.DirectoryAuthenticationVersion](https://img.shields.io/nuget/v/Visus.DirectoryAuthentication.svg)](https://www.nuget.org/packages/Visus.DirectoryAuthentication)
 
 This project implements middleware for ASP.NET Core that enables authenticating users against LDAP directories like Active Directory via an LDAP bind.
 
