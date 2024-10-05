@@ -56,10 +56,7 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="groupMap">An LDAP property map for
         /// <typeparamref name="TGroup"/> that allows the service to retrieve
         /// infromation about the group object.</param>
-        /// <param name="objectCache">An in-memory cache for
-        /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>.
-        /// </param>
-        /// <param name="entryCache">A cache for raw LDAP entries.</param>
+        /// <param name="cache">A cache for raw LDAP entries.</param>
         /// <param name="logger">A logger for persisting important messages like
         /// failed search requests.</param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
@@ -69,15 +66,13 @@ namespace Visus.DirectoryAuthentication.Services {
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap,
-                ILdapObjectCache<TUser, TGroup> objectCache,
-                ILdapEntryCache<SearchResultEntry> entryCache,
+                ILdapCache cache,
                 ILogger<LdapSearchService<TUser, TGroup>> logger)
-                : base(options, userMap, groupMap, objectCache) {
-            ArgumentNullException.ThrowIfNull(connectionService,
-                nameof(connectionService));
+                : base(options, userMap, groupMap) {
+            ArgumentNullException.ThrowIfNull(connectionService);
 
-            this._entryCache = entryCache
-                ?? throw new ArgumentNullException(nameof(entryCache));
+            this._cache = cache
+                ?? throw new ArgumentNullException(nameof(cache));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
             this._options = options?.Value
@@ -118,28 +113,20 @@ namespace Visus.DirectoryAuthentication.Services {
         protected override TGroup? GetGroupEntry(
                 string filter,
                 IDictionary<string, SearchScope>? searchBases)
-            => this.ObjectCache.GetGroup(filter, f => {
-                this._logger.LogTrace("Cache miss for group identified by "
-                    + "filter {Filter}.", f);
-                return this.GetEntry<TGroup>(f,
-                    searchBases,
-                    this.GroupAttributes,
-                    this.MapGroup);
-            });
+            => this.GetEntry<TGroup>(filter,
+                searchBases,
+                this.GroupAttributes,
+                this.MapGroup);
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override Task<TGroup?> GetGroupEntryAsync(
                 string filter,
                 IDictionary<string, SearchScope>? searchBases)
-            => this.ObjectCache.GetGroup(filter, f => {
-                this._logger.LogTrace("Cache miss for group identified by "
-                    + "filter {Filter}.", f);
-                return this.GetEntryAsync<TGroup>(filter,
-                    searchBases,
-                    this.GroupAttributes,
-                    this.MapGroup);
-            });
+            => this.GetEntryAsync<TGroup>(filter,
+                searchBases,
+                this.GroupAttributes,
+                this.MapGroup);
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -389,8 +376,7 @@ namespace Visus.DirectoryAuthentication.Services {
             if (this._mapper.GroupIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
                     this._mapper,
-                    this.ObjectCache,
-                    this._entryCache,
+                    this._cache,
                     this._options);
                 this._mapper.SetGroups(group, groups);
             }
@@ -412,8 +398,7 @@ namespace Visus.DirectoryAuthentication.Services {
             if (this._mapper.UserIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
                     this._mapper,
-                    this.ObjectCache,
-                    this._entryCache,
+                    this._cache,
                     this._options);
                 this._mapper.SetGroups(user, groups);
             }
@@ -423,8 +408,8 @@ namespace Visus.DirectoryAuthentication.Services {
         #endregion
 
         #region Private fields
+        private readonly ILdapCache _cache;
         private LdapConnection? _connection;
-        private readonly ILdapEntryCache<SearchResultEntry> _entryCache;
         private readonly ILogger _logger;
         private readonly ILdapMapper<SearchResultEntry, TUser, TGroup> _mapper;
         private readonly LdapOptions _options;

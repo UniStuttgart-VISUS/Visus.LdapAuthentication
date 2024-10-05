@@ -203,7 +203,6 @@ namespace Visus.LdapAuthentication.Services {
                     var groups = entry.GetGroups(connection,
                         this._mapper,
                         this.Cache,
-                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -249,7 +248,6 @@ namespace Visus.LdapAuthentication.Services {
                     var groups = entry.GetGroups(connection,
                         this._mapper,
                         this.Cache,
-                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -261,7 +259,6 @@ namespace Visus.LdapAuthentication.Services {
                 username);
             throw new KeyNotFoundException(Resources.ErrorUserNotFound);
         }
-
 
         /// <inheritdoc />
         public async Task<(TUser, IEnumerable<Claim>)> LoginUserAsync(
@@ -278,8 +275,8 @@ namespace Visus.LdapAuthentication.Services {
         #endregion
 
         #region Private properties
-        private NoCacheService<LdapEntry, TUser, TGroup> Cache
-            => NoCacheService<LdapEntry, TUser, TGroup>.Default;
+        private NoCacheService<LdapEntry> Cache
+            => NoCacheService<LdapEntry>.Default;
         #endregion
 
         #region Private methods

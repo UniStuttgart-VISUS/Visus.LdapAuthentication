@@ -149,10 +149,7 @@ namespace Visus.LdapAuthentication {
 
             // Add the in-memory caches.
             services.AddMemoryCache();
-            services.TryAddSingleton<ILdapEntryCache<LdapEntry>,
-                LdapCacheService<TUser, TGroup>>();
-            services.TryAddSingleton<ILdapObjectCache<TUser, TGroup>,
-                LdapCacheService<TUser, TGroup>>();
+            services.TryAddSingleton<ILdapCache, LdapCacheService>();
 
             return services.AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>()

@@ -209,7 +209,6 @@ namespace Visus.DirectoryAuthentication.Services {
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
                         this.Cache,
-                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -258,7 +257,6 @@ namespace Visus.DirectoryAuthentication.Services {
                     var groups = s.Entries[0].GetGroups(connection,
                         this._mapper,
                         this.Cache,
-                        this.Cache,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -286,8 +284,8 @@ namespace Visus.DirectoryAuthentication.Services {
         #endregion
 
         #region Private properties
-        private NoCacheService<SearchResultEntry, TUser, TGroup> Cache
-            => NoCacheService<SearchResultEntry, TUser, TGroup>.Default;
+        private NoCacheService<SearchResultEntry> Cache
+            => NoCacheService<SearchResultEntry>.Default;
         #endregion
 
         #region Private methods

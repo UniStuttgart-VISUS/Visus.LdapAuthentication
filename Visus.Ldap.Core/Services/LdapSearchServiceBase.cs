@@ -223,19 +223,13 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <param name="groupMap">An LDAP property map for
         /// <typeparamref name="TGroup"/> that allows the service to retrieve
         /// infromation about the group object.</param>
-        /// <param name="objectCache">An in-memory cache for
-        /// <typeparamref name="TUser"/> and <typeparamref name="TGroup"/>.
-        /// </param>
         /// <exception cref="ArgumentNullException">If any of the parameters is
         /// <c>null</c>.</exception>
         protected LdapSearchServiceBase(IOptions<TOptions> options,
                 ILdapAttributeMap<TUser> userMap,
-                ILdapAttributeMap<TGroup> groupMap,
-                ILdapObjectCache<TUser, TGroup> objectCache) {
+                ILdapAttributeMap<TGroup> groupMap) {
             this.GroupMap = groupMap
                 ?? throw new ArgumentNullException(nameof(groupMap));
-            this.ObjectCache = objectCache
-                ?? throw new ArgumentNullException(nameof(objectCache));
             this.Options = options?.Value
                 ?? throw new ArgumentNullException(nameof(options));
             this.UserMap = userMap
@@ -268,12 +262,6 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <typeparamref name="TGroup"/>.
         /// </summary>
         protected ILdapAttributeMap<TGroup> GroupMap { get; }
-
-        /// <summary>
-        /// Gets an in-memory cache for <typeparamref name="TUser"/> and
-        /// <typeparamref name="TGroup"/> objects.
-        /// </summary>
-        protected ILdapObjectCache<TUser, TGroup> ObjectCache { get; }
 
         /// <summary>
         /// Gets the LDAP server configuration.

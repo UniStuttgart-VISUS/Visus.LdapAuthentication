@@ -140,23 +140,20 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <param name="that"></param>
         /// <param name="connection"></param>
         /// <param name="mapper"></param>
-        /// <param name="objectCache"></param>
-        /// <param name="entryCache"></param>
+        /// <param name="cache"></param>
         /// <param name="options"></param>
         /// <returns></returns>
         internal static IEnumerable<TGroup> GetGroups<TUser, TGroup>(
                 this SearchResultEntry that,
                 LdapConnection connection,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
-                ILdapObjectCache<TUser, TGroup> objectCache,
-                ILdapEntryCache<SearchResultEntry> entryCache,
+                ILdapCacheBase<SearchResultEntry> cache,
                 LdapOptions options)
                 where TGroup : new() {
             Debug.Assert(that != null);
             Debug.Assert(connection != null);
             Debug.Assert(mapper != null);
-            Debug.Assert(objectCache != null);
-            Debug.Assert(entryCache != null);
+            Debug.Assert(cache != null);
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
 
@@ -167,25 +164,12 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 .ToArray();
 
             // Obtain the primary group first.
-            var primaryGroupFilter = that.GetPrimaryGroupFilter(options);
-            var primaryGroup = (primaryGroupFilter != null)
-                ? objectCache.GetGroup(primaryGroupFilter,
-                    f => {
-                        // Note: using the GetPrimaryGroup method here instead
-                        // of performing a search on 'connection' ensures that
-                        // the entry will be cached, too.
-                        var e = that.GetPrimaryGroup(connection,
-                            entryCache,
-                            attributes,
-                            options);
-                        return (e != null)
-                            ? mapper.MapPrimaryGroup(e, new TGroup())
-                            : default;
-                    })
-                : default;
-
+            var primaryGroup = that.GetPrimaryGroup(connection,
+                cache,
+                attributes,
+                options);
             if (primaryGroup != null) {
-                yield return primaryGroup;
+                yield return mapper.MapPrimaryGroup(primaryGroup, new TGroup());
             }
 
             var groups = that.GetGroups(connection, attributes, options);
@@ -209,8 +193,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 // Recursively reconstruct the hierarchy itself.
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, mapper, objectCache,
-                        entryCache, options);
+                    var parents = g.GetGroups(connection, mapper, cache,
+                        options);
                     yield return mapper.SetGroups(group, parents);
                 }
 
@@ -242,7 +226,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static async Task<IEnumerable<SearchResultEntry>> GetGroupsAsync(
                 this SearchResultEntry that,
                 LdapConnection connection,
-                ILdapEntryCache<SearchResultEntry> cache,
+                ILdapCacheBase<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);
@@ -258,10 +242,11 @@ namespace Visus.DirectoryAuthentication.Extensions {
             retval.Capacity = groups.Count();
 
             foreach (var g in groups) {
-                var gg = $"({options.Mapping.DistinguishedNameAttribute}={g})";
-                var e = await cache.GetEntry(gg, async f =>
-                    (await connection.SearchAsync(f, attributes, options))
-                    .SingleOrDefault());
+                var f = $"({options.Mapping.DistinguishedNameAttribute}={g})";
+                var e = (await cache.GetOrAdd(f,
+                    attributes,
+                    () => connection.SearchAsync(f, attributes, options)))
+                    .SingleOrDefault();
                 if (e != null) {
                     retval.Add(e);
                 }
@@ -330,7 +315,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static SearchResultEntry? GetPrimaryGroup(
                 this SearchResultEntry that,
                 LdapConnection connection,
-                ILdapEntryCache<SearchResultEntry> cache,
+                ILdapCacheBase<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);
@@ -345,9 +330,10 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 return null;
             }
 
-            return cache.GetEntry(filter,
-                f => connection.Search(f, attributes, options)
-                .FirstOrDefault());
+            return cache.GetOrAdd(filter,
+                attributes,
+                () => connection.Search(filter, attributes, options))
+                .SingleOrDefault();
         }
 
         /// <summary>
@@ -371,7 +357,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static async Task<SearchResultEntry?> GetPrimaryGroupAsync(
                 this SearchResultEntry that,
                 LdapConnection connection,
-                ILdapEntryCache<SearchResultEntry> cache,
+                ILdapCacheBase<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);
@@ -386,10 +372,10 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 return null;
             }
 
-            return await cache.GetEntry(filter, async f => {
-                return (await connection.SearchAsync(f, attributes, options))
-                    .FirstOrDefault();
-            });
+            return (await cache.GetOrAdd(filter,
+                attributes,
+                () => connection.SearchAsync(filter, attributes, options)))
+                .SingleOrDefault();
         }
 
         /// <summary>
