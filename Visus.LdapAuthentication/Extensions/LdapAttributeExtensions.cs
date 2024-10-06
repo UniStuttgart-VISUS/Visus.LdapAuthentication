@@ -8,6 +8,7 @@ using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Visus.Ldap.Mapping;
 
 
@@ -169,8 +170,8 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <returns>The values of the attribute.</returns>
         public static IEnumerable<object> GetValues(this LdapAttribute that,
                 Type type) {
-            ArgumentNullException.ThrowIfNull(that, nameof(that));
-            ArgumentNullException.ThrowIfNull(type, nameof(type));
+            ArgumentNullException.ThrowIfNull(that);
+            ArgumentNullException.ThrowIfNull(type);
 
             if (type == typeof(string)) {
                 if (that.StringValueArray?.Length > 0) {
@@ -192,7 +193,18 @@ namespace Visus.LdapAuthentication.Extensions {
                     yield return that.ByteValues;
                 }
             }
-
         }
+
+        /// <summary>
+        /// Gets all values of the specified <typeparamref name="TObject"/> that
+        /// <paramref name="that"/> has.
+        /// </summary>
+        /// <typeparam name="TObject">The type to retrieve, which can be either
+        /// a <see cref="string"/> or a <see cref="byte"/> array.</typeparam>
+        /// <param name="that">The attribute to get the values of.</param>
+        /// <returns>The values of the attribute.</returns>
+        public static IEnumerable<TObject> GetValues<TObject>(
+                this LdapAttribute that)
+            => that.GetValues(typeof(TObject)).Cast<TObject>();
     }
 }

@@ -332,13 +332,12 @@ namespace Visus.LdapAuthentication.Extensions {
             var mapping = options.Mapping;
             Debug.Assert(mapping != null);
 
-            var atts = that.GetAttributeSet();
-            if (!atts.ContainsKey(mapping.PrimaryGroupAttribute)) {
+            var att = that.TryGetAttribute(mapping.PrimaryGroupAttribute);
+            if (att == null) {
                 return null;
             }
 
-            var rid = atts[mapping.PrimaryGroupAttribute]
-                .GetValue(typeof(string), null) as string;
+            var rid = att.GetValue(typeof(string), null) as string;
             if (rid == null) {
                 return null;
             }
@@ -476,6 +475,23 @@ namespace Visus.LdapAuthentication.Extensions {
             }
 
             return retval;
+        }
+
+        /// <summary>
+        /// Checks whether <paramref name="that"/> has an attribute named
+        /// <paramref name="attribute"/> and returns it.
+        /// </summary>
+        /// <param name="that"></param>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        internal static LdapAttribute? TryGetAttribute(this LdapEntry that,
+                string attribute) {
+            Debug.Assert(that != null);
+            if (that.GetAttributeSet().TryGetValue(attribute, out var retval)) {
+                return retval;
+            } else {
+                return null;
+            }
         }
 #endregion
 

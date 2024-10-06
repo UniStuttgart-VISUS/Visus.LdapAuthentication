@@ -9,10 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Visus.Ldap;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Extensions;
@@ -101,15 +99,23 @@ namespace Visus.DirectoryAuthentication.Services {
         }
 
         /// <inheritdoc />
+        public abstract IEnumerable<TUser> GetGroupMembers(TGroup group);
+
+        /// <inheritdoc />
+        public virtual Task<IEnumerable<TUser>> GetGroupMembersAsync(
+                TGroup group,
+                CancellationToken cancellationToken)
+            => Task.FromResult(this.GetGroupMembers(group));
+
+        /// <inheritdoc />
         public IEnumerable<TGroup> GetGroups()
-            => this.GetGroupEntries(this.Options.Mapping!.GroupsFilter,
-                null, default);
+            => this.GetGroupEntries(this.Mapping!.GroupsFilter, null, default);
 
         /// <inheritdoc />
         public Task<IEnumerable<TGroup>> GetGroupsAsync(
                 CancellationToken cancellationToken)
-            => this.GetGroupEntriesAsync(this.Options.Mapping!.GroupsFilter,
-                null, cancellationToken);
+            => this.GetGroupEntriesAsync(this.Mapping!.GroupsFilter, null,
+                cancellationToken);
 
         /// <inheritdoc />
         public IEnumerable<TGroup> GetGroups(string filter)
@@ -175,14 +181,13 @@ namespace Visus.DirectoryAuthentication.Services {
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers()
-            => this.GetUserEntries(this.Options.Mapping!.UsersFilter,
-                null, default);
+            => this.GetUserEntries(this.Mapping!.UsersFilter, null, default);
 
         /// <inheritdoc />
         public Task<IEnumerable<TUser>> GetUsersAsync(
                 CancellationToken cancellationToken)
-            => this.GetUserEntriesAsync(this.Options.Mapping!.UsersFilter,
-                null, cancellationToken);
+            => this.GetUserEntriesAsync(this.Mapping!.UsersFilter, null,
+                cancellationToken);
 
         /// <inheritdoc />
         public IEnumerable<TUser> GetUsers(string filter)
@@ -235,18 +240,20 @@ namespace Visus.DirectoryAuthentication.Services {
             this.UserMap = userMap
                 ?? throw new ArgumentNullException(nameof(userMap));
 
-            Debug.Assert(this.Options.Mapping != null);
             this.GroupAttributes = this.GroupMap.IsGroupMember
                 ? this.GroupMap.AttributeNames
-                    .Append(this.Options.Mapping.GroupsAttribute)
+                    .Append(this.Mapping.GroupsAttribute)
                     .ToArray()
                 : this.GroupMap.AttributeNames.ToArray();
             this.UserAttributes = this.UserMap.IsGroupMember
                 ? this.UserMap.AttributeNames
-                    .Append(this.Options.Mapping.PrimaryGroupAttribute)
-                    .Append(this.Options.Mapping.GroupsAttribute)
+                    .Append(this.Mapping.PrimaryGroupAttribute)
+                    .Append(this.Mapping.GroupsAttribute)
                     .ToArray()
                 : this.UserMap.AttributeNames.ToArray();
+            this.GroupMemberAttributes = this.UserAttributes
+                .Append(this.Mapping.GroupMemberAttribute)
+                .ToArray();
         }
         #endregion
 
@@ -262,6 +269,17 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <typeparamref name="TGroup"/>.
         /// </summary>
         protected ILdapAttributeMap<TGroup> GroupMap { get; }
+
+        /// <summary>
+        /// Gets the attributes that must be loaded to recursively find all
+        /// members of a group.
+        /// </summary>
+        protected string[] GroupMemberAttributes { get; }
+
+        /// <summary>
+        /// Gets the active LDAP mapping from <see cref="Options"/>.
+        /// </summary>
+        protected LdapMapping Mapping => this.Options.Mapping!;
 
         /// <summary>
         /// Gets the LDAP server configuration.
@@ -430,9 +448,9 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <returns>The actual filter to be used in a query.</returns>
         protected string MergeGroupFilter(string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
-                return this.Options.Mapping!.GroupsFilter;
+                return this.Mapping!.GroupsFilter;
             } else {
-                return $"(&{this.Options.Mapping!.GroupsFilter}{filter})";
+                return $"(&{this.Mapping!.GroupsFilter}{filter})";
             }
         }
 
@@ -445,9 +463,9 @@ namespace Visus.DirectoryAuthentication.Services {
         /// <returns>The actual filter to be used in a query.</returns>
         protected string MergeUserFilter(string filter) {
             if (string.IsNullOrWhiteSpace(filter)) {
-                return this.Options.Mapping!.UsersFilter;
+                return this.Mapping!.UsersFilter;
             } else {
-                return $"(&{this.Options.Mapping!.UsersFilter}{filter})";
+                return $"(&{this.Mapping!.UsersFilter}{filter})";
             }
         }
         #endregion

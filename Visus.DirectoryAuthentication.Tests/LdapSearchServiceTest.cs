@@ -94,6 +94,40 @@ namespace Visus.DirectoryAuthentication.Tests {
         }
 
         [TestMethod]
+        public void TestGetGroupMembers() {
+            if (this._testSecrets.CanRun) {
+                Assert.IsNotNull(this._services);
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var group = service.GetGroupByIdentity(this._testSecrets.ExistingGroupIdentity!);
+                Assert.IsNotNull(group, "Search returned existing group identity.");
+
+                var members = service.GetGroupMembers(group);
+                Assert.IsTrue(members.Any(), "Group as at least one member");
+
+                foreach (var m in members) {
+                    Assert.IsNotNull(m);
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task TestGetGroupMembersAsync() {
+            if (this._testSecrets.CanRun) {
+                Assert.IsNotNull(this._services);
+                var service = this._services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
+                Assert.IsNotNull(service);
+
+                var group = service.GetGroupByIdentity(this._testSecrets.ExistingGroupIdentity!);
+                Assert.IsNotNull(group, "Search returned existing group identity.");
+
+                var members = await service.GetGroupMembersAsync(group);
+                Assert.IsTrue(members.Any(), "Group as at least one member");
+            }
+        }
+
+        [TestMethod]
         public void TestGetUserByAccountName() {
             if (this._testSecrets.CanRun) {
                 Assert.IsNotNull(this._services);

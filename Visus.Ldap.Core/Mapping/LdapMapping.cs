@@ -29,6 +29,19 @@ namespace Visus.Ldap.Mapping {
         } = "distinguishedName";
 
         /// <summary>
+        /// Gets or sets the name of the attribute holding the members of a
+        /// group.
+        /// </summary>
+        /// <remarks>
+        /// The implementation expects this attribute to hold the DNs of the
+        /// members of a group object.
+        /// </remarks>
+        public string GroupMemberAttribute {
+            get;
+            set;
+        } = "member";
+
+        /// <summary>
         /// Gets or sets the attribute where (non-primary) groups are stored.
         /// </summary>
         /// <remarks>

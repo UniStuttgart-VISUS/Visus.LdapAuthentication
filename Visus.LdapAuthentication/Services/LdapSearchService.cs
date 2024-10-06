@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Services;
 using Visus.Ldap;
+using Visus.Ldap.Extensions;
 using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
@@ -76,25 +77,65 @@ namespace Visus.LdapAuthentication.Services {
                 ?? throw new ArgumentNullException(nameof(cache));
             this._logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-            this._options = options?.Value
-                ?? throw new ArgumentNullException(nameof(options));
             this._mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
 
             this._connection = connectionService.Connect(
-                this._options.User, this._options.Password);
+                this.Options.User, this.Options.Password);
         }
         #endregion
 
-        #region Private Properties
-        /// <summary>
-        /// Gets the LDAP connection or throws
-        /// <see cref="ObjectDisposedException"/>.
-        /// </summary>
-        private LdapConnection Connection {
-            get {
-                ObjectDisposedException.ThrowIf(this._connection == null, this);
-                return this._connection;
+        #region Public methods
+        /// <inheritdoc />
+        public override IEnumerable<TUser> GetGroupMembers(TGroup group) {
+            ArgumentNullException.ThrowIfNull(group);
+            Debug.Assert(this.Options != null);
+            Debug.Assert(this.Mapping != null);
+
+            var stack = new Stack<string>();
+            stack.Push(this._mapper.GetDistinguishedName(group)
+                .ToLdapFilter(this.Mapping.DistinguishedNameAttribute));
+
+            while (stack.TryPop(out var filter)) {
+                var entry = this.Connection.Search(filter,
+                    this.GroupMemberAttributes,
+                    this.Options)
+                    .SingleOrDefault();
+                if (entry == null) {
+                    continue;
+                }
+
+                var members = entry.TryGetAttribute(
+                    this.Mapping.GroupMemberAttribute);
+                if (members == null) {
+                    continue;
+                }
+
+                var memberFilter = members.GetValues<string>()
+                    .ToLdapFilter(this.Mapping.DistinguishedNameAttribute);
+
+                foreach (var u in this.GetUsers(memberFilter)) {
+                    yield return u;
+                }
+
+                if (this.Options.IsRecursiveGroupMembership) {
+                    var groupFilter = this.MergeGroupFilter(memberFilter);
+#if WITH_LDAP_CACHE
+                    var groups = this._cache.GetOrAdd(groupFilter,
+                        this.GroupMemberAttributes,
+                        () => this.Connection.Search(groupFilter,
+                            this.GroupMemberAttributes,
+                            this.Options));
+#else // WITH_LDAP_CACHE
+                    var groups = this.Connection.Search(groupFilter,
+                        this.GroupMemberAttributes,
+                        this.Options);
+#endif // WITH_LDAP_CACHE
+
+                    foreach (var g in groups) {
+                        stack.Push(g.GetFilter(this.Options));
+                    }
+                }
             }
         }
         #endregion
@@ -174,6 +215,19 @@ namespace Visus.LdapAuthentication.Services {
                 this.MapUser);
         #endregion
 
+        #region Private Properties
+        /// <summary>
+        /// Gets the LDAP connection or throws
+        /// <see cref="ObjectDisposedException"/>.
+        /// </summary>
+        private LdapConnection Connection {
+            get {
+                ObjectDisposedException.ThrowIf(this._connection == null, this);
+                return this._connection;
+            }
+        }
+        #endregion
+
         #region Private methods
         /// <summary>
         /// Gets all entries matching <paramref name="filter"/> and maps them
@@ -193,7 +247,7 @@ namespace Visus.LdapAuthentication.Services {
             ArgumentException.ThrowIfNullOrEmpty(filter, nameof(filter));
 
             if (searchBases == null) {
-                searchBases = this._options.SearchBases;
+                searchBases = this.Options.SearchBases;
                 this._logger.LogDebug("No search bases specified, using "
                     + "{SearchBases} from the LDAP options.",
                     string.Join(", ", searchBases.Keys));
@@ -207,9 +261,9 @@ namespace Visus.LdapAuthentication.Services {
                     b.Value,
                     filter,
                     attributes,
-                    this._options.PageSize,
+                    this.Options.PageSize,
                     sortAttribute,
-                    this._options.Timeout,
+                    this.Options.Timeout,
                     this._logger,
                     cancellationToken);
 
@@ -235,7 +289,7 @@ namespace Visus.LdapAuthentication.Services {
             ArgumentException.ThrowIfNullOrEmpty(filter, nameof(filter));
 
             if (searchBases == null) {
-                searchBases = this._options.SearchBases;
+                searchBases = this.Options.SearchBases;
                 this._logger.LogDebug("No search bases specified, using "
                     + "{SearchBases} from the LDAP options.",
                     string.Join(", ", searchBases.Keys));
@@ -271,7 +325,7 @@ namespace Visus.LdapAuthentication.Services {
             ArgumentException.ThrowIfNullOrEmpty(filter, nameof(filter));
 
             if (searchBases == null) {
-                searchBases = this._options.SearchBases;
+                searchBases = this.Options.SearchBases;
                 this._logger.LogDebug("No search bases specified, using "
                     + "{SearchBases} from the LDAP options.",
                     string.Join(", ", searchBases.Keys));
@@ -279,7 +333,7 @@ namespace Visus.LdapAuthentication.Services {
 
             foreach (var b in searchBases) {
                 var entry = (await this.Connection.SearchAsync(
-                    b, filter, attributes, this._options.PollingInterval)
+                    b, filter, attributes, this.Options.PollingInterval)
                     .ConfigureAwait(false))
                     .FirstOrDefault();
                 if (entry != null) {
@@ -309,7 +363,7 @@ namespace Visus.LdapAuthentication.Services {
                 var groups = entry.GetGroups(this.Connection,
                     this._cache,
                     this._mapper,
-                    this._options);
+                    this.Options);
                 this._mapper.SetGroups(group, groups);
             }
 
@@ -331,7 +385,7 @@ namespace Visus.LdapAuthentication.Services {
                 var groups = entry.GetGroups(this.Connection,
                     this._cache,
                     this._mapper,
-                    this._options);
+                    this.Options);
                 this._mapper.SetGroups(user, groups);
             }
 
@@ -344,7 +398,6 @@ namespace Visus.LdapAuthentication.Services {
         private LdapConnection? _connection;
         private readonly ILogger _logger;
         private readonly ILdapMapper<LdapEntry, TUser, TGroup> _mapper;
-        private readonly LdapOptions _options;
         #endregion
     }
 }

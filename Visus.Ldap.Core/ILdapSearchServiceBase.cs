@@ -94,6 +94,44 @@ namespace Visus.Ldap {
         Task<TGroup?> GetGroupByNameAsync(string name);
 
         /// <summary>
+        /// Retrieves the users in the given <paramref name="group"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>The groups in <paramref name="group"/> will be recursively
+        /// expanded if
+        /// <see cref="Configuration.LdapOptionsBase.IsRecursiveGroupMembership"/>
+        /// is <c>true</c>.</para>
+        /// <para>The results provided by the method might not be distinct if the
+        /// group hierarchy is expanded and a user is transitive member via
+        /// multiple paths.</para>
+        /// </remarks>
+        /// <param name="group">The group to retrieve the users for.</param>
+        /// <returns>The members of the given group.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="group"/>
+        /// is <c>null</c>.</exception>
+        IEnumerable<TUser> GetGroupMembers(TGroup group);
+
+        /// <summary>
+        /// Asynchronously retrieves the users in the given
+        /// <paramref name="group"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>The groups in <paramref name="group"/> will be recursively
+        /// expanded if
+        /// <see cref="Configuration.LdapOptionsBase.IsRecursiveGroupMembership"/>
+        /// is <c>true</c>.</para>
+        /// <para>The results provided by the method might not be distinct if the
+        /// group hierarchy is expanded and a user is transitive member via
+        /// multiple paths.</para>
+        /// </remarks>
+        /// <param name="group">The group to retrieve the users for.</param>
+        /// <returns>The members of the given group.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="group"/>
+        /// is <c>null</c>.</exception>
+        Task<IEnumerable<TUser>> GetGroupMembersAsync(TGroup group,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets all groups from the directory that are in matching the search
         /// criteria configured in the
         /// <see cref="Configuration.LdapOptionsBase"/> used by the application.
