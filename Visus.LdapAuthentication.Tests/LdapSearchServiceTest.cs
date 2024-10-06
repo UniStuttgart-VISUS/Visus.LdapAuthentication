@@ -6,16 +6,16 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Novell.Directory.Ldap;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Visus.Ldap.Mapping;
 using Visus.Ldap;
-using System;
 using Visus.Ldap.Configuration;
-using Microsoft.Extensions.Options;
+using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Configuration;
-using Novell.Directory.Ldap;
 
 
 namespace Visus.LdapAuthentication.Tests {

@@ -32,6 +32,5 @@ namespace Visus.DirectoryAuthentication.Services {
             ILogger<LdapCacheService> logger)
         : LdapCacheServiceBase<SearchResultEntry>(cache,
             options?.Value!,
-            logger),
-            ILdapCache;
+            logger);
 }

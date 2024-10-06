@@ -46,6 +46,19 @@ namespace Visus.DirectoryAuthentication.Extensions {
         }
 
         /// <summary>
+        /// Gets the distinguished name of <paramref name="that"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method is used for unifying the implementation for Microsoft and
+        /// Novell.
+        /// </remarks>
+        /// <param name="that">The entry to get the DN of.</param>
+        /// <returns>The DN of <paramref name="that"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static string GetDistinguishedName(this SearchResultEntry that)
+            => that.DistinguishedName;
+
+        /// <summary>
         /// Gets an LDAP filter that selects the given entry via its DN.
         /// </summary>
         /// <param name="that">The entry to get the filter for.</param>
@@ -208,10 +221,10 @@ namespace Visus.DirectoryAuthentication.Extensions {
             // Prepare a caching mechanism for group objects.
             var knownGroups = new Dictionary<string, TGroup>();
             var mapUnknown = (SearchResultEntry e) => {
-                if (!knownGroups.TryGetValue(e.DistinguishedName,
+                if (!knownGroups.TryGetValue(e.GetDistinguishedName(),
                         out var retval)) {
                     retval = mapper.MapGroup(e, new TGroup());
-                    knownGroups.Add(e.DistinguishedName, retval);
+                    knownGroups.Add(e.GetDistinguishedName(), retval);
                 }
                 return retval;
             };
@@ -229,7 +242,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 // it contains its parent groups.
 
                 if (primaryGroup != null) {
-                    var group = knownGroups[primaryGroup.DistinguishedName]
+                    var group = knownGroups[primaryGroup.GetDistinguishedName()]
                         = mapper.MapPrimaryGroup(primaryGroup, new TGroup());
                     var parents = getGroups(primaryGroup);
                     yield return mapper.SetGroups(group, parents);
@@ -246,7 +259,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
             } else {
                 // Just get individual group object w/o setting their parents.
                 if (primaryGroup != null) {
-                    knownGroups[primaryGroup.DistinguishedName]
+                    knownGroups[primaryGroup.GetDistinguishedName()]
                         = mapper.MapPrimaryGroup(primaryGroup, new TGroup());
 
                     // The primary group might be a group member itself, so we

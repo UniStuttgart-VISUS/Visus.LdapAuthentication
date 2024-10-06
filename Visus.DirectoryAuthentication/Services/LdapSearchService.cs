@@ -66,7 +66,7 @@ namespace Visus.DirectoryAuthentication.Services {
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap,
-                ILdapCache cache,
+                ILdapCache<SearchResultEntry> cache,
                 ILogger<LdapSearchService<TUser, TGroup>> logger)
                 : base(options, userMap, groupMap) {
             ArgumentNullException.ThrowIfNull(connectionService);
@@ -408,7 +408,7 @@ namespace Visus.DirectoryAuthentication.Services {
         #endregion
 
         #region Private fields
-        private readonly ILdapCache _cache;
+        private readonly ILdapCache<SearchResultEntry> _cache;
         private LdapConnection? _connection;
         private readonly ILogger _logger;
         private readonly ILdapMapper<SearchResultEntry, TUser, TGroup> _mapper;

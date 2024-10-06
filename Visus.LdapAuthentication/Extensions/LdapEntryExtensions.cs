@@ -26,6 +26,19 @@ namespace Visus.LdapAuthentication.Extensions {
 
         #region Internal methods
         /// <summary>
+        /// Gets the distinguished name of <paramref name="that"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method is used for unifying the implementation for Microsoft and
+        /// Novell.
+        /// </remarks>
+        /// <param name="that">The entry to get the DN of.</param>
+        /// <returns>The DN of <paramref name="that"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static string GetDistinguishedName(this LdapEntry that)
+            => that.Dn;
+
+        /// <summary>
         /// Gets an LDAP filter that selects the given entry via its DN.
         /// </summary>
         /// <param name="that">The entry to get the filter for.</param>
@@ -188,9 +201,10 @@ namespace Visus.LdapAuthentication.Extensions {
             // Prepare a caching mechanism for group objects.
             var knownGroups = new Dictionary<string, TGroup>();
             var mapUnknown = (LdapEntry e) => {
-                if (!knownGroups.TryGetValue(e.Dn, out var retval)) {
+                if (!knownGroups.TryGetValue(e.GetDistinguishedName(),
+                        out var retval)) {
                     retval = mapper.MapGroup(e, new TGroup());
-                    knownGroups.Add(e.Dn, retval);
+                    knownGroups.Add(e.GetDistinguishedName(), retval);
                 }
                 return retval;
             };
@@ -208,7 +222,7 @@ namespace Visus.LdapAuthentication.Extensions {
                 // it contains its parent groups.
 
                 if (primaryGroup != null) {
-                    var group = knownGroups[primaryGroup.Dn]
+                    var group = knownGroups[primaryGroup.GetDistinguishedName()]
                         = mapper.MapPrimaryGroup(primaryGroup, new TGroup());
                     var parents = getGroups(primaryGroup);
                     yield return mapper.SetGroups(group, parents);
@@ -225,7 +239,7 @@ namespace Visus.LdapAuthentication.Extensions {
             } else {
                 // Just get individual group object w/o setting their parents.
                 if (primaryGroup != null) {
-                    knownGroups[primaryGroup.Dn]
+                    knownGroups[primaryGroup.GetDistinguishedName()]
                         = mapper.MapPrimaryGroup(primaryGroup, new TGroup());
 
                     // The primary group might be a group member itself, so we

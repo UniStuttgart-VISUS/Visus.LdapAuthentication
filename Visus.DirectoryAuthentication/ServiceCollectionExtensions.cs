@@ -150,7 +150,7 @@ namespace Visus.DirectoryAuthentication {
 
             // Add the in-memory caches.
             services.AddMemoryCache();
-            services.TryAddSingleton<ILdapCache, LdapCacheService>();
+            services.TryAddSingleton<ILdapCache<SearchResultEntry>, LdapCacheService>();
 
             return services.AddScoped<ILdapAuthenticationService<TUser>,
                     LdapAuthenticationService<TUser, TGroup>>()

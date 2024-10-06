@@ -6,10 +6,13 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Threading.Tasks;
+using Visus.DirectoryAuthentication.Configuration;
 using Visus.Ldap;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
@@ -167,6 +170,13 @@ namespace Visus.DirectoryAuthentication.Tests {
                 });
                 var services = collection.BuildServiceProvider();
 
+                var options = services.GetService<IOptions<LdapOptions>>();
+                Assert.IsNotNull(options);
+                Assert.AreEqual(LdapCaching.SlidingExpiration, options.Value.Caching, "Caching is on");
+
+                var cache = services.GetService<ILdapCache<SearchResultEntry>>();
+                Assert.IsNotNull(cache);
+
                 var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -191,11 +201,19 @@ namespace Visus.DirectoryAuthentication.Tests {
                 });
                 var services = collection.BuildServiceProvider();
 
+                var options = services.GetService<IOptions<LdapOptions>>();
+                Assert.IsNotNull(options);
+                Assert.AreEqual(LdapCaching.None, options.Value.Caching, "Caching is off");
+
                 var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
                 var users = service.GetUsers();
                 Assert.IsTrue(users.Any(), "Directory search returns any user.");
+
+                foreach (var user in users) {
+                    Assert.IsNotNull(user);
+                }
             }
         }
 
