@@ -61,10 +61,19 @@ namespace Visus.DirectoryIdentity.Tests {
                 var userStore = this._services.GetService<IUserClaimStore<IdentityUser>>();
                 Assert.IsNotNull(userStore);
 
-                var claim = new Claim(ClaimTypes.Name, this._testSecrets.ExistingUserAccount!);
-                var users = await userStore.GetUsersForClaimAsync(claim, default);
-                Assert.IsNotNull(users);
-                Assert.IsTrue(users.Count() == 1);
+                {
+                    var claim = new Claim(ClaimTypes.Name, this._testSecrets.ExistingUserAccount!);
+                    var users = await userStore.GetUsersForClaimAsync(claim, default);
+                    Assert.IsNotNull(users);
+                    Assert.IsTrue(users.Count() == 1, "User for account claim");
+                }
+
+                {
+                    var claim = new Claim(ClaimTypes.GroupSid, this._testSecrets.ExistingGroupIdentity!);
+                    var users = await userStore.GetUsersForClaimAsync(claim, default);
+                    Assert.IsNotNull(users);
+                    Assert.IsTrue(users.Any(), "Users for group claim");
+                }
             }
         }
 

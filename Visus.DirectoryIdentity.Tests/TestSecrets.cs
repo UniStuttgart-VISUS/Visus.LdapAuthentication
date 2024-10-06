@@ -34,13 +34,27 @@ namespace Visus.DirectoryIdentity.Tests {
         /// Answer whether tests requiring an actual server can run.
         /// </summary>
         public bool CanRun
-            => !string.IsNullOrWhiteSpace(this.ExistingUserAccount)
+            => !string.IsNullOrWhiteSpace(this.ExistingGroupAccount)
+            && !string.IsNullOrWhiteSpace(this.ExistingGroupIdentity)
+            && !string.IsNullOrWhiteSpace(this.ExistingUserAccount)
             && !string.IsNullOrWhiteSpace(this.ExistingUserIdentity)
             && (this.LdapOptions != null)
             && !string.IsNullOrWhiteSpace(this.LdapOptions.User)
             && !string.IsNullOrWhiteSpace(this.LdapOptions.Password)
             && !string.IsNullOrWhiteSpace(this.NonExistingUserAccount)
             && !string.IsNullOrWhiteSpace(this.NonExistingUserIdentity);
+
+        /// <summary>
+        /// Gets or sets the account name of a known group that can be searched
+        /// in the directory.
+        /// </summary>
+        public string? ExistingGroupAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identity of a known group that can be searched in the
+        /// directory.
+        /// </summary>
+        public string? ExistingGroupIdentity { get; set; }
 
         /// <summary>
         /// Gets or sets the account name of a known user that can be searched

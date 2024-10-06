@@ -4,7 +4,6 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-using System.Collections.Generic;
 using Visus.LdapAuthentication.Configuration;
 
 

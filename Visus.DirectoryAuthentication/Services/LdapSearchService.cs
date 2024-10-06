@@ -138,7 +138,6 @@ namespace Visus.DirectoryAuthentication.Services {
             }
         }
 
-
         /// <inheritdoc />
         public override async Task<IEnumerable<TUser>> GetGroupMembersAsync(
                 TGroup group, CancellationToken cancellationToken) {

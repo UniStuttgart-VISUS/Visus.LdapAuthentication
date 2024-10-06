@@ -40,6 +40,10 @@ namespace Visus.Identity.Mapping {
             builder.MapProperty(nameof(IdentityRole<TKey>.Name))
                 .StoringAccountName()
                 .ToAttribute("sAMAccountName");
+
+            builder.MapProperty(nameof(IdentityRole<TKey>.NormalizedName))
+                .StoringDistinguishedName()
+                .ToAttribute("distinguishedName");
         }
 
         /// <summary>
@@ -82,6 +86,10 @@ namespace Visus.Identity.Mapping {
             builder.MapProperty(nameof(IdentityUser<TKey>.Id))
                 .StoringIdentity()
                 .ToAttribute("uidNumber");
+
+            builder.MapProperty(nameof(IdentityUser<TKey>.NormalizedUserName))
+                .StoringDistinguishedName()
+                .ToAttribute("distinguishedName");
 
             builder.MapProperty(nameof(IdentityUser<TKey>.LockoutEnd))
                 .ToAttribute("lockoutTime")

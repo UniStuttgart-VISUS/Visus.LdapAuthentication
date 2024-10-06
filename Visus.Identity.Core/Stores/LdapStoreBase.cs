@@ -9,8 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -172,7 +175,7 @@ namespace Visus.Identity.Stores {
         Task<TRole?> IRoleStore<TRole>.FindByNameAsync(
                 string normalisedRoleName,
                 CancellationToken cancellationToken)
-            => this._searchService.GetGroupByNameAsync(
+            => this._searchService.GetGroupByDistinguishedNameAsync(
                 normalisedRoleName);
 
         /// <inheritdoc />
@@ -217,13 +220,15 @@ namespace Visus.Identity.Stores {
         public virtual Task<string?> GetNormalizedRoleNameAsync(
                 TRole role,
                 CancellationToken cancellationToken)
-            => this.GetRoleNameAsync(role, cancellationToken);
+            => Task.FromResult(this._roleMap.DistinguishedNameProperty
+                ?.GetValue(role) as string);
 
         /// <inheritdoc />
         public virtual Task<string?> GetNormalizedUserNameAsync(
                 TUser user,
                 CancellationToken cancellationToken)
-            => this.GetUserNameAsync(user, cancellationToken);
+            => Task.FromResult(this._userMap.DistinguishedNameProperty
+                ?.GetValue(user) as string);
 
         /// <inheritdoc />
         public virtual Task<string> GetRoleIdAsync(
@@ -275,16 +280,28 @@ namespace Visus.Identity.Stores {
 
             if (this._roleClaimAttributes.TryGetValue(claim.Type, out var ra)) {
                 var c = claim.Value.EscapeLdapFilterExpression();
-                var filter = $"({ua}={c})";
+                var filter = $"({ra}={c})";
                 this._logger.LogDebug("Obtaining groups having an attribute "
                     + "{Attribute} with value {Value} ({EscapedValue}).",
-                    ua, claim.Value, c);
+                    ra, claim.Value, c);
                 var groups = await this._searchService
-                    .GetUsersAsync(filter, cancellationToken)
+                    .GetGroupsAsync(filter, cancellationToken)
                     .ConfigureAwait(false);
 
-                // TODO: The search service needs to be able to recursively search group members in order for this to work.
+                var retval = new List<TUser>();
+
+                foreach (var g in groups) {
+                    var users = await this._searchService.GetGroupMembersAsync(
+                        g, cancellationToken);
+                    retval.AddRange(users);
+                }
+
+                return retval;
             }
+
+            this._logger.LogWarning("Users for claim {Claim} could not be "
+                + "identified, because the claim lacks a known LDAP mapping.",
+                claim);
 
             return Array.Empty<TUser>();
         }
