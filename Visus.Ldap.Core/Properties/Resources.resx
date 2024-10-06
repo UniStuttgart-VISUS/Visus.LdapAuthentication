@@ -129,6 +129,9 @@
   <data name="ErrorEmptyCacheKey" xml:space="preserve">
     <value>The identity of a cache key must not be empty.</value>
   </data>
+  <data name="ErrorEmptyFilterList" xml:space="preserve">
+    <value>The list of attributes to search must comprise at least one non-empty string value.</value>
+  </data>
   <data name="ErrorEmptyPassword" xml:space="preserve">
     <value>The password for the LDAP service account must be specified unless no service user is specified.</value>
   </data>

@@ -97,6 +97,15 @@ namespace Visus.Ldap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The list of attributes to search must comprise at least one non-empty string value..
+        /// </summary>
+        internal static string ErrorEmptyFilterList {
+            get {
+                return ResourceManager.GetString("ErrorEmptyFilterList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The password for the LDAP service account must be specified unless no service user is specified..
         /// </summary>
         internal static string ErrorEmptyPassword {

@@ -58,8 +58,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
             Debug.Assert(that != null);
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
-            return $"({options.Mapping.DistinguishedNameAttribute}="
-                + $"{that.DistinguishedName})";
+            return that.DistinguishedName.ToLdapFilter(
+                options.Mapping.DistinguishedNameAttribute);
         }
 
         /// <summary>
@@ -113,6 +113,11 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// group.</param>
         /// <param name="options">The LDAP options determining the search scope
         /// and the attribute mapping.</param>
+        /// <param name="directOnly">If <c>true</c>, the method will ignore
+        /// <see cref="LdapOptions.IsRecursiveGroupMembership"/> and return only
+        /// direct groups <paramref name="that"/> is member of. This parameter is
+        /// intended for implementing other overloads of the method and defaults
+        /// to <c>false</c>.</param>
         /// <returns>The LDAP entries of all groups except for the primary one.
         /// </returns>
         internal static IEnumerable<SearchResultEntry> GetGroups(
@@ -120,27 +125,45 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 LdapConnection connection,
                 ILdapCache<SearchResultEntry> cache,
                 string[] attributes,
-                LdapOptions options) {
+                LdapOptions options,
+                bool directOnly = false) {
             Debug.Assert(that != null);
             Debug.Assert(connection != null);
             Debug.Assert(cache != null);
             Debug.Assert(attributes != null);
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
+            var dnAtt = options.Mapping.DistinguishedNameAttribute;
 
-            var groups = that.GetGroups(options);
+            // Get LDAP filters for the groups of 'that'.
+            var filters = new Stack<string>();
 
-            if (groups.Any()) {
-                Debug.Assert(options != null);
-                Debug.Assert(options.Mapping != null);
-                groups = groups.Select(g => g.EscapeLdapFilterExpression()!);
-                groups = groups.Select(
-                    g => $"({options.Mapping.DistinguishedNameAttribute}={g})");
-                var filter = $"(|{string.Join("", groups)})";
-                return cache.GetOrAdd(filter, attributes,
+            var dns = that.GetGroups(options);
+            if (dns.Any()) {
+                filters.Push(dns.ToLdapFilter(dnAtt));
+            }
+
+            while (filters.TryPop(out var filter)) {
+                // Look up the entries for the current group.
+#if WITH_LDAP_CACHE
+                var groups = cache.GetOrAdd(filter, attributes,
                     () => connection.Search(filter, attributes, options));
-            } else {
-                return Enumerable.Empty<SearchResultEntry>();
+#else // WITH_LDAP_CACHE
+                var groups = connection.Search(filter, attributes, options);
+#endif // WITH_LDAP_CACHE
+
+                foreach (var g in groups) {
+                    yield return g;
+
+                    // If we are requested to recurse, get the LDAP filters
+                    // for 'r' and queue them for retrieval.
+                    if (options.IsRecursiveGroupMembership && !directOnly) {
+                        dns = g.GetGroups(options);
+                        if (dns.Any()) {
+                            filters.Push(dns.ToLdapFilter(dnAtt));
+                        }
+                    }
+                }
             }
         }
 
@@ -175,53 +198,72 @@ namespace Visus.DirectoryAuthentication.Extensions {
             Debug.Assert(options != null);
             Debug.Assert(options.Mapping != null);
 
+            // Compile the attributes we need to read for a group.
             var attributes = mapper.RequiredGroupAttributes
                 .Append(options.Mapping.PrimaryGroupAttribute)
                 .Append(options.Mapping.PrimaryGroupIdentityAttribute)
                 .Append(options.Mapping.GroupsAttribute)
                 .ToArray();
 
-            // Obtain the primary group first.
+            // Prepare a caching mechanism for group objects.
+            var knownGroups = new Dictionary<string, TGroup>();
+            var mapUnknown = (SearchResultEntry e) => {
+                if (!knownGroups.TryGetValue(e.DistinguishedName,
+                        out var retval)) {
+                    retval = mapper.MapGroup(e, new TGroup());
+                    knownGroups.Add(e.DistinguishedName, retval);
+                }
+                return retval;
+            };
+            var getGroups = (SearchResultEntry e) => e.GetGroups(connection,
+                cache, attributes, options).Select(p => mapUnknown(p));
+
+            // Get the primary group, which requires special handling.
             var primaryGroup = that.GetPrimaryGroup(connection,
                 cache,
                 attributes,
                 options);
-            if (primaryGroup != null) {
-                yield return mapper.MapPrimaryGroup(primaryGroup, new TGroup());
-            }
 
-            var groups = that.GetGroups(connection, cache, attributes, options);
+            if (mapper.GroupIsGroupMember) {
+                // Recursively reconstruct the hierarchy in the group object if
+                // it contains its parent groups.
 
-            if (options.IsRecursiveGroupMembership) {
-                // Accumulate all groups into one enumeration.
-                var stack = new Stack<SearchResultEntry>(groups);
-
-                while (stack.Any()) {
-                    var group = stack.Pop();
-                    yield return mapper.MapGroup(group, new TGroup());
-
-                    groups = group.GetGroups(connection, cache, attributes,
-                        options);
-                    foreach (var g in groups) {
-                        yield return mapper.MapGroup(g, new TGroup());
-                        stack.Push(g);
-                    }
+                if (primaryGroup != null) {
+                    var group = knownGroups[primaryGroup.DistinguishedName]
+                        = mapper.MapPrimaryGroup(primaryGroup, new TGroup());
+                    var parents = getGroups(primaryGroup);
+                    yield return mapper.SetGroups(group, parents);
                 }
 
-            } else if (mapper.GroupIsGroupMember) {
-                // Recursively reconstruct the hierarchy itself.
+                var groups = that.GetGroups(connection, cache, attributes,
+                    options, false);
                 foreach (var g in groups) {
-                    var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, cache, mapper,
-                        options);
+                    var group = mapUnknown(g);
+                    var parents = getGroups(g);
                     yield return mapper.SetGroups(group, parents);
                 }
 
             } else {
-                // The options do not require groups to be evaluated
-                // recursively, so we can just map and return them.
-                foreach (var g in groups) {
-                    yield return mapper.MapGroup(g, new TGroup());
+                // Just get individual group object w/o setting their parents.
+                if (primaryGroup != null) {
+                    knownGroups[primaryGroup.DistinguishedName]
+                        = mapper.MapPrimaryGroup(primaryGroup, new TGroup());
+
+                    // The primary group might be a group member itself, so we
+                    // need to expand the hierarchy as requested.
+                    if (options.IsRecursiveGroupMembership) {
+                        _ = getGroups(primaryGroup).ToList();
+                    }
+                }
+
+                // Retrieve the "normal" groups, which the results of will be
+                // already expanded if recursive groups are requested.
+                _ = getGroups(that).ToList();
+
+                // At this point, we have a unique set of 'knownGroups' to
+                // return.
+                foreach (var k in knownGroups.Keys) {
+                    yield return knownGroups[k];
                 }
             }
         }
@@ -262,10 +304,15 @@ namespace Visus.DirectoryAuthentication.Extensions {
 
             foreach (var g in groups) {
                 var f = $"({options.Mapping.DistinguishedNameAttribute}={g})";
+#if WITH_LDAP_CACHE
                 var e = (await cache.GetOrAdd(f,
                     attributes,
                     () => connection.SearchAsync(f, attributes, options)))
                     .SingleOrDefault();
+#else // WITH_LDAP_CACHE
+                var e = (await connection.SearchAsync(f, attributes, options))
+                    .SingleOrDefault();
+#endif // WITH_LDAP_CACHE
                 if (e != null) {
                     retval.Add(e);
                 }
@@ -349,10 +396,15 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 return null;
             }
 
+#if WITH_LDAP_CACHE
             return cache.GetOrAdd(filter,
                 attributes,
                 () => connection.Search(filter, attributes, options))
                 .SingleOrDefault();
+#else // WITH_LDAP_CACHE
+            return connection.Search(filter, attributes, options)
+                .SingleOrDefault();
+#endif // WITH_LDAP_CACHE
         }
 
         /// <summary>
@@ -391,10 +443,15 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 return null;
             }
 
+#if WITH_LDAP_CACHE
             return (await cache.GetOrAdd(filter,
                 attributes,
                 () => connection.SearchAsync(filter, attributes, options)))
                 .SingleOrDefault();
+#else // WITH_LDAP_CACHE
+            return (await connection.SearchAsync(filter, attributes, options))
+                .SingleOrDefault();
+#endif // WITH_LDAP_CACHE
         }
 
         /// <summary>

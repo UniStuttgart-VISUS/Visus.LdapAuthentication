@@ -13,6 +13,9 @@ using Visus.Ldap.Mapping;
 using Visus.Ldap;
 using System;
 using Visus.Ldap.Configuration;
+using Microsoft.Extensions.Options;
+using Visus.LdapAuthentication.Configuration;
+using Novell.Directory.Ldap;
 
 
 namespace Visus.LdapAuthentication.Tests {
@@ -221,6 +224,13 @@ namespace Visus.LdapAuthentication.Tests {
                 });
                 var services = collection.BuildServiceProvider();
 
+                var options = services.GetService<IOptions<LdapOptions>>();
+                Assert.IsNotNull(options);
+                Assert.AreEqual(LdapCaching.SlidingExpiration, options.Value.Caching, "Caching is on");
+
+                var cache = services.GetService<ILdapCache<LdapEntry>>();
+                Assert.IsNotNull(cache);
+
                 var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
 
@@ -244,6 +254,10 @@ namespace Visus.LdapAuthentication.Tests {
                     o.Caching = LdapCaching.None;
                 });
                 var services = collection.BuildServiceProvider();
+
+                var options = services.GetService<IOptions<LdapOptions>>();
+                Assert.IsNotNull(options);
+                Assert.AreEqual(LdapCaching.None, options.Value.Caching, "Caching is off");
 
                 var service = services.GetService<ILdapSearchService<LdapUser, LdapGroup>>();
                 Assert.IsNotNull(service);
