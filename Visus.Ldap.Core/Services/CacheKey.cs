@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Visus.Ldap.Properties;
 
 
@@ -28,14 +29,23 @@ namespace Visus.Ldap.Services {
         /// <param name="type">The type of the item encoded.</param>
         /// <param name="identity">The identity of the item, which must be
         /// unique for the <paramref name="type"/>.</param>
-        public CacheKey(Type type, HashSet<string> identity) {
-            this._identity = identity
-                ?? throw new ArgumentNullException(nameof(identity));
+        public CacheKey(Type type, IEnumerable<string> identity) {
+            ArgumentNullException.ThrowIfNull(identity);
+            if (!identity.Any()) {
+                throw new ArgumentException(Resources.ErrorEmptyCacheKey);
+            }
+
             this._type = type
                 ?? throw new ArgumentNullException(nameof(identity));
 
-            if (identity.Count == 0) {
-                throw new ArgumentException(Resources.ErrorEmptyCacheKey);
+            this._identity = new(identity);
+
+            // As the key is immutable, we can compute the hash right now.
+            this._hashCode = (this.GetType().GetHashCode() >> 1)
+                ^ (this._type.GetHashCode() >> 2);
+
+            foreach (var i in this._identity) {
+                this._hashCode ^= i.GetHashCode();
             }
         }
         #endregion
@@ -61,19 +71,11 @@ namespace Visus.Ldap.Services {
         }
 
         /// <inheritdoc />
-        public override int GetHashCode() {
-            var retval = this.GetType().GetHashCode()
-                ^ (this._type.GetHashCode() >> 1);
-
-            foreach (var i in this._identity) {
-                retval ^= i.GetHashCode();
-            }
-
-            return retval;
-        }
+        public override int GetHashCode() => this._hashCode;
         #endregion
 
         #region Private fields
+        private readonly int _hashCode;
         private readonly HashSet<string> _identity;
         private readonly Type _type;
         #endregion
@@ -98,7 +100,7 @@ namespace Visus.Ldap.Services {
         /// by <typeparamref name="TOwner"/>.</param>
         /// <returns>A new cache key.</returns>
         public static CacheKey<TOwner> Create<TOwner>(Type type,
-            string identity) => new CacheKey<TOwner>(type, new([identity]));
+            string identity) => new CacheKey<TOwner>(type, [identity]);
 
         /// <summary>
         /// Creates a new key for the object identified by
@@ -114,7 +116,7 @@ namespace Visus.Ldap.Services {
         /// <returns>A new cache key.</returns>
         public static CacheKey<TOwner> Create<TOwner>(Type type,
                 IEnumerable<string> identity)
-            => new CacheKey<TOwner>(type, new(identity));
+            => new CacheKey<TOwner>(type, identity);
 
         /// <summary>
         /// Creates a new key for the object identified by
@@ -130,7 +132,7 @@ namespace Visus.Ldap.Services {
         /// by <typeparamref name="TOwner"/>.</param>
         /// <returns>A new cache key.</returns>
         public static CacheKey<TOwner> Create<TOwner, TType>(string identity)
-            => new CacheKey<TOwner>(typeof(TType), new([identity]));
+            => new CacheKey<TOwner>(typeof(TType), [identity]);
 
         /// <summary>
         /// Creates a new key for the object identified by
@@ -147,6 +149,6 @@ namespace Visus.Ldap.Services {
         /// <returns>A new cache key.</returns>
         public static CacheKey<TOwner> Create<TOwner, TType>(
                 IEnumerable<string> identity)
-            => new CacheKey<TOwner>(typeof(TType), new(identity));
+            => new CacheKey<TOwner>(typeof(TType), identity);
     }
 }
