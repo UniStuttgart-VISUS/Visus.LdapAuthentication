@@ -43,8 +43,15 @@ namespace Visus.Ldap.Services {
         #region Public methods
         /// <inheritdoc />
         public bool Equals(CacheKey<TOwner>? other) {
-            return (other != null)
-                && (other._type == this._type)
+            if (other == null) {
+                return false;
+            }
+
+            if (object.ReferenceEquals(this, other)) {
+                return true;
+            }
+
+            return (other._type == this._type)
                 && other._identity.SetEquals(this._identity);
         }
 

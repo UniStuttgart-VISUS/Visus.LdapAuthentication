@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace Visus.Ldap.Services {
 
     /// <summary>
-    /// Implementation of <see cref="ILdapCacheBase{TEntry}"/> that caches
+    /// Implementation of <see cref="ILdapCache{TEntry}"/> that caches
     /// nothing.
     /// </summary>
     /// <remarks>
@@ -19,7 +19,7 @@ namespace Visus.Ldap.Services {
     /// </remarks>
     /// <typeparam name="TEntry">The type of raw LDAP entries cached by the
     /// service.</typeparam>
-    public class NoCacheService<TEntry> : ILdapCacheBase<TEntry> {
+    public class NoCacheService<TEntry> : ILdapCache<TEntry> {
 
         #region Public constants
         /// <summary>
@@ -30,7 +30,7 @@ namespace Visus.Ldap.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public ILdapCacheBase<TEntry> Add(IEnumerable<TEntry> entries,
+        public ILdapCache<TEntry> Add(IEnumerable<TEntry> entries,
             IEnumerable<string> key) => this;
 
         /// <inheritdoc />

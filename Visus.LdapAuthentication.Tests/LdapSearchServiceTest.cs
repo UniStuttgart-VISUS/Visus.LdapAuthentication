@@ -88,7 +88,7 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.IsNotNull(group, "Search returned existing group account.");
 
                 var cached = service.GetGroupByName(this._testSecrets.ExistingGroupAccount!);
-                Assert.AreSame(group, cached, "Search returned cached group.");
+                Assert.AreEqual(group, cached, "Search returned cached group.");
             }
         }
 
@@ -112,7 +112,7 @@ namespace Visus.LdapAuthentication.Tests {
                 Assert.IsNotNull(group, "Search returned existing group account.");
 
                 var cached = await service.GetGroupByNameAsync(this._testSecrets.ExistingGroupAccount!);
-                Assert.AreSame(group, cached, "Search returned cached group.");
+                Assert.AreEqual(group, cached, "Search returned cached group.");
             }
         }
 
@@ -250,6 +250,10 @@ namespace Visus.LdapAuthentication.Tests {
 
                 var users = service.GetUsers();
                 Assert.IsTrue(users.Any(), "Directory search returns any user.");
+
+                foreach (var user in users) {
+                    Assert.IsNotNull(user);
+                }
             }
         }
 

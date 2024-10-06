@@ -15,6 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Visus.DirectoryAuthentication.Services;
+using Visus.Ldap;
 using Visus.Ldap.Mapping;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Extensions;
@@ -66,7 +67,7 @@ namespace Visus.LdapAuthentication.Services {
                 ILdapMapper<LdapEntry, TUser, TGroup> mapper,
                 ILdapAttributeMap<TUser> userMap,
                 ILdapAttributeMap<TGroup> groupMap,
-                ILdapCache cache,
+                ILdapCache<LdapEntry> cache,
                 ILogger<LdapSearchService<TUser, TGroup>> logger)
                 : base(options, userMap, groupMap) {
             ArgumentNullException.ThrowIfNull(connectionService);
@@ -306,8 +307,8 @@ namespace Visus.LdapAuthentication.Services {
 
             if (this._mapper.GroupIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
-                    this._mapper,
                     this._cache,
+                    this._mapper,
                     this._options);
                 this._mapper.SetGroups(group, groups);
             }
@@ -328,8 +329,8 @@ namespace Visus.LdapAuthentication.Services {
 
             if (this._mapper.UserIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
-                    this._mapper,
                     this._cache,
+                    this._mapper,
                     this._options);
                 this._mapper.SetGroups(user, groups);
             }
@@ -339,7 +340,7 @@ namespace Visus.LdapAuthentication.Services {
         #endregion
 
         #region Private fields
-        private readonly ILdapCache _cache;
+        private readonly ILdapCache<LdapEntry> _cache;
         private LdapConnection? _connection;
         private readonly ILogger _logger;
         private readonly ILdapMapper<LdapEntry, TUser, TGroup> _mapper;

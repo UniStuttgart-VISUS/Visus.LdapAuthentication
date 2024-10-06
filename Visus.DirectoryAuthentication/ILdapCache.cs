@@ -15,5 +15,5 @@ namespace Visus.DirectoryAuthentication {
     /// raw LDAP entries in memory for reuse without querying the LDAP server
     /// every time.
     /// </summary>
-    public interface ILdapCache : ILdapCacheBase<SearchResultEntry>;
+    public interface ILdapCache : ILdapCache<SearchResultEntry>;
 }

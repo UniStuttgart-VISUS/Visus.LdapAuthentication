@@ -96,12 +96,19 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// Gets the LDAP entries for the groups of <paramref name="that"/>
         /// using the specified LDAP <paramref name="connection"/>.
         /// </summary>
+        /// <remarks>
+        /// Note that this will only include the groups <paramref name="that"/>
+        /// is direct memory of, which are returned by
+        /// <see cref="GetGroups(LdapEntry, LdapOptions)"/>. If you need LDAP
+        /// entries for all (recursive) groups including the primary group,
+        /// use <see cref="GetGroupEntries"/> instead.
+        /// </remarks>
         /// <param name="that">The entry to get the groups for.</param>
         /// <param name="connection">The LDAP connection used to retrieve the
         /// entry representing the groups obtained from <paramref name="that"/>.
         /// </param>
-        /// <param name="connection">The LDAP connection used to retrieve the
-        /// entry of the group.</param>
+        /// <param name="cache">A cache for the LDAP entries which potentially
+        /// prevents the method from performing an actual LDAP lookup.</param>
         /// <param name="attributes">The attributes to load for the entry of the
         /// group.</param>
         /// <param name="options">The LDAP options determining the search scope
@@ -111,9 +118,16 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static IEnumerable<SearchResultEntry> GetGroups(
                 this SearchResultEntry that,
                 LdapConnection connection,
+                ILdapCache<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
-            ArgumentNullException.ThrowIfNull(connection, nameof(connection));
+            Debug.Assert(that != null);
+            Debug.Assert(connection != null);
+            Debug.Assert(cache != null);
+            Debug.Assert(attributes != null);
+            Debug.Assert(options != null);
+            Debug.Assert(options.Mapping != null);
+
             var groups = that.GetGroups(options);
 
             if (groups.Any()) {
@@ -122,8 +136,9 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 groups = groups.Select(g => g.EscapeLdapFilterExpression()!);
                 groups = groups.Select(
                     g => $"({options.Mapping.DistinguishedNameAttribute}={g})");
-                return connection.Search($"(|{string.Join("", groups)})",
-                    attributes, options);
+                var filter = $"(|{string.Join("", groups)})";
+                return cache.GetOrAdd(filter, attributes,
+                    () => connection.Search(filter, attributes, options));
             } else {
                 return Enumerable.Empty<SearchResultEntry>();
             }
@@ -138,16 +153,19 @@ namespace Visus.DirectoryAuthentication.Extensions {
         /// <typeparam name="TGroup">The type of the group objects to be
         /// created.</typeparam>
         /// <param name="that"></param>
-        /// <param name="connection"></param>
+        /// <param name="connection">The LDAP connection used to retrieve the
+        /// entry representing the groups obtained from <paramref name="that"/>.
+        /// </param>
+        /// <param name="cache">A cache for the LDAP entries which potentially
+        /// prevents the method from performing an actual LDAP lookup.</param>
         /// <param name="mapper"></param>
-        /// <param name="cache"></param>
         /// <param name="options"></param>
         /// <returns></returns>
         internal static IEnumerable<TGroup> GetGroups<TUser, TGroup>(
                 this SearchResultEntry that,
                 LdapConnection connection,
+                ILdapCache<SearchResultEntry> cache,
                 ILdapMapper<SearchResultEntry, TUser, TGroup> mapper,
-                ILdapCacheBase<SearchResultEntry> cache,
                 LdapOptions options)
                 where TGroup : new() {
             Debug.Assert(that != null);
@@ -172,7 +190,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 yield return mapper.MapPrimaryGroup(primaryGroup, new TGroup());
             }
 
-            var groups = that.GetGroups(connection, attributes, options);
+            var groups = that.GetGroups(connection, cache, attributes, options);
 
             if (options.IsRecursiveGroupMembership) {
                 // Accumulate all groups into one enumeration.
@@ -182,7 +200,8 @@ namespace Visus.DirectoryAuthentication.Extensions {
                     var group = stack.Pop();
                     yield return mapper.MapGroup(group, new TGroup());
 
-                    groups = group.GetGroups(connection, attributes, options);
+                    groups = group.GetGroups(connection, cache, attributes,
+                        options);
                     foreach (var g in groups) {
                         yield return mapper.MapGroup(g, new TGroup());
                         stack.Push(g);
@@ -193,7 +212,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
                 // Recursively reconstruct the hierarchy itself.
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, mapper, cache,
+                    var parents = g.GetGroups(connection, cache, mapper,
                         options);
                     yield return mapper.SetGroups(group, parents);
                 }
@@ -226,7 +245,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static async Task<IEnumerable<SearchResultEntry>> GetGroupsAsync(
                 this SearchResultEntry that,
                 LdapConnection connection,
-                ILdapCacheBase<SearchResultEntry> cache,
+                ILdapCache<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);
@@ -315,7 +334,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static SearchResultEntry? GetPrimaryGroup(
                 this SearchResultEntry that,
                 LdapConnection connection,
-                ILdapCacheBase<SearchResultEntry> cache,
+                ILdapCache<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);
@@ -357,7 +376,7 @@ namespace Visus.DirectoryAuthentication.Extensions {
         internal static async Task<SearchResultEntry?> GetPrimaryGroupAsync(
                 this SearchResultEntry that,
                 LdapConnection connection,
-                ILdapCacheBase<SearchResultEntry> cache,
+                ILdapCache<SearchResultEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);

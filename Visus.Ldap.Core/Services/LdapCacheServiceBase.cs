@@ -15,18 +15,18 @@ using Visus.Ldap.Configuration;
 namespace Visus.Ldap.Services {
 
     /// <summary>
-    /// Implementation of <see cref="ILdapCacheBase{TEntry}"/> that uses
+    /// Implementation of <see cref="ILdapCache{TEntry}"/> that uses
     /// <see cref="IMemoryCache"/> to provide group objects from memory in
     /// order to bypass the LDAP server.
     /// </summary>
     /// <typeparam name="TEntry">The type of raw LDAP entries cached by the
     /// service.</typeparam>
     public abstract class LdapCacheServiceBase<TEntry>
-            : ILdapCacheBase<TEntry> {
+            : ILdapCache<TEntry> {
 
         #region Public methods
         /// <inheritdoc />
-        public ILdapCacheBase<TEntry> Add(IEnumerable<TEntry> entries,
+        public ILdapCache<TEntry> Add(IEnumerable<TEntry> entries,
                 IEnumerable<string> key) {
             ArgumentNullException.ThrowIfNull(entries);
 

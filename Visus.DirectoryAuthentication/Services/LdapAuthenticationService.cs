@@ -115,7 +115,9 @@ namespace Visus.DirectoryAuthentication.Services {
                         this.Cache,
                         this._groupClaimAttributes,
                         this._options);
+                    // TODO: this is not recursive!
                     var groups = user.GetGroups(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
 
@@ -166,7 +168,9 @@ namespace Visus.DirectoryAuthentication.Services {
                         this.Cache,
                         this._groupClaimAttributes,
                         this._options);
+                    // TODO: this is not recursive!
                     var groups = user.GetGroups(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
 
@@ -207,8 +211,8 @@ namespace Visus.DirectoryAuthentication.Services {
                 if (res is SearchResponse s && s.Any()) {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
-                        this._mapper,
                         this.Cache,
+                        this._mapper,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -255,8 +259,8 @@ namespace Visus.DirectoryAuthentication.Services {
                 if (res is SearchResponse s && s.Any()) {
                     this._mapper.MapUser(s.Entries[0], retval);
                     var groups = s.Entries[0].GetGroups(connection,
-                        this._mapper,
                         this.Cache,
+                        this._mapper,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;

@@ -6,10 +6,13 @@
 
 using Novell.Directory.Ldap;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Visus.Ldap;
 using Visus.Ldap.Extensions;
@@ -75,36 +78,69 @@ namespace Visus.LdapAuthentication.Extensions {
         /// Gets the LDAP entries for the groups of <paramref name="that"/>
         /// using the specified LDAP <paramref name="connection"/>.
         /// </summary>
+        /// <remarks>
+        /// Note that this method uses the group membership attribute of
+        /// <paramref name="that"/> and therefore does not return the primary
+        /// group. Use
+        /// <see cref="GetPrimaryGroup(LdapEntry, LdapConnection, ILdapCache{LdapEntry}, string[], LdapOptions)"/>
+        /// to get the primary group in addition to calling this method.
+        /// </remarks>
         /// <param name="that">The entry to get the groups for.</param>
         /// <param name="connection">The LDAP connection used to retrieve the
         /// entry representing the groups obtained from <paramref name="that"/>.
         /// </param>
-        /// <param name="connection">The LDAP connection used to retrieve the
-        /// entry of the group.</param>
+        /// <param name="cache">A cache for the LDAP entries which potentially
+        /// prevents the method from performing an actual LDAP lookup.</param>
         /// <param name="attributes">The attributes to load for the entry of the
         /// group.</param>
         /// <param name="options">The LDAP options determining the search scope
         /// and the attribute mapping.</param>
+        /// <param name="directOnly">If <c>true</c>, the method will ignore
+        /// <see cref="LdapOptions.IsRecursiveGroupMembership"/> and return only
+        /// direct groups <paramref name="that"/> is member of.</param>
         /// <returns>The LDAP entries of all groups except for the primary one.
         /// </returns>
         internal static IEnumerable<LdapEntry> GetGroups(
                 this LdapEntry that,
                 LdapConnection connection,
+                ILdapCache<LdapEntry> cache,
                 string[] attributes,
-                LdapOptions options) {
-            ArgumentNullException.ThrowIfNull(connection, nameof(connection));
-            var groups = that.GetGroups(options);
+                LdapOptions options,
+                bool directOnly = false) {
+            Debug.Assert(that != null);
+            Debug.Assert(connection != null);
+            Debug.Assert(cache != null);
+            Debug.Assert(attributes != null);
+            Debug.Assert(options != null);
+            Debug.Assert(options.Mapping != null);
 
-            if (groups.Any()) {
-                Debug.Assert(options != null);
-                Debug.Assert(options.Mapping != null);
-                groups = groups.Select(g => g.EscapeLdapFilterExpression()!);
-                groups = groups.Select(
-                    g => $"({options.Mapping.DistinguishedNameAttribute}={g})");
-                return connection.Search($"(|{string.Join("", groups)})",
-                    attributes, options);
-            } else {
-                return Enumerable.Empty<LdapEntry>();
+            var dn = options.Mapping.DistinguishedNameAttribute;
+
+            // Get LDAP filters for the groups of 'that'.
+            var groups = new Stack<string>(that.GetGroups(options)
+                .Select(g => g.EscapeLdapFilterExpression()!)
+                .Select(g => $"({dn}={g})"));
+
+            while (groups.TryPop(out var filter)) {
+                // Look up the entry for the current group.
+                var retval = cache.GetOrAdd(filter, attributes,
+                    () => connection.Search(filter, attributes, options));
+
+                foreach (var r in retval) {
+                    yield return r;
+
+                    // If we are requested to recurse, get the LDAP filters
+                    // for 'r' and queue them for retrieval.
+                    if (options.IsRecursiveGroupMembership && !directOnly) {
+                        var parents = r.GetGroups(options)
+                            .Select(g => g.EscapeLdapFilterExpression()!)
+                            .Select(g => $"({dn}={g})");
+                        groups.EnsureCapacity(groups.Count + parents.Count());
+                        foreach (var p in parents) {
+                            groups.Push(p);
+                        }
+                    }
+                }
             }
         }
 
@@ -117,16 +153,19 @@ namespace Visus.LdapAuthentication.Extensions {
         /// <typeparam name="TGroup">The type of the group objects to be
         /// created.</typeparam>
         /// <param name="that"></param>
-        /// <param name="connection"></param>
+        /// <param name="connection">The LDAP connection used to retrieve the
+        /// entry representing the groups obtained from <paramref name="that"/>.
+        /// </param>
+        /// <param name="cache">A cache for the LDAP entries which potentially
+        /// prevents the method from performing an actual LDAP lookup.</param>
         /// <param name="mapper"></param>
-        /// <param name="cache"></param>
         /// <param name="options"></param>
         /// <returns></returns>
         internal static IEnumerable<TGroup> GetGroups<TUser, TGroup>(
                 this LdapEntry that,
                 LdapConnection connection,
+                ILdapCache<LdapEntry> cache,
                 ILdapMapper<LdapEntry, TUser, TGroup> mapper,
-                ILdapCacheBase<LdapEntry> cache,
                 LdapOptions options)
                 where TGroup : new() {
             Debug.Assert(that != null);
@@ -142,7 +181,8 @@ namespace Visus.LdapAuthentication.Extensions {
                 .Append(options.Mapping.GroupsAttribute)
                 .ToArray();
 
-            // Obtain the primary group first.
+            // Obtain the primary group first. This group is special, so we need
+            // to handle it separately.
             var primaryGroup = that.GetPrimaryGroup(connection,
                 cache,
                 attributes,
@@ -151,7 +191,7 @@ namespace Visus.LdapAuthentication.Extensions {
                 yield return mapper.MapPrimaryGroup(primaryGroup, new TGroup());
             }
 
-            var groups = that.GetGroups(connection, attributes, options);
+            var groups = that.GetGroups(connection, cache, attributes, options);
 
             if (options.IsRecursiveGroupMembership) {
                 // Accumulate all groups into one enumeration.
@@ -161,7 +201,8 @@ namespace Visus.LdapAuthentication.Extensions {
                     var group = stack.Pop();
                     yield return mapper.MapGroup(group, new TGroup());
 
-                    groups = group.GetGroups(connection, attributes, options);
+                    groups = group.GetGroups(connection, cache, attributes,
+                        options);
                     foreach (var g in groups) {
                         yield return mapper.MapGroup(g, new TGroup());
                         stack.Push(g);
@@ -172,7 +213,7 @@ namespace Visus.LdapAuthentication.Extensions {
                 // Recursively reconstruct the hierarchy itself.
                 foreach (var g in groups) {
                     var group = mapper.MapGroup(g, new TGroup());
-                    var parents = g.GetGroups(connection, mapper, cache,
+                    var parents = g.GetGroups(connection, cache, mapper,
                         options);
                     yield return mapper.SetGroups(group, parents);
                 }
@@ -206,7 +247,7 @@ namespace Visus.LdapAuthentication.Extensions {
         internal static async Task<IEnumerable<LdapEntry>> GetGroupsAsync(
                 this LdapEntry that,
                 LdapConnection connection,
-                ILdapCacheBase<LdapEntry> cache,
+                ILdapCache<LdapEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);
@@ -295,7 +336,7 @@ namespace Visus.LdapAuthentication.Extensions {
         internal static LdapEntry? GetPrimaryGroup(
                 this LdapEntry that,
                 LdapConnection connection,
-                ILdapCacheBase<LdapEntry> cache,
+                ILdapCache<LdapEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);
@@ -337,7 +378,7 @@ namespace Visus.LdapAuthentication.Extensions {
         internal static async Task<LdapEntry?> GetPrimaryGroupAsync(
                 this LdapEntry that,
                 LdapConnection connection,
-                ILdapCacheBase<LdapEntry> cache,
+                ILdapCache<LdapEntry> cache,
                 string[] attributes,
                 LdapOptions options) {
             Debug.Assert(that != null);

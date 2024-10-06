@@ -113,6 +113,7 @@ namespace Visus.LdapAuthentication.Services {
                         this._groupClaimAttributes,
                         this._options);
                     var groups = user.GetGroups(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
 
@@ -163,6 +164,7 @@ namespace Visus.LdapAuthentication.Services {
                         this._groupClaimAttributes,
                         this._options);
                     var groups = user.GetGroups(connection,
+                        this.Cache,
                         this._groupClaimAttributes,
                         this._options);
 
@@ -201,8 +203,8 @@ namespace Visus.LdapAuthentication.Services {
                 if (entry != null) {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
-                        this._mapper,
                         this.Cache,
+                        this._mapper,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;
@@ -246,8 +248,8 @@ namespace Visus.LdapAuthentication.Services {
                 if (entry != null) {
                     this._mapper.MapUser(entry, retval);
                     var groups = entry.GetGroups(connection,
-                        this._mapper,
                         this.Cache,
+                        this._mapper,
                         this._options);
                     this._mapper.SetGroups(retval, groups);
                     return retval;

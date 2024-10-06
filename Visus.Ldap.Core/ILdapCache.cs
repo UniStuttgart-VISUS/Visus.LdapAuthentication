@@ -1,4 +1,4 @@
-﻿// <copyright file="ILdapCacheBase.cs" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="ILdapCache.cs" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2024 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -21,7 +21,7 @@ namespace Visus.Ldap {
     /// </summary>
     /// <typeparam name="TEntry">The type of raw LDAP entries cached by the
     /// service.</typeparam>
-    public interface ILdapCacheBase<TEntry> {
+    public interface ILdapCache<TEntry> {
 
         /// <summary>
         /// Adds the given <paramref name="entries"/> to the cache, which must
@@ -35,7 +35,7 @@ namespace Visus.Ldap {
         /// <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="key"/> is
         /// empty.</exception>
-        ILdapCacheBase<TEntry> Add(IEnumerable<TEntry> entries,
+        ILdapCache<TEntry> Add(IEnumerable<TEntry> entries,
             IEnumerable<string> key);
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Visus.Ldap {
         /// <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="key"/> is
         /// empty.</exception>
-        ILdapCacheBase<TEntry> Add(IEnumerable<TEntry> entries,
+        ILdapCache<TEntry> Add(IEnumerable<TEntry> entries,
                 string filter,
                 IEnumerable<string> attributes)
             => this.Add(entries, attributes?.Append(filter)!);
@@ -73,7 +73,7 @@ namespace Visus.Ldap {
         /// <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If <paramref name="key"/> is
         /// empty.</exception>
-        ILdapCacheBase<TEntry> Add(TEntry entry,
+        ILdapCache<TEntry> Add(TEntry entry,
                 string filter,
                 IEnumerable<string> attributes)
             => this.Add([entry], filter, attributes);

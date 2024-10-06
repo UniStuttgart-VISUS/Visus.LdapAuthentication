@@ -32,6 +32,5 @@ namespace Visus.LdapAuthentication.Services {
             ILogger<LdapCacheService> logger)
         : LdapCacheServiceBase<LdapEntry>(cache,
             options?.Value!,
-            logger),
-            ILdapCache;
+            logger);
 }

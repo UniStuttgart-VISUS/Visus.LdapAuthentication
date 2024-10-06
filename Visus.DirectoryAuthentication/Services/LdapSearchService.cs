@@ -375,8 +375,8 @@ namespace Visus.DirectoryAuthentication.Services {
 
             if (this._mapper.GroupIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
-                    this._mapper,
                     this._cache,
+                    this._mapper,
                     this._options);
                 this._mapper.SetGroups(group, groups);
             }
@@ -397,8 +397,8 @@ namespace Visus.DirectoryAuthentication.Services {
 
             if (this._mapper.UserIsGroupMember) {
                 var groups = entry.GetGroups(this.Connection,
-                    this._mapper,
                     this._cache,
+                    this._mapper,
                     this._options);
                 this._mapper.SetGroups(user, groups);
             }
