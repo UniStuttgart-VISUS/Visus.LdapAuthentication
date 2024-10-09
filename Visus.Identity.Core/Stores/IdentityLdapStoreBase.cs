@@ -117,7 +117,7 @@ namespace Visus.Identity.Stores {
                 TUser user,
                 CancellationToken cancellationToken) {
             ArgumentNullException.ThrowIfNull(user, nameof(user));
-            return Task.FromResult(user.UserName?.ToLowerInvariant());
+            return Task.FromResult(user.NormalizedUserName?.ToUpperInvariant());
         }
 
         /// <inheritdoc />
