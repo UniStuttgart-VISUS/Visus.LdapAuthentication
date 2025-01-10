@@ -11,7 +11,7 @@
     <Company>Visualisierunginstitut der Universität Stuttgart</Company>
     <Product>ASP.NET Core LDAP Authentication Middleware</Product>
     <Description>This library implements shared functionality used in Visus.DirectoryIdentity and Visus.LdapIdentity. There should be little need for including this package directly.</Description>
-    <Copyright>Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart</Copyright>
+    <Copyright>Copyright © 2021 - 2025 Visualisierungsinstitut der Universität Stuttgart</Copyright>
     <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</PackageProjectUrl>
     <RepositoryUrl>https://github.com/UniStuttgart-VISUS/Visus.LdapAuthentication</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
