@@ -1,5 +1,5 @@
 ﻿// <copyright file="ServiceCollectionExtensions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2021 - 2025 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -17,7 +17,6 @@ using Visus.Ldap;
 using Visus.Ldap.Claims;
 using Visus.Ldap.Configuration;
 using Visus.Ldap.Mapping;
-using Visus.Ldap.Services;
 
 
 namespace Visus.DirectoryAuthentication {
@@ -60,6 +59,9 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="mapGroupClaims">If not <c>null</c>, the method will call
         /// this function to build a custom mapping to
         /// <typeparamref name="TGroup"/> to claim types.</param>
+        /// <param name="validateOnStart">If <see langword="true" />, which is
+        /// the default, the LDAP options will be validated on application
+        /// start.</param>
         /// <returns><paramref name="services"/>.</returns>
         /// <exception cref="ArgumentNullException">If
         /// <paramref name="services"/> is <c>null</c>.</exception>
@@ -72,7 +74,8 @@ namespace Visus.DirectoryAuthentication {
                 Action<ILdapAttributeMapBuilder<TUser>, LdapOptions>? mapUser = null,
                 Action<ILdapAttributeMapBuilder<TGroup>, LdapOptions>? mapGroup = null,
                 Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null)
+                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null,
+                bool validateOnStart = true)
                 where TUser : class, new()
                 where TGroup : class, new()
                 where TLdapMapper : class, ILdapMapper<SearchResultEntry, TUser, TGroup>
@@ -86,8 +89,12 @@ namespace Visus.DirectoryAuthentication {
 
             {
                 var b = services.AddOptions<LdapOptions>()
-                    .Configure(options)
-                    .ValidateOnStart();
+                    .Configure(options);
+
+                if (validateOnStart) {
+                    b.ValidateOnStart();
+                }
+
                 b.Services.AddSingleton<LdapOptionsValidator>();
                 b.Services.AddSingleton<IValidateOptions<LdapOptions>,
                     FluentValidateOptions<LdapOptions, LdapOptionsValidator>>();
@@ -179,6 +186,9 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="mapGroupClaims">If not <c>null</c>, the method will call
         /// this function to build a custom mapping to
         /// <typeparamref name="TGroup"/> to claim types.</param>
+        /// <param name="validateOnStart">If <see langword="true" />, which is
+        /// the default, the LDAP options will be validated on application
+        /// start.</param>
         /// <returns><paramref name="services"/>.</returns>
         public static IServiceCollection AddLdapAuthentication<TUser, TGroup>(
                 this IServiceCollection services,
@@ -186,7 +196,8 @@ namespace Visus.DirectoryAuthentication {
                 Action<ILdapAttributeMapBuilder<TUser>, LdapOptions>? mapUser = null,
                 Action<ILdapAttributeMapBuilder<TGroup>, LdapOptions>? mapGroup = null,
                 Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null)
+                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null,
+                bool validateOnStart = true)
                 where TUser : class, new()
                 where TGroup : class, new()
             => services.AddLdapAuthentication<TUser,
@@ -224,6 +235,9 @@ namespace Visus.DirectoryAuthentication {
         /// <param name="mapGroupClaims">If not <c>null</c>, the method will call
         /// this function to build a custom mapping to
         /// <typeparamref name="TGroup"/> to claim types.</param>
+        /// <param name="validateOnStart">If <see langword="true" />, which is
+        /// the default, the LDAP options will be validated on application
+        /// start.</param>
         /// <returns><paramref name="services"/>.</returns>
         public static IServiceCollection AddLdapAuthentication(
                 this IServiceCollection services,
@@ -231,7 +245,8 @@ namespace Visus.DirectoryAuthentication {
                 Action<ILdapAttributeMapBuilder<LdapUser>, LdapOptions>? mapUser = null,
                 Action<ILdapAttributeMapBuilder<LdapGroup>, LdapOptions>? mapGroup = null,
                 Action<IClaimsMapBuilder, LdapOptions>? mapUserClaims = null,
-                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null)
+                Action<IClaimsMapBuilder, LdapOptions>? mapGroupClaims = null,
+                bool validateOnStart = true)
             => services.AddLdapAuthentication<LdapUser, LdapGroup>(options,
                 mapUser, mapGroup, mapUserClaims, mapGroupClaims);
     }
