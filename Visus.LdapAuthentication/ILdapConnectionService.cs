@@ -1,10 +1,11 @@
 ﻿// <copyright file="ILdapConnectionService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2021 - 2025 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
 using Novell.Directory.Ldap;
+using Visus.LdapAuthentication.Configuration;
 
 
 namespace Visus.LdapAuthentication {
@@ -13,6 +14,14 @@ namespace Visus.LdapAuthentication {
     /// Interface of a service providing access to a configured LDAP connection.
     /// </summary>
     public interface ILdapConnectionService {
+
+        /// <summary>
+        /// Connect to the LDAP server configured in <paramref name="options"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="LdapOptions" /> specifying the
+        /// server and the user account used to connect to the server.</param>
+        /// <returns>A new LDAP connection</returns>
+        LdapConnection Connect(LdapOptions options);
 
         /// <summary>
         /// Connect to the preconfigured LDAP service with the specified

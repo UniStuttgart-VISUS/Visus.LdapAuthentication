@@ -1,5 +1,5 @@
 ﻿// <copyright file="LdapConnectionService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2021 - 2025 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -45,14 +45,38 @@ namespace Visus.DirectoryAuthentication.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public LdapConnection Connect(string? username, string? password) {
-            var retval = this._options.ToConnection(_logger);
+        public LdapConnection Connect(LdapOptions options)
+            => this.Connect(null,
+                null,
+                options ?? throw new ArgumentNullException(nameof(options)));
+
+        /// <inheritdoc />
+        public LdapConnection Connect(string? username, string? password)
+            => this.Connect(username, password, this._options);
+        #endregion
+
+        #region Private class methods
+        /// <summary>
+        /// Gets a regular expression for detecting whether the user name is a
+        /// UPN.
+        /// </summary>
+        /// <returns></returns>
+        [GeneratedRegex(@".+@.+")]
+        private static partial Regex GetUpnRegex();
+        #endregion
+
+        #region Private methods
+        public LdapConnection Connect(string? username,
+                string? password,
+                LdapOptions options) {
+            Debug.Assert(options is not null);
+            var retval = options.ToConnection(_logger);
             Debug.Assert(retval != null);
 
             if ((username != null)
-                    && !string.IsNullOrWhiteSpace(this._options.DefaultDomain)
+                    && !string.IsNullOrWhiteSpace(options.DefaultDomain)
                     && !GetUpnRegex().IsMatch(username)) {
-                username = $"{username}@{this._options.DefaultDomain}";
+                username = $"{username}@{options.DefaultDomain}";
             }
 
             this._logger.LogDebug("User name to bind (possibly expanded by the "
@@ -83,17 +107,7 @@ namespace Visus.DirectoryAuthentication.Services {
         }
         #endregion
 
-        #region Private class methods
-        /// <summary>
-        /// Gets a regular expression for detecting whether the user name is a
-        /// UPN.
-        /// </summary>
-        /// <returns></returns>
-        [GeneratedRegex(@".+@.+")]
-        private static partial Regex GetUpnRegex();
-        #endregion
-
-        #region Private fields
+            #region Private fields
         private readonly ILogger _logger;
         private readonly LdapOptions _options;
         #endregion

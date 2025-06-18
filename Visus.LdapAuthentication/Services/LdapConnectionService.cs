@@ -1,5 +1,5 @@
 ﻿// <copyright file="LdapConnectionService.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2021 - 2025 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -10,7 +10,6 @@ using Novell.Directory.Ldap;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using Visus.LdapAuthentication.Configuration;
 using Visus.LdapAuthentication.Properties;
@@ -46,13 +45,81 @@ namespace Visus.LdapAuthentication.Services {
 
         #region Public methods
         /// <inheritdoc />
-        public LdapConnection Connect(string? username, string? password) {
-            var retval = this.TryConnect();
+        public LdapConnection Connect(LdapOptions options)
+            => this.Connect(null,
+                null,
+                options ?? throw new ArgumentNullException(nameof(options)));
+
+        /// <inheritdoc />
+        public LdapConnection Connect(string? username, string? password)
+            => this.Connect(username, password, this._options);
+        #endregion
+
+        #region Private class methods
+        /// <summary>
+        /// Gets a regular expression for detecting whether the user name is a
+        /// UPN.
+        /// </summary>
+        /// <returns></returns>
+        [GeneratedRegex(@".+@.+")]
+        private static partial Regex GetUpnRegex();
+        #endregion
+
+        #region Private methods
+        /// <summary>
+        /// Block the <paramref name="server"/> at the specified position for
+        /// the configured amount of time.
+        /// </summary>
+        private void Blacklist(int server, LdapOptions options) {
+            Debug.Assert(options is not null);
+            Debug.Assert(server < options.Servers.Length);
+
+            // Only enter the critical section if a valid timespan was
+            // specified that actually needs to expire.
+            if (options.BlacklistFailedServersFor > TimeSpan.Zero) {
+                lock (this._lock) {
+                    var until = DateTimeOffset.UtcNow;
+                    until += options.BlacklistFailedServersFor;
+                    this._blacklisted[server] = until;
+                    this._logger.LogWarning(Resources.WarnServerBlacklisted,
+                        options.Servers[server], until);
+
+                    // If the currently active server is the blacklisted one,
+                    // make sure that we now select another one in the
+                    // critical section we are already in to make the
+                    // failover policy basically free.
+                    if (this._currentServer == server) {
+                        do {
+                            ++this._currentServer;
+                            this._currentServer %= options.Servers.Length;
+                        } while (this.IsBlacklistedUnsafe(this._currentServer)
+                            && (this._currentServer != server));
+
+                        if (this._currentServer == server) {
+                            this._logger.LogWarning(Resources.WarnNoFallback);
+                        }
+                    }
+                }
+            } /* if (this._options.BlacklistFailedServersFor > TimeSpan.Zero) */
+        }
+
+        /// <summary>
+        /// Connect to the server specified in <paramref name="options"/>
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        private LdapConnection Connect(string? username,
+                string? password,
+                LdapOptions options) {
+            Debug.Assert(options is not null);
+            var retval = this.TryConnect(options);
 
             if ((username != null)
-                    && !string.IsNullOrWhiteSpace(this._options.DefaultDomain)
+                    && !string.IsNullOrWhiteSpace(options.DefaultDomain)
                     && !GetUpnRegex().IsMatch(username)) {
-                username = $"{username}@{this._options.DefaultDomain}";
+                username = $"{username}@{options.DefaultDomain}";
             }
 
             this._logger.LogDebug("User name to bind (possibly expanded by the "
@@ -71,54 +138,6 @@ namespace Visus.LdapAuthentication.Services {
             }
 
             return retval;
-        }
-        #endregion
-
-        #region Private class methods
-        /// <summary>
-        /// Gets a regular expression for detecting whether the user name is a
-        /// UPN.
-        /// </summary>
-        /// <returns></returns>
-        [GeneratedRegex(@".+@.+")]
-        private static partial Regex GetUpnRegex();
-        #endregion
-
-        #region Private methods
-        /// <summary>
-        /// Block the <paramref name="server"/> at the specified position for
-        /// the configured amount of time.
-        /// </summary>
-        private void Blacklist(int server) {
-            Debug.Assert(server < this._options.Servers.Length);
-
-            // Only enter the critical section if a valid timespan was
-            // specified that actually needs to expire.
-            if (this._options.BlacklistFailedServersFor > TimeSpan.Zero) {
-                lock (this._lock) {
-                    var until = DateTimeOffset.UtcNow;
-                    until += this._options.BlacklistFailedServersFor;
-                    this._blacklisted[server] = until;
-                    this._logger.LogWarning(Resources.WarnServerBlacklisted,
-                        this._options.Servers[server], until);
-
-                    // If the currently active server is the blacklisted one,
-                    // make sure that we now select another one in the
-                    // critical section we are already in to make the
-                    // failover policy basically free.
-                    if (this._currentServer == server) {
-                        do {
-                            ++this._currentServer;
-                            this._currentServer %= this._options.Servers.Length;
-                        } while (this.IsBlacklistedUnsafe(this._currentServer)
-                            && (this._currentServer != server));
-
-                        if (this._currentServer == server) {
-                            this._logger.LogWarning(Resources.WarnNoFallback);
-                        }
-                    }
-                }
-            } /* if (this._options.BlacklistFailedServersFor > TimeSpan.Zero) */
         }
 
         /// <summary>
@@ -183,19 +202,20 @@ namespace Visus.LdapAuthentication.Services {
         /// <summary>
         /// Try connecting to any of the configured servers.
         /// </summary>
-        private LdapConnection TryConnect() {
+        private LdapConnection TryConnect(LdapOptions options) {
+            Debug.Assert(options is not null);
             Exception? error = null;
 
-            for (int i = 0; i < this._options.Servers.Length; ++i) {
+            for (int i = 0; i < options.Servers.Length; ++i) {
                 var selection = this.Select();
-                var server = this._options.Servers[selection];
+                var server = options.Servers[selection];
 
                 try {
                     this._logger.LogInformation(Resources.InfoServerSelected,
                         server);
-                    return this._options.ToConnection(server, this._logger);
+                    return options.ToConnection(server, this._logger);
                 } catch (Exception ex) {
-                    this.Blacklist(selection);
+                    this.Blacklist(selection, options);
                     error = ex;
                 }
             }
