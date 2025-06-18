@@ -46,8 +46,8 @@ namespace Visus.LdapAuthentication.Services {
         #region Public methods
         /// <inheritdoc />
         public LdapConnection Connect(LdapOptions options)
-            => this.Connect(null,
-                null,
+            => this.Connect(options?.User,
+                options?.Password,
                 options ?? throw new ArgumentNullException(nameof(options)));
 
         /// <inheritdoc />
