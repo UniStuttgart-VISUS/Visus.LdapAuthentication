@@ -1,5 +1,5 @@
 # Visus.DirectoryAuthentication
-Visus.DirectoryAuthentication implements LDAP authentication using [System.DirectorySerices.Protocols](https://learn.microsoft.com/en-gb/dotnet/api/system.directoryservices.protocols), which is a platform-independent implementation of LDAP services since .NET 5.
+Visus.DirectoryAuthentication implements LDAP authentication using [System.DirectoryServices.Protocols](https://learn.microsoft.com/en-gb/dotnet/api/system.directoryservices.protocols), which is a platform-independent implementation of LDAP services since .NET 5.
 
 
 # Usage
@@ -11,7 +11,7 @@ Visus.DirectoryAuthentication implements LDAP authentication using [System.Direc
 1. [Searching users](#searching-users)
 
 ## Make sure the prerequisites are installed
-[System.DirectorySerices.Protocols](https://learn.microsoft.com/en-gb/dotnet/api/system.directoryservices.protocols) requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must be installed. Please note that P/Invoke requires the [name of the library being hard-coded](https://github.com/dotnet/runtime/issues/69456), which might be a problem. There are basically [two ways for you to resolve this](https://decovar.dev/blog/2022/06/16/dotnet-ldap-authentication/#platform-specific-dependencies), which is installing the expected version or by creating a symlink that pretends the current version is the expected one.
+[System.DirectoryServices.Protocols](https://learn.microsoft.com/en-gb/dotnet/api/system.directoryservices.protocols) requires native LDAP libraries for P/Invoke being installed. This should be the case for all Windows platforms by default, but on Linux, `libldap` must be installed. Please note that P/Invoke requires the [name of the library being hard-coded](https://github.com/dotnet/runtime/issues/69456), which might be a problem. There are basically [two ways for you to resolve this](https://decovar.dev/blog/2022/06/16/dotnet-ldap-authentication/#platform-specific-dependencies), which is installing the expected version or by creating a symlink that pretends the current version is the expected one.
 
 ## Add the LDAP services
 The authentication functionality is added in `ConfigureServices` in your `Startup` class via the following statements:
@@ -42,7 +42,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add LDAP authentication with default LdapUser object.
 builder.Services.AddLdapAuthentication(o => {
-    this.Configuration.GetSection(LdapOptions.Section).Bind(o);
+    builder.Configuration.GetSection(LdapOptions.Section).Bind(o);
 });
 // ...
 ```
@@ -57,7 +57,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add LDAP authentication with default LdapUser object.
 builder.Services.AddLdapAuthentication<MyUser, MyGroup>(o => {
-    this.Configuration.GetSection(LdapOptions.Section).Bind(o);
+    builder.Configuration.GetSection(LdapOptions.Section).Bind(o);
 });
 // ...
 ```
