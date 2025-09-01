@@ -201,6 +201,9 @@
   <data name="InfoServerSelected" xml:space="preserve">
     <value>The LDAP server {0} has been selected for a new connection.</value>
   </data>
+  <data name="ErrorNoMapping" xml:space="preserve">
+    <value>No valid mapping has been configured.</value>
+  </data>
   <data name="WarnCertCheckDisabled" xml:space="preserve">
     <value>LDAP SSL certificate check has been disabled.</value>
   </data>
@@ -209,5 +212,8 @@
   </data>
   <data name="WarnServerBlacklisted" xml:space="preserve">
     <value>The LDAP server {0} has been blacklisted until {1}.</value>
+  </data>
+  <data name="ErrorNoPasswordAttribute" xml:space="preserve">
+    <value>The password attribute is not configured, but it is required. </value>
   </data>
 </root>

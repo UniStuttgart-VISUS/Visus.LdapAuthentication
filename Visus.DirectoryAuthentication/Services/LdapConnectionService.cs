@@ -107,7 +107,7 @@ namespace Visus.DirectoryAuthentication.Services {
         }
         #endregion
 
-            #region Private fields
+        #region Private fields
         private readonly ILogger _logger;
         private readonly LdapOptions _options;
         #endregion
