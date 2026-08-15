@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UserSecretsId>7eae50eb-94c9-49d3-9d26-7e1fb1a70b23</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Visus.BasicLdapAuthentication\Visus.BasicLdapAuthentication.csproj" />
+    <ProjectReference Include="..\Visus.LdapAuthentication\Visus.LdapAuthentication.csproj" />
+  </ItemGroup>
+
+</Project>
