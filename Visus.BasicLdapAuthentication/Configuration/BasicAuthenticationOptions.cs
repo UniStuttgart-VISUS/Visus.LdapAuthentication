@@ -6,6 +6,7 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Net.Http.Headers;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Visus.DirectoryAuthentication.Configuration;
@@ -39,6 +40,12 @@ namespace Visus.BasicLdapAuthentication.Configuration {
         public bool AdvertiseEncodings { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets whether the cookie can be refreshed if
+        /// <see cref="CookieScheme"/> is set.
+        /// </summary>
+        public bool AllowCookieRefresh { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets whether the authentication handler allows unencrypted
         /// HTTP requests. This feature is only allowed in debug builds and
         /// development environments.
@@ -50,6 +57,24 @@ namespace Visus.BasicLdapAuthentication.Configuration {
         /// before creating a principal from them.
         /// </summary>
         public ClaimFilter? ClaimFilter { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets the lifetime of the cookie used for authentication,
+        /// which is only relevant if <see cref="CookieScheme"/> is set.
+        /// </summary>
+        public TimeSpan CookieLifetime { get; set; } = TimeSpan.FromMinutes(10);
+
+        /// <summary>
+        /// Gets or sets a cookie authentication scheme that can be used in
+        /// addition to the basic authentication scheme.
+        /// </summary>
+        /// <remarks>
+        /// If this property is a non-empty string, the authentication handler
+        /// will sign in the user to the
+        /// <see cref="Microsoft.AspNetCore.Http.HttpContext"/> of the
+        /// authentication request using this scheme.
+        /// </remarks>
+        public string? CookieScheme { get; set; } = null;
 
         /// <summary>
         /// Gets or sets, in order of preference, the encodings for the
@@ -65,6 +90,12 @@ namespace Visus.BasicLdapAuthentication.Configuration {
         /// <see cref="HeaderNames.Authorization"/>.
         /// </summary>
         public string Header { get; set; } = HeaderNames.Authorization;
+
+        /// <summary>
+        /// Gets or sets whether the cookie is configured to be persistent, i.e.
+        /// outlives the session, if <see cref="CookieScheme"/> is set.
+        /// </summary>
+        public bool PersistentCookie { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the realm sent in the authentication header.

@@ -36,7 +36,7 @@ namespace Visus.BasicLdapAuthentication {
         /// <param name="configure">An optional callback to customise the
         /// scheme.</param>
         /// <returns><paramref name="builder"/></returns>
-        public static AuthenticationBuilder AddBasicAuthentication<TUser>(
+        public static AuthenticationBuilder AddBasicLdapAuthentication<TUser>(
                 this AuthenticationBuilder builder,
                 string scheme,
                 Action<BasicAuthenticationOptions>? configure = null)
@@ -60,11 +60,11 @@ namespace Visus.BasicLdapAuthentication {
         /// <param name="configure">An optional callback to customise the
         /// scheme.</param>
         /// <returns><paramref name="builder"/></returns>
-        public static AuthenticationBuilder AddBasicAuthentication<TUser>(
+        public static AuthenticationBuilder AddBasicLdapAuthentication<TUser>(
                 this AuthenticationBuilder builder,
                 Action<BasicAuthenticationOptions>? configure = null)
                 where TUser : class
-            => builder.AddBasicAuthentication<TUser>(
+            => builder.AddBasicLdapAuthentication<TUser>(
                 BasicAuthenticationDefaults.AuthenticationScheme,
                 configure);
 
@@ -82,11 +82,11 @@ namespace Visus.BasicLdapAuthentication {
         /// <param name="configure">An optional callback to customise the
         /// scheme.</param>
         /// <returns><paramref name="builder"/></returns>
-        public static AuthenticationBuilder AddBasicAuthentication(
+        public static AuthenticationBuilder AddBasicLdapAuthentication(
                 this AuthenticationBuilder builder,
                 string scheme,
                 Action<BasicAuthenticationOptions>? configure = null)
-            => builder.AddBasicAuthentication<LdapUser>(scheme, configure);
+            => builder.AddBasicLdapAuthentication<LdapUser>(scheme, configure);
 
         /// <summary>
         /// Adds the basic authentication handler to the given
@@ -101,9 +101,9 @@ namespace Visus.BasicLdapAuthentication {
         /// <param name="configure">An optional callback to customise the
         /// scheme.</param>
         /// <returns><paramref name="builder"/></returns>
-        public static AuthenticationBuilder AddBasicAuthentication(
+        public static AuthenticationBuilder AddBasicLdapAuthentication(
                 this AuthenticationBuilder builder,
                 Action<BasicAuthenticationOptions>? configure = null)
-            => builder.AddBasicAuthentication<LdapUser>(configure);
+            => builder.AddBasicLdapAuthentication<LdapUser>(configure);
     }
 }

@@ -132,6 +132,20 @@ namespace Visus.BasicLdapAuthentication {
                 var principal = await this._ldap.LoginPrincipalAsync(parts[0],
                     parts[1], this.Options.ClaimFilter, CancellationToken.None);
                 Debug.Assert(principal is not null);
+
+                if (!string.IsNullOrWhiteSpace(this.Options.CookieScheme)) {
+                    var t = DateTimeOffset.UtcNow;
+                    await this.Request.HttpContext.SignInAsync(
+                        this.Options.CookieScheme,
+                        principal,
+                        new AuthenticationProperties {
+                            AllowRefresh = this.Options.AllowCookieRefresh,
+                            ExpiresUtc = t + this.Options.CookieLifetime,
+                            IsPersistent = this.Options.PersistentCookie,
+                            IssuedUtc = t,
+                        });
+                }
+
                 this.Logger.LogInformation("Issuing LDAP-based basic "
                     + "authentication ticket for {User} with scheme {Scheme}.",
                     principal.Identity?.Name, this.Scheme.Name);

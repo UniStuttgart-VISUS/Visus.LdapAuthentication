@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,9 +22,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 builder.Services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
-    .AddBasicAuthentication(o => {
+    .AddCookie(o => {
+        o.Cookie.IsEssential = true;
+    }).AddBasicLdapAuthentication(o => {
         builder.Configuration.GetSection(BasicAuthenticationOptions.Section).Bind(o);
-        o.ClaimFilter = (c, _) => c != ClaimTypes.GroupSid;
+        o.CookieScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        o.ClaimFilter = (c, _) => (c != ClaimTypes.GroupSid) && (c != ClaimTypes.Role);
     });
 builder.Services.AddLdapAuthentication(o => {
         builder.Configuration.GetSection(LdapOptions.Section).Bind(o);
