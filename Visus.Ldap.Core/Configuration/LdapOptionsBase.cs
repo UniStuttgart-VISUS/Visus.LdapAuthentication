@@ -143,6 +143,7 @@ namespace Visus.Ldap.Configuration {
                     new LdapMapping() {
                         GroupsAttribute = "memberOf",
                         GroupsFilter = "(objectClass=group)",
+                        PasswordAttribute = "unicodePwd",
                         PrimaryGroupAttribute = "primaryGroupID",
                         PrimaryGroupIdentityAttribute = "objectSid",
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
@@ -154,6 +155,7 @@ namespace Visus.Ldap.Configuration {
                     new LdapMapping() {
                         GroupsAttribute = "memberOf",
                         GroupsFilter = "(objectClass=group)",
+                        PasswordAttribute = "unicodePwd",
                         PrimaryGroupAttribute = "gidNumber",
                         PrimaryGroupIdentityAttribute = "gidNumber",
                         UserFilter = "(|(sAMAccountName={0})(userPrincipalName={0}))",
@@ -165,6 +167,7 @@ namespace Visus.Ldap.Configuration {
                     new LdapMapping() {
                         GroupsAttribute = "memberOf",
                         GroupsFilter = "(objectClass=group)",
+                        // TODO: figure out how the password is stored in OpenLDAP.
                         PrimaryGroupAttribute = "gidNumber",
                         PrimaryGroupIdentityAttribute = "gidNumber",
                         UserFilter = "(&(objectClass=posixAccount)(entryDN={0}))",

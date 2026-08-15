@@ -187,6 +187,24 @@ namespace Visus.LdapAuthentication.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No valid mapping has been configured..
+        /// </summary>
+        public static string ErrorNoMapping {
+            get {
+                return ResourceManager.GetString("ErrorNoMapping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The password attribute is not configured, but it is required. .
+        /// </summary>
+        public static string ErrorNoPasswordAttribute {
+            get {
+                return ResourceManager.GetString("ErrorNoPasswordAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not retrieve the primary group claim for &quot;{0}&quot;..
         /// </summary>
         public static string ErrorPrimaryGroupClaim {

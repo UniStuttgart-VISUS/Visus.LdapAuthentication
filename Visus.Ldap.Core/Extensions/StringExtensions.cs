@@ -1,17 +1,17 @@
 ﻿// <copyright file="StringExtensions.cs" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2021 - 2025 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
-
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Visus.Ldap.Properties;
+
 
 namespace Visus.Ldap.Extensions {
 
@@ -42,6 +42,20 @@ namespace Visus.Ldap.Extensions {
             that = that.Replace("/", "\\2f");
 
             return that;
+        }
+
+        /// <summary>
+        /// Encodes <paramref name="that"/> as password for use with Active
+        /// Directory. AD expects the password to be a quoted UTF-16 string.
+        /// </summary>
+        /// <param name="that">The password to be encoded.</param>
+        /// <returns>The encoded password.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="that"/>
+        /// is <see langword="null"/>.</exception>
+        public static byte[] ToActiveDirectoryPassword(this string that) {
+            ArgumentNullException.ThrowIfNull(that);
+            // Cf. https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/change-windows-active-directory-user-password
+            return Encoding.Unicode.GetBytes($@"""{that}""");
         }
 
         /// <summary>

@@ -71,6 +71,16 @@ namespace Visus.Ldap.Mapping {
         public string PrimaryGroupAttribute { get; set; } = null!;
 
         /// <summary>
+        /// Gets or sets the attribute where the user or machine password is
+        /// stored.
+        /// </summary>
+        /// <remarks>
+        /// This attribute is required by the <see cref="ILdapPasswordService"/>
+        /// and can be left blank for other services.
+        /// </remarks>
+        public string? PasswordAttribute { get; set; }
+
+        /// <summary>
         /// Gets or sets the attribute where the identity of the primary group
         /// is stored.
         /// </summary>
