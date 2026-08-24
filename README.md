@@ -20,6 +20,9 @@ See [README for Visus.LdapAuthentication](Visus.LdapAuthentication/README.md).
 ## Visus.DirectoryAuthentication
 See [README for Visus.DirectoryAuthentication](Visus.DirectoryAuthentication/README.md)
 
+## Visus.BasicLdapAuthentication
+Implements the basic authentication scheme backed by an LDAP user database (Visus.LdapAuthentication or Visus.DirectoryAuthentication). See [README for Visus.BasicLdapAuthentication](Visus.BasicLdapAuthentication/README.md) for usage.
+
 ## What's new in version 2?
 Version 2.0 is a major rewrite of both libraries, which removes previously deprecated functionality and unifies large parts of the implementation between LdapAuthentication and DirectoryAuthentication in the [`Visus.Ldap.Core`](Visus.Ldap.Core) library. The most important changes to the 1.x branch are:
 1. Both libraries now require at least .NET 8.
